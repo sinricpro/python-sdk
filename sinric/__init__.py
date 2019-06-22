@@ -1,3 +1,3 @@
-from ._configmanager import ConfigManager
-from ._sinric import Sinric
-from ._sinricdevice import SinricDevice
+from ._sinricpro import Sinric
+from ._jsoncommands import JsonCommands
+from ._sinricprocommand import SinricProCommand
