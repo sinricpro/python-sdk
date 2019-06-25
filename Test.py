@@ -15,7 +15,7 @@ class Sinric:
     async def listen(self):
         async with ws.connect(
                 'ws://23.95.122.232:3001',
-                extra_headers={'Authorization:': self.apiKey, 'deviceids:': self.deviceId}) as websocket:
+                extra_headers={'Authorization': self.apiKey, 'deviceids': self.deviceId}) as websocket:
             greeting = await websocket.recv()
             self.myQueue.put(greeting)
 
@@ -32,12 +32,15 @@ class Sinric:
 
     def initialize(self):
         while True:
-            asyncio.get_event_loop().run_until_complete(self.listen())
-            asyncio.get_event_loop().run_until_complete(self.performAction())
+            try:
+                asyncio.get_event_loop().run_until_complete(self.listen())
+                asyncio.get_event_loop().run_until_complete(self.performAction())
+            except Exception as e:
+                print(e)
 
 
-apiKey = '6125c4a0-2d5b-4d0b-a0c6-70774d6c0b69'
-deviceId = '5d11133035d6f2121c7dccb6'
+apiKey = 'Api Key'
+deviceId = 'Device Id'
 
 if __name__ == '__main__':
     obj = Sinric(apiKey, deviceId)
