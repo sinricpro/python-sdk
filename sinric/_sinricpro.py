@@ -1,6 +1,6 @@
 import websockets as ws
-from time import sleep
 import json
+from ._piactions import PiActions
 
 
 async def Request(apiKey, deviceId, queue):  # Producer
@@ -19,7 +19,9 @@ async def Process(queue):  # Consumer
         actions = jsonobj['actions']
         actionname = actions[0]['name']
         deviceid = jsonobj['did']
-        print('Action : ', actionname, '  DeviceId : ', deviceid)
+        piAction = PiActions(actionname, deviceid)
+        piAction.printData()
+        # print('Action : ', actionname, '  DeviceId : ', deviceid)
 
     else:
         print('Queue Empty')

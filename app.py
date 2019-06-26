@@ -2,11 +2,8 @@ from sinric._sinricpro import Request, Process
 import asyncio
 from queue import Queue
 
-# deviceId = 'Device Id'
-# apiKey = 'Api Key'
-
-deviceId = '5d13927d5d37dc4a5b9c74e5'
-apiKey = 'c963892e-1116-47bb-be34-14ff95c4ce00'
+apiKey = ''
+deviceId = ''
 
 
 async def main():
