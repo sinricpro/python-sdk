@@ -1,3 +1,3 @@
-from ._sinricpro import Produce, Consume
+from ._sinricpro import Request, Process
 from ._jsoncommands import JsonCommands
 from ._sinricprocommand import SinricProCommand
