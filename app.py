@@ -1,28 +1,19 @@
-from sinric._sinricpro import Request, Process
+from sinric.communication._sinricprosocket import SinricPro
 import asyncio
-from queue import Queue
 
-apiKey = 'Api'
-deviceId1 = 'id1'
-deviceId2 = 'Id2'
+apiKey = 'Api Key'
+deviceId1 = 'Device Id 1'
+deviceId2 = 'Device Id 2'
 deviceId = ';'.join([deviceId1, deviceId2])
 
-
-async def main():
-    try:
-        prod = loop.create_task(Request(apiKey, deviceId, myq))
-        cons = loop.create_task(Process(myq))
-        await asyncio.wait([prod, cons])
-        return
-    except Exception as e:
-        print(e)
-
-
 if __name__ == '__main__':
-    myq = Queue()
-    while True:
-        try:
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(main())
-        except Exception as e:
-            print(e)
+    client = SinricPro(apiKey, deviceId)
+    loop = asyncio.get_event_loop()
+    connection = loop.run_until_complete(client.connect())
+    tasks = [
+        asyncio.ensure_future(client.handle()),
+        asyncio.ensure_future(client.heartbeat(connection)),
+        asyncio.ensure_future(client.receiveMessage(connection)),
+    ]
+
+    loop.run_until_complete(asyncio.wait(tasks))

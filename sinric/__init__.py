@@ -1,2 +1,2 @@
-from ._sinricpro import Request, Process
-from ._piactions import PiActions
+from sinric.communication._sinricprosocket import SinricPro
+from sinric.command._mainqueue import queue
