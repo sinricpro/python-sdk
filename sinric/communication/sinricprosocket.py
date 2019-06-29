@@ -1,11 +1,9 @@
 import websockets
 import json
-from sinric.command._mainqueue import queue
+from sinric.command.mainqueue import queue
 import asyncio
-import time
 
-
-class SinricPro:
+class SinricProSocket:
 
     def __init__(self, apiKey, deviceId):
         self.apiKey = apiKey
@@ -45,5 +43,5 @@ class SinricPro:
                 break
 
     async def handle(self):
-        while queue.qsize() > 0:
-            print(queue.get())
+        # await printit(self.func)
+        return

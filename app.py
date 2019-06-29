@@ -1,19 +1,13 @@
-from sinric.communication._sinricprosocket import SinricPro
+from sinric.communication.sinricprosocket import SinricProSocket
+from sinric.sinricpro import SinricPro
 import asyncio
 
-apiKey = 'Api Key'
-deviceId1 = 'Device Id 1'
-deviceId2 = 'Device Id 2'
+apiKey = 'c963892e-1116-47bb-be34-14ff95c4ce00'
+deviceId1 = '5d126916eb7e894a699e0ae0'
+deviceId2 = '5d13927d5d37dc4a5b9c74e5'
 deviceId = ';'.join([deviceId1, deviceId2])
 
 if __name__ == '__main__':
     client = SinricPro(apiKey, deviceId)
-    loop = asyncio.get_event_loop()
-    connection = loop.run_until_complete(client.connect())
-    tasks = [
-        asyncio.ensure_future(client.handle()),
-        asyncio.ensure_future(client.heartbeat(connection)),
-        asyncio.ensure_future(client.receiveMessage(connection)),
-    ]
-
-    loop.run_until_complete(asyncio.wait(tasks))
+    client.add()
+    client.handle()
