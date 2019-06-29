@@ -2,14 +2,17 @@ import websockets
 import json
 from sinric.command.mainqueue import queue
 import asyncio
+from sinric.callback_handler.cbhandler import CallBackHandler
 
 
 class SinricProSocket:
 
-    def __init__(self, apiKey, deviceId):
+    def __init__(self, apiKey, deviceId, callbacks):
         self.apiKey = apiKey
         self.deviceIds = deviceId
         self.connection = None
+        self.callbacks = callbacks
+        self.callbackHandler = CallBackHandler(self.callbacks)
         pass
 
     async def connect(self):  # Producer
@@ -44,5 +47,6 @@ class SinricProSocket:
                 break
 
     async def handle(self):
-        # await printit(self.func)
-        return
+        while queue.qsize() > 0:
+            self.callbackHandler.handleCallBacks(queue.get())
+        pass

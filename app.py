@@ -1,15 +1,22 @@
 from sinric.sinricpro import SinricPro
-
-apiKey = ''
-deviceId1 = ''
-deviceId2 = ''
-deviceId = ';'.join([deviceId1, deviceId2])
+from credential import apiKey, deviceId
 
 
-def powerState():
+def powerState(did, state):
+    print(did, state)
     return
 
 
+def powerLevel(did, state):
+    print(did, state['value'])
+    return
+
+
+callbacks = {
+    'powerState': powerState,
+    'powerLevel': powerLevel,
+}
+
 if __name__ == '__main__':
-    client = SinricPro(apiKey, deviceId)
+    client = SinricPro(apiKey, deviceId, callbacks)
     client.handle()
