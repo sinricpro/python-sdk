@@ -18,7 +18,8 @@ class SinricProSocket:
     async def connect(self):  # Producer
         self.connection = await websockets.client.connect('ws://23.95.122.232:3001',
                                                           extra_headers={'Authorization': self.apiKey,
-                                                                         'deviceids': self.deviceIds})
+                                                                         'deviceids': self.deviceIds},
+                                                          ping_interval=30000, ping_timeout=10000)
         if self.connection.open:
             print('Client Connected')
             return self.connection
@@ -31,20 +32,19 @@ class SinricProSocket:
             try:
                 message = await connection.recv()
                 queue.put(json.loads(message))
-                print(queue.qsize(), ' : Queue Size')
                 await self.handle()
             except websockets.exceptions.ConnectionClosed:
                 print('Connection with server closed')
                 break
 
-    async def heartbeat(self, connection):
-        while True:
-            try:
-                await connection.send('H')
-                await asyncio.sleep(5)
-            except websockets.exceptions.ConnectionClosed:
-                print('Connection with server closed')
-                break
+    # async def heartbeat(self, connection):
+    #     while True:
+    #         try:
+    #             await connection.send('H')
+    #             await asyncio.sleep(5)
+    #         except websockets.exceptions.ConnectionClosed:
+    #             print('Connection with server closed')
+    #             break
 
     async def handle(self):
         while queue.qsize() > 0:

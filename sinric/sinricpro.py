@@ -14,7 +14,7 @@ class SinricPro:
     def handle(self):
         tasks = [
             asyncio.ensure_future(self.socket.handle()),
-            asyncio.ensure_future(self.socket.heartbeat(self.connection)),
+            # asyncio.ensure_future(self.socket.heartbeat(self.connection)),
             asyncio.ensure_future(self.socket.receiveMessage(self.connection)),
         ]
 
