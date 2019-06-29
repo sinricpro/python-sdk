@@ -1,8 +1,8 @@
 import websockets
 import json
 from sinric.command.mainqueue import queue
-import asyncio
 from sinric.callback_handler.cbhandler import CallBackHandler
+from time import sleep
 
 
 class SinricProSocket:
@@ -35,7 +35,7 @@ class SinricProSocket:
                 await self.handle()
             except websockets.exceptions.ConnectionClosed:
                 print('Connection with server closed')
-                break
+                # break
 
     # async def heartbeat(self, connection):
     #     while True:
@@ -49,4 +49,4 @@ class SinricProSocket:
     async def handle(self):
         while queue.qsize() > 0:
             self.callbackHandler.handleCallBacks(queue.get(), self.connection)
-        pass
+        return

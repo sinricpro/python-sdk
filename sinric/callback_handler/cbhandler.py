@@ -45,4 +45,19 @@ class CallBackHandler:
 
         elif jsn['actions'][0]['name'] == 'setPowerLevel':
             powerState = self.callbacks['powerLevel']
-            powerState(jsn['did'], jsn['actions'][0]['parameters'])
+            resp = powerState(jsn['did'], jsn['actions'][0]['parameters'])
+            response = {
+                "clientId": "android-app",
+                "did": jsn['did'],
+                "deviceAttributes": [],
+                "type": "action",
+                "ts": 1556844844604,
+                "actions": [{
+                    "name": "setPowerLevel",
+                    "parameters": {
+                        "value": jsn['actions'][0]['parameters']['value']
+                    }
+                }]
+            }
+            if resp:
+                connection.send(response)
