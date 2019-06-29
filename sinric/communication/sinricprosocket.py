@@ -48,5 +48,5 @@ class SinricProSocket:
 
     async def handle(self):
         while queue.qsize() > 0:
-            self.callbackHandler.handleCallBacks(queue.get())
+            self.callbackHandler.handleCallBacks(queue.get(), self.connection)
         pass

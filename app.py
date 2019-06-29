@@ -4,12 +4,12 @@ from credential import apiKey, deviceId
 
 def powerState(did, state):
     print(did, state)
-    return
+    return True
 
 
 def powerLevel(did, state):
     print(did, state['value'])
-    return
+    return True
 
 
 callbacks = {
