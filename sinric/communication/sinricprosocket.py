@@ -3,6 +3,7 @@ import json
 from sinric.command.mainqueue import queue
 import asyncio
 
+
 class SinricProSocket:
 
     def __init__(self, apiKey, deviceId):
