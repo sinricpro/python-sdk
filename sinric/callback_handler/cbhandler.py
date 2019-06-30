@@ -1,11 +1,14 @@
-class CallBackHandler:
+from sinric.controller.powerController import PowerController
+
+
+class CallBackHandler(PowerController):
     def __init__(self, callbacks):
+        super().__init__()
         self.callbacks = callbacks
 
-    def handleCallBacks(self, jsn, connection):
+    async def handleCallBacks(self, jsn, connection):
         if jsn['actions'][0]['name'] == 'setOn':
-            powerState = self.callbacks['powerState']
-            resp = powerState(jsn['did'], jsn['actions'][0]['name'])
+            resp = await self.powerState(jsn, self.callbacks['powerState'])
             response = {
                 "success": True,
                 "results": [
@@ -21,11 +24,10 @@ class CallBackHandler:
                 ]
             }
             if resp:
-                connection.send(response)
+                await connection.send(response)
 
         elif jsn['actions'][0]['name'] == 'setOff':
-            powerState = self.callbacks['powerState']
-            resp = powerState(jsn['did'], jsn['actions'][0]['name'])
+            resp = await self.powerState(jsn, self.callbacks['powerState'])
             response = {
                 "success": True,
                 "results": [
@@ -41,7 +43,7 @@ class CallBackHandler:
                 ]
             }
             if resp:
-                connection.send(response)
+                await connection.send(response)
 
         elif jsn['actions'][0]['name'] == 'setPowerLevel':
             powerState = self.callbacks['powerLevel']

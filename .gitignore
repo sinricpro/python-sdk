@@ -2,4 +2,3 @@
 events/
 devices/
 credential.py
-controller/

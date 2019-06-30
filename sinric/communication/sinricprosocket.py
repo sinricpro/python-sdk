@@ -35,18 +35,9 @@ class SinricProSocket:
                 await self.handle()
             except websockets.exceptions.ConnectionClosed:
                 print('Connection with server closed')
-                # break
-
-    # async def heartbeat(self, connection):
-    #     while True:
-    #         try:
-    #             await connection.send('H')
-    #             await asyncio.sleep(5)
-    #         except websockets.exceptions.ConnectionClosed:
-    #             print('Connection with server closed')
-    #             break
+                break
 
     async def handle(self):
         while queue.qsize() > 0:
-            self.callbackHandler.handleCallBacks(queue.get(), self.connection)
+           await self.callbackHandler.handleCallBacks(queue.get(), self.connection)
         return

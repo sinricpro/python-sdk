@@ -1,7 +1,6 @@
 from sinric.sinricpro import SinricPro
 from credential import apiKey, deviceId
 
-
 def powerState(did, state):
     print(did, state)
     return True
