@@ -13,7 +13,10 @@ class SinricPro:
 
     def handle(self):
         tasks = [
-            asyncio.ensure_future(self.socket.handle()),
-            asyncio.ensure_future(self.socket.receiveMessage(self.connection)),
+            self.socket.handle(),
+            self.socket.receiveMessage(self.connection)
+            # asyncio.ensure_future(self.socket.handle()),
+            # asyncio.ensure_future(self.socket.receiveMessage(self.connection)),
         ]
+
         self.loop.run_until_complete(asyncio.wait(tasks))
