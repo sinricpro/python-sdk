@@ -1,1 +1,1 @@
-#  Sinric-Python-SDK
+#  Sinric-Python3-SDK

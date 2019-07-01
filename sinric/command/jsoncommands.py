@@ -1,12 +1,14 @@
 JSON_COMMANDS = {
-    'DEVICEID': 'did',
+    'DEVICEID': 'deviceId',
     'SETBRIGHTNESS': 'setBrightness',
     'SETON': 'setOn',
     'SETOFF': 'setOff',
     'ACTIONS': 'actions',
     'ACTION': 'action',
-    'TIMESTAMP': 'ts',
+    'TIMESTAMP': 'createdAt',
+    'SETPOWERSTATE': 'setPowerState',
     'SETPOWERLEVEL': 'setPowerLevel',
+    'ADJUSTPOWERLEVEL': 'adjustPowerLevel',
     'SETCOLOR': 'setColor',
     'SETCOLORTEMPERATURE': 'setColorTemperature',
     'INCREASECOLORTEMPERATURE': 'increaseColorTemperature',
@@ -19,11 +21,12 @@ JSON_COMMANDS = {
     'COLOR_R': 'r',
     'COLOR_G': 'g',
     'COLOR_B': 'b',
-    'COLORTEMPERATURE': 'colorTemperatureInKelvin',
+    'COLORTEMPERATURE': 'colorTemperature',
     'POWERSTATE': 'powerState',
     'POWERLEVEL': 'powerLevel',
     'PARAMETERS': 'parameters',
     'NAME': 'name',
-
+    'STATE': 'state',
+    'ADJUSTBRIGHTNESS': 'adjustBrightness'
 
 }
