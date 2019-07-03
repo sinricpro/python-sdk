@@ -6,10 +6,9 @@ from time import sleep
 import asyncore
 
 
-class SinricProSocket(asyncore.dispatcher):
+class SinricProSocket():
 
     def __init__(self, apiKey, deviceId, callbacks):
-        asyncore.dispatcher.__init__(self)
         self.apiKey = apiKey
         self.deviceIds = deviceId
         self.connection = None

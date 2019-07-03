@@ -73,20 +73,10 @@ callbacks = {
 
 if __name__ == '__main__':
     wsClient = SinricPro(apiKey, deviceId, callbacks)
-    udpClient = SinricProUdp()
-    t2 = Thread(target=udpClient.handle)
+    udpClient = SinricProUdp(callbacks)
+    t2 = Thread(target=udpClient.listen)
     t2.setDaemon(True)
     t2.start()
     while True:
         wsClient.handle()
         pass
-
-# udp_obj = udpClient.connect()
-# ws_obj = wsClient.connect()
-# t0 = Thread(target=wsClient.receiveMessage, args=(ws_obj,))
-# t1 = Thread(target=wsClient.handle)
-# t0.setDaemon(True)
-# t1.setDaemon(True)
-# t0.start()
-# t1.start()
-# client = SinricPro(apiKey, deviceId, callbacks)
