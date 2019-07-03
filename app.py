@@ -1,5 +1,7 @@
 from sinric.sinricpro import SinricPro
-from credentials import apiKey, deviceId
+from credential import apiKey, deviceId
+from sinric.communication.sinricproudp import SinricProUdp
+from threading import Thread
 
 tempStates = {
     'powerLevel': 0,
@@ -70,6 +72,21 @@ callbacks = {
 }
 
 if __name__ == '__main__':
-    client = SinricPro(apiKey, deviceId, callbacks)
+    wsClient = SinricPro(apiKey, deviceId, callbacks)
+    udpClient = SinricProUdp()
+    t2 = Thread(target=udpClient.handle)
+    t2.setDaemon(True)
+    t2.start()
     while True:
-        client.handle()
+        wsClient.handle()
+        pass
+
+# udp_obj = udpClient.connect()
+# ws_obj = wsClient.connect()
+# t0 = Thread(target=wsClient.receiveMessage, args=(ws_obj,))
+# t1 = Thread(target=wsClient.handle)
+# t0.setDaemon(True)
+# t1.setDaemon(True)
+# t0.start()
+# t1.start()
+# client = SinricPro(apiKey, deviceId, callbacks)

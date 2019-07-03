@@ -3,17 +3,18 @@ import json
 from sinric.command.mainqueue import queue
 from sinric.callback_handler.cbhandler import CallBackHandler
 from time import sleep
+import asyncore
 
 
-class SinricProSocket:
+class SinricProSocket(asyncore.dispatcher):
 
     def __init__(self, apiKey, deviceId, callbacks):
+        asyncore.dispatcher.__init__(self)
         self.apiKey = apiKey
         self.deviceIds = deviceId
         self.connection = None
         self.callbacks = callbacks
         self.callbackHandler = CallBackHandler(self.callbacks)
-        pass
 
     async def connect(self):  # Producer
         self.connection = await websockets.client.connect('ws://23.95.122.232:3001',
