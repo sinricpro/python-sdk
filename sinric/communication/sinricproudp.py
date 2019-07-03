@@ -23,4 +23,3 @@ class SinricProUdp:
         while True:
             data, addr = self.sockServ.recvfrom(1024)
             queue.put(json.loads(data.decode('ascii')))
-            # print("Message: ", data.decode('ascii'))
