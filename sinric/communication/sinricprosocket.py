@@ -2,8 +2,6 @@ import websockets
 import json
 from sinric.command.mainqueue import queue
 from sinric.callback_handler.cbhandler import CallBackHandler
-from time import sleep
-import asyncore
 
 
 class SinricProSocket():
@@ -28,14 +26,16 @@ class SinricProSocket():
         await self.connection.send(message)
 
     async def receiveMessage(self, connection):
+        # while True:
         try:
             message = await connection.recv()
             queue.put(json.loads(message))
         except websockets.exceptions.ConnectionClosed:
             print('Connection with server closed')
+            # break
 
     async def handle(self):
         # sleep(6)
-        while queue.qsize() > 0:
-            await self.callbackHandler.handleCallBacks(queue.get(), self.connection)
-        return
+        while True:
+            while queue.qsize() > 0:
+                await self.callbackHandler.handleCallBacks(queue.get(), self.connection)

@@ -1,6 +1,7 @@
 import socket
 from sinric.command.mainqueue import queue
 from sinric.callback_handler.cbhandler import CallBackHandler
+import json
 
 
 class SinricProUdp:
@@ -21,5 +22,5 @@ class SinricProUdp:
     def listen(self):
         while True:
             data, addr = self.sockServ.recvfrom(1024)
-            # queue.put(data.decode('ascii'))
-            print("Message: ", data)
+            queue.put(json.loads(data.decode('ascii')))
+            # print("Message: ", data.decode('ascii'))

@@ -16,7 +16,6 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
         self.callbacks = callbacks
 
     async def handleCallBacks(self, jsn, connection):
-        # print(jsn)
         if jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETPOWERSTATE']:
             resp, state = await self.powerState(jsn, self.callbacks['powerState'])
             response = {
