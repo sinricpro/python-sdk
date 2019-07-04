@@ -1,6 +1,6 @@
 #  Python3 SDK for Sinric Pro
 
-### Get your api from [sinric-pro-website]('https://sinric.pro')
+### Get your api from [sinric-pro-website](https://sinric.pro)
 
 ### Copy paste your credentials into credentials.py
 
