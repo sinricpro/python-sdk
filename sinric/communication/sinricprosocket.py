@@ -4,7 +4,7 @@ from sinric.command.mainqueue import queue
 from sinric.callback_handler.cbhandler import CallBackHandler
 
 
-class SinricProSocket():
+class SinricProSocket:
 
     def __init__(self, apiKey, deviceId, callbacks):
         self.apiKey = apiKey
@@ -12,6 +12,10 @@ class SinricProSocket():
         self.connection = None
         self.callbacks = callbacks
         self.callbackHandler = CallBackHandler(self.callbacks)
+        self.enableTrace = False
+
+    def enableRequestPrint(self, bool2):
+        self.enableTrace = bool2
 
     async def connect(self):  # Producer
         self.connection = await websockets.client.connect('ws://23.95.122.232:3001',
@@ -26,16 +30,17 @@ class SinricProSocket():
         await self.connection.send(message)
 
     async def receiveMessage(self, connection):
-        # while True:
-        try:
-            message = await connection.recv()
-            queue.put(json.loads(message))
-        except websockets.exceptions.ConnectionClosed:
-            print('Connection with server closed')
-            # break
+        while True:
+            try:
+                message = await connection.recv()
+                if self.enableTrace:
+                    print(message)
+                queue.put(json.loads(message))
+            except websockets.exceptions.ConnectionClosed:
+                print('Connection with server closed')
+                break
 
     async def handle(self):
-        # sleep(6)
         while True:
             while queue.qsize() > 0:
                 await self.callbackHandler.handleCallBacks(queue.get(), self.connection)
