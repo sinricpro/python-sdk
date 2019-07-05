@@ -1,5 +1,5 @@
 from sinric.sinricpro import SinricPro
-from credential import apiKey, deviceId
+from credentials import apiKey, deviceId
 from sinric.communication.sinricproudp import SinricProUdp
 from threading import Thread
 import asyncio

@@ -2,6 +2,7 @@ import socket
 from sinric.command.mainqueue import queue
 from sinric.callback_handler.cbhandler import CallBackHandler
 import json
+from credentials import deviceIdArr
 import struct
 
 
@@ -26,6 +27,10 @@ class SinricProUdp:
     def listen(self):
         while True:
             data, addr = self.sockServ.recvfrom(1024)
-            queue.put(json.loads(data.decode('ascii')))
+            jsonData = json.loads(data.decode('ascii'))
+            if jsonData['deviceId'] in deviceIdArr:
+                queue.put(jsonData)
+            else:
+                print('Invalid Device id')
             if self.enablePrint:
                 print(data)
