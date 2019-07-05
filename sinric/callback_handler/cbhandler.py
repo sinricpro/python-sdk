@@ -41,8 +41,8 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                     udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETPOWERLEVEL']:
-            resp, value = self.setPowerLevel(jsn[JSON_COMMANDS['DEVICEID']],
-                                             self.callbacks['setPowerLevel'])
+            resp, value = await self.setPowerLevel(jsn,
+                                                   self.callbacks['setPowerLevel'])
             response = {
                 "payloadVersion": 1,
                 "success": resp,
@@ -62,8 +62,8 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                     udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['ADJUSTPOWERLEVEL']:
-            resp, value = self.setPowerLevel(jsn[JSON_COMMANDS['DEVICEID']],
-                                             self.callbacks['adjustPowerLevel'])
+            resp, value = await self.adjustPowerLevel(jsn,
+                                                      self.callbacks['adjustPowerLevel'])
             response = {
                 "payloadVersion": 1,
                 "success": resp,

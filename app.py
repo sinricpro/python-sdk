@@ -90,9 +90,9 @@ def handle_queue(hande, udo):
 
 def handle_threads():
     ws_client = SinricPro(apiKey, deviceId, callbacks)
-    ws_client.socket.enableRequestPrint(False)  # Set it to True to start printing request JSON
+    ws_client.socket.enableRequestPrint(True)  # Set it to True to start printing request JSON
     udp_client = SinricProUdp(callbacks)
-    udp_client.enableUdpPrint(True)  # Set it to True to start printing request UDP JSON
+    udp_client.enableUdpPrint(False)  # Set it to True to start printing request UDP JSON
     t1 = Thread(target=handle_queue, args=(ws_client.socket.handle, udp_client))
     t2 = Thread(target=udp_client.listen)
     t1.setDaemon(True)
