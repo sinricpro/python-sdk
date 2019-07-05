@@ -14,7 +14,7 @@
 
 ### TODO
 
-   * Test multicast UDP
+   * ~~Test multicast UDP~~
    * Add events
    * Timestamp calculation 
    * Build format wheel
