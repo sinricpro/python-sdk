@@ -8,6 +8,7 @@ import struct
 class SinricProUdp:
     def __init__(self, callbacks1):
         self.callbacks = callbacks1
+        self.enablePrint = False
         self.udp_ip = '224.9.9.9'
         self.udp_port = 3333
         self.address = (self.udp_ip, 3333)
@@ -18,8 +19,13 @@ class SinricProUdp:
         self.sockServ.bind(self.address)
         self.callbackHandler = CallBackHandler(self.callbacks)
 
+    def enableUdpPrint(self, dat):
+        self.enablePrint = dat
+
     def listen(self):
         while True:
             data, addr = self.sockServ.recvfrom(1024)
-            print(data)
-            queue.put(json.loads(data.decode('utf-8')))
+            queue.put(json.loads(data.decode('ascii')))
+            if self.enablePrint:
+                print(data)
+
