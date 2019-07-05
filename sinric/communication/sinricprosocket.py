@@ -35,12 +35,12 @@ class SinricProSocket:
                 message = await connection.recv()
                 if self.enableTrace:
                     print(message)
-                queue.put(json.loads(message))
+                queue.put([json.loads(message), True, False])
             except websockets.exceptions.ConnectionClosed:
                 print('Connection with server closed')
                 break
 
-    async def handle(self):
+    async def handle(self, udp_client):
         while True:
             while queue.qsize() > 0:
-                await self.callbackHandler.handleCallBacks(queue.get(), self.connection)
+                await self.callbackHandler.handleCallBacks(queue.get(), self.connection, udp_client)

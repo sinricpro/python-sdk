@@ -1,6 +1,5 @@
 import socket
 from sinric.command.mainqueue import queue
-from sinric.callback_handler.cbhandler import CallBackHandler
 import json
 from credentials import deviceIdArr
 import struct
@@ -19,18 +18,20 @@ class SinricProUdp:
         self.sockServ.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP,
                                  struct.pack("4sl", socket.inet_aton(self.udp_ip), socket.INADDR_ANY))
 
-        self.callbackHandler = CallBackHandler(self.callbacks)
-
     def enableUdpPrint(self, dat):
         self.enablePrint = dat
+
+    def sendResponse(self, data, sender):
+        self.sockServ.sendto(data, sender)
 
     def listen(self):
         while True:
             data, addr = self.sockServ.recvfrom(1024)
             jsonData = json.loads(data.decode('ascii'))
             if jsonData['deviceId'] in deviceIdArr:
-                queue.put(jsonData)
+                queue.put([jsonData, False, True, addr])
             else:
                 print('Invalid Device id')
             if self.enablePrint:
                 print(data)
+                print('UDP senderID : ', addr)
