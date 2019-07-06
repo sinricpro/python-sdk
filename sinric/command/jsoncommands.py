@@ -27,6 +27,8 @@ JSON_COMMANDS = {
     'PARAMETERS': 'parameters',
     'NAME': 'name',
     'STATE': 'state',
-    'ADJUSTBRIGHTNESS': 'adjustBrightness'
+    'ADJUSTBRIGHTNESS': 'adjustBrightness',
+    'MESSAGEID': 'messageId',
+    'CLIENTID': 'clientId'
 
 }

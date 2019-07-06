@@ -24,6 +24,8 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
             resp, state = await self.powerState(jsn, self.callbacks['powerState'])
             response = {
                 "payloadVersion": 1,
+                'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                 "success": True,
                 "message": "OK",
                 "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
@@ -47,6 +49,8 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                 "payloadVersion": 1,
                 "success": resp,
                 "message": "OK",
+                'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                 "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                 "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                 "type": "response",
@@ -68,6 +72,8 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                 "payloadVersion": 1,
                 "success": resp,
                 "message": "OK",
+                'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                 "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                 "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                 "type": "response",
@@ -86,7 +92,8 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
             resp, value = await self.setBrightness(jsn, self.callbacks['setBrightness'])
             response = {
                 "payloadVersion": 1,
-                "clientId": "alexa-skill",
+                'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                 "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                 "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                 "deviceAttributes": "",
@@ -106,7 +113,8 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
             resp, value = await self.adjustBrightness(jsn, self.callbacks['adjustBrightness'])
             response = {
                 "payloadVersion": 1,
-                "clientId": "alexa-skill",
+                'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                 "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                 "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                 "deviceAttributes": "",
@@ -128,6 +136,8 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                 "payloadVersion": 1,
                 "success": resp,
                 "message": "OK",
+                'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                 "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                 "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                 "type": "response",
@@ -151,6 +161,8 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
             response = {
                 "payloadVersion": 1,
                 "success": resp,
+                'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                 "message": "OK",
                 "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                 "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
