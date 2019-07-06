@@ -4,6 +4,7 @@ from sinric.command.jsoncommands import JSON_COMMANDS
 from sinric.controller.powerLevelController import PowerLevel
 from sinric.controller.colorController import ColorController
 from sinric.controller.colorTemperature import ColorTemperatureController
+import json
 
 
 # TODO Time Stamp Calculation
@@ -15,12 +16,16 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
         super().__init__()
         self.callbacks = callbacks
 
-    async def handleCallBacks(self, jsn, connection):
-        # print(jsn)
+    async def handleCallBacks(self, dataArr, connection, udp_client):
+        jsn = dataArr[0]
+        socketTrace = dataArr[1]
+        udpTrace = dataArr[2]
         if jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETPOWERSTATE']:
             resp, state = await self.powerState(jsn, self.callbacks['powerState'])
             response = {
                 "payloadVersion": 1,
+                'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                 "success": True,
                 "message": "OK",
                 "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
@@ -32,15 +37,20 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                 }
             }
             if resp:
-                await connection.send(response)
+                if socketTrace:
+                    await connection.send(response)
+                elif udpTrace:
+                    udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETPOWERLEVEL']:
-            resp, value = self.setPowerLevel(jsn[JSON_COMMANDS['DEVICEID']],
-                                             self.callbacks['setPowerLevel'])
+            resp, value = await self.setPowerLevel(jsn,
+                                                   self.callbacks['setPowerLevel'])
             response = {
                 "payloadVersion": 1,
                 "success": resp,
                 "message": "OK",
+                'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                 "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                 "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                 "type": "response",
@@ -50,15 +60,20 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                 }
             }
             if resp:
-                connection.send(response)
+                if socketTrace:
+                    await connection.send(response)
+                elif udpTrace:
+                    udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['ADJUSTPOWERLEVEL']:
-            resp, value = self.setPowerLevel(jsn[JSON_COMMANDS['DEVICEID']],
-                                             self.callbacks['adjustPowerLevel'])
+            resp, value = await self.adjustPowerLevel(jsn,
+                                                      self.callbacks['adjustPowerLevel'])
             response = {
                 "payloadVersion": 1,
                 "success": resp,
                 "message": "OK",
+                'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                 "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                 "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                 "type": "response",
@@ -68,13 +83,17 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                 }
             }
             if resp:
-                connection.send(response)
+                if socketTrace:
+                    await connection.send(response)
+                elif udpTrace:
+                    udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETBRIGHTNESS']:
             resp, value = await self.setBrightness(jsn, self.callbacks['setBrightness'])
             response = {
                 "payloadVersion": 1,
-                "clientId": "alexa-skill",
+                'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                 "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                 "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                 "deviceAttributes": "",
@@ -85,13 +104,17 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                 }
             }
             if resp:
-                await connection.send(response)
+                if socketTrace:
+                    await connection.send(response)
+                elif udpTrace:
+                    udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['ADJUSTBRIGHTNESS']:
             resp, value = await self.adjustBrightness(jsn, self.callbacks['adjustBrightness'])
             response = {
                 "payloadVersion": 1,
-                "clientId": "alexa-skill",
+                'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                 "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                 "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                 "deviceAttributes": "",
@@ -102,7 +125,10 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                 }
             }
             if resp:
-                await connection.send(response)
+                if socketTrace:
+                    await connection.send(response)
+                elif udpTrace:
+                    udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETCOLOR']:
             resp = await self.setColor(jsn, self.callbacks['setColor'])
@@ -110,6 +136,8 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                 "payloadVersion": 1,
                 "success": resp,
                 "message": "OK",
+                'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                 "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                 "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                 "type": "response",
@@ -123,13 +151,18 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                 }
             }
             if resp:
-                await connection.send(response)
+                if socketTrace:
+                    await connection.send(response)
+                elif udpTrace:
+                    udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETCOLORTEMPERATURE']:
             resp = await self.setColorTemperature(jsn, self.callbacks['setColorTemperature'])
             response = {
                 "payloadVersion": 1,
                 "success": resp,
+                'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                 "message": "OK",
                 "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                 "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
@@ -140,4 +173,7 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                 }
             }
             if resp:
-                connection.send(response)
+                if socketTrace:
+                    await connection.send(response)
+                elif udpTrace:
+                    udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
