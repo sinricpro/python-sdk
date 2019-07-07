@@ -27,7 +27,7 @@ class SinricProSocket:
             return self.connection
 
     async def sendMessage(self, message):
-        await self.connection.send(message)
+        await self.connection.send(json.dumps(message))
 
     async def receiveMessage(self, connection):
         while True:

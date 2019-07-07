@@ -38,7 +38,7 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
             }
             if resp:
                 if socketTrace:
-                    await connection.send(response)
+                    await connection.send(json.dumps(response))
                 elif udpTrace:
                     udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
 
@@ -61,7 +61,7 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
             }
             if resp:
                 if socketTrace:
-                    await connection.send(response)
+                    await connection.send(json.dumps(response))
                 elif udpTrace:
                     udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
 
@@ -84,7 +84,7 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
             }
             if resp:
                 if socketTrace:
-                    await connection.send(response)
+                    await connection.send(json.dumps(response))
                 elif udpTrace:
                     udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
 
@@ -105,7 +105,7 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
             }
             if resp:
                 if socketTrace:
-                    await connection.send(response)
+                    await connection.send(json.dumps(response))
                 elif udpTrace:
                     udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
 
@@ -126,7 +126,7 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
             }
             if resp:
                 if socketTrace:
-                    await connection.send(response)
+                    await connection.send(json.dumps(response))
                 elif udpTrace:
                     udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
 
@@ -152,7 +152,7 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
             }
             if resp:
                 if socketTrace:
-                    await connection.send(response)
+                    await connection.send(json.dumps(response))
                 elif udpTrace:
                     udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
 
@@ -174,6 +174,6 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
             }
             if resp:
                 if socketTrace:
-                    await connection.send(response)
+                    await connection.send(json.dumps(response))
                 elif udpTrace:
                     udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
