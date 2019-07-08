@@ -1,7 +1,7 @@
 import asyncio
-from sinric.communication.sinricprosocket import SinricProSocket
+from sinric._sinricprosocket import SinricProSocket
 from threading import Thread
-from sinric.communication.sinricproudp import SinricProUdp
+
 
 class SinricPro:
     def __init__(self, api, deviceid, callbacks):
