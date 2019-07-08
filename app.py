@@ -1,11 +1,5 @@
-from sinric.sinricpro import SinricPro
+from sinric.sinricpro import SinricPro, SinricProUdp
 from credentials import apiKey, deviceId
-from sinric.communication.sinricproudp import SinricProUdp
-from threading import Thread
-import asyncio
-
-# Don't forget to change """ from credential import apiKey, deviceId """ to
-# """ from credentials import apiKey, deviceId """
 
 tempStates = {
     'powerLevel': 0,
@@ -83,24 +77,9 @@ callbacks = {
     'setColorTemperature': set_color_temperature
 }
 
-
-def handle_queue(hande, udo):
-    asyncio.new_event_loop().run_until_complete(hande(udo))
-
-
-def handle_threads():
-    ws_client = SinricPro(apiKey, deviceId, callbacks)
-    ws_client.socket.enableRequestPrint(True)  # Set it to True to start printing request JSON
+if __name__ == '__main__':
+    client = SinricPro(apiKey, deviceId, callbacks)
+    client.socket.enableRequestPrint(False)  # Set it to True to start printing request JSON
     udp_client = SinricProUdp(callbacks)
     udp_client.enableUdpPrint(False)  # Set it to True to start printing request UDP JSON
-    t1 = Thread(target=handle_queue, args=(ws_client.socket.handle, udp_client))
-    t2 = Thread(target=udp_client.listen)
-    t1.setDaemon(True)
-    t2.setDaemon(True)
-    t1.start()
-    t2.start()
-    ws_client.handle()
-
-
-if __name__ == '__main__':
-    handle_threads()
+    client.handle_all(udp_client)

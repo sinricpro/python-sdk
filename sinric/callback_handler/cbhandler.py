@@ -7,10 +7,6 @@ from sinric.controller.colorTemperature import ColorTemperatureController
 import json
 
 
-# TODO Time Stamp Calculation
-# TODO increaseColorTemperature
-# TODO decreaseColorTemperature
-
 class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorController, ColorTemperatureController):
     def __init__(self, callbacks):
         super().__init__()

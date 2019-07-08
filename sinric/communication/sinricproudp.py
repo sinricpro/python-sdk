@@ -11,7 +11,7 @@ class SinricProUdp:
         self.enablePrint = False
         self.udp_ip = '224.9.9.9'
         self.udp_port = 3333
-        self.address = ('', 3333)
+        self.address = ('', self.udp_port)
         self.sockServ = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sockServ.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sockServ.bind(self.address)
