@@ -1,7 +1,7 @@
 import websockets
 import json
-from sinric.command.mainqueue import queue
-from sinric.callback_handler.cbhandler import CallBackHandler
+from sinric._mainqueue import queue
+from sinric._cbhandler import CallBackHandler
 
 
 class SinricProSocket:

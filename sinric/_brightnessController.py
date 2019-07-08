@@ -1,4 +1,4 @@
-from sinric.command.jsoncommands import JSON_COMMANDS
+from sinric._jsoncommands import JSON_COMMANDS
 
 
 class BrightnessController:

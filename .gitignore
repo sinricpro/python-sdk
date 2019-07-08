@@ -1,4 +1,4 @@
 .idea/
 events/
 devices/
-credential.py
+credentials.py
