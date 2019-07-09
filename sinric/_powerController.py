@@ -2,7 +2,7 @@ from sinric._jsoncommands import JSON_COMMANDS
 
 
 class PowerController:
-    def __init__(self):
+    def __init__(self, x):
         pass
 
     async def powerState(self, jsn, power_state_callback):

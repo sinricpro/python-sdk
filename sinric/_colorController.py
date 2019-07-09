@@ -2,7 +2,7 @@ from sinric._jsoncommands import JSON_COMMANDS
 
 
 class ColorController:
-    def __init__(self):
+    def __init__(self, x):
         pass
 
     async def setColor(self, jsn, set_color_callback):

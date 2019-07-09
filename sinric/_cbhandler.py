@@ -8,9 +8,13 @@ import json
 
 
 # noinspection PyBroadException
-class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorController, ColorTemperatureController):
+class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController):
     def __init__(self, callbacks):
-        super().__init__()
+        PowerLevel.__init__(self, 0)
+        BrightnessController.__init__(self, 0)
+        PowerController.__init__(self, 0)
+        ColorController.__init__(self, 0)
+        ColorTemperatureController.__init__(self, 0)
         self.callbacks = callbacks
 
     async def handleCallBacks(self, dataArr, connection, udp_client):
@@ -86,7 +90,6 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                     "value": {"powerLevel": value}}
                 if resp:
                     if socketTrace:
-                        print(json.dumps(response))
                         await connection.send(json.dumps(response))
                     elif udpTrace:
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
