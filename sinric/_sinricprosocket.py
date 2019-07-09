@@ -2,7 +2,7 @@ import websockets
 import json
 from sinric._mainqueue import queue
 from sinric._cbhandler import CallBackHandler
-
+from time import sleep
 
 class SinricProSocket:
 
@@ -26,8 +26,8 @@ class SinricProSocket:
             print('Client Connected')
             return self.connection
 
-    async def sendMessage(self, message):
-        await self.connection.send(json.dumps(message))
+    # async def sendMessage(self, message):
+    #     await self.connection.send(json.dumps(message))
 
     async def receiveMessage(self, connection):
         while True:
