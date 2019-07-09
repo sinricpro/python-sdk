@@ -82,13 +82,11 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                     "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "type": "response",
-                    "action": "adjustPowerLevel",
-                    "value": {
-                        "powerLevel": value
-                    }
-                }
+                    "action": jsn[JSON_COMMANDS['ACTION']],
+                    "value": {"powerLevel": value}}
                 if resp:
                     if socketTrace:
+                        print(json.dumps(response))
                         await connection.send(json.dumps(response))
                     elif udpTrace:
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
@@ -101,17 +99,15 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                 resp, value = await self.setBrightness(jsn, self.callbacks['setBrightness'])
                 response = {
                     "payloadVersion": 1,
+                    "success": resp,
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                     "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "deviceAttributes": "",
-                    "type": "request",
+                    "type": "response",
                     "action": "setBrightness",
-                    "value": {
-                        "brightness": value
-                    }
-                }
+                    "value": {"brightness": value}}
                 if resp:
                     if socketTrace:
                         await connection.send(json.dumps(response))
@@ -125,12 +121,13 @@ class CallBackHandler(PowerController, BrightnessController, PowerLevel, ColorCo
                 resp, value = await self.adjustBrightness(jsn, self.callbacks['adjustBrightness'])
                 response = {
                     "payloadVersion": 1,
+                    "success": resp,
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                     "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "deviceAttributes": "",
-                    "type": "request",
+                    "type": "response",
                     "action": "adjustBrightness",
                     "value": {
                         "brightness": value

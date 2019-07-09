@@ -5,16 +5,15 @@
 
 ### Copy paste your credentials into credentials.py
 
-### Required packages
-        websockets (python3 -m pip install websockets)
-
-### Run App.py
-
-       python3 app.py
+### Install
+        python3 -m pip install sinricpro --user
+   
+### Upgarde
+        python3 -m pip install sinricpro --upgrade --user
 
 ### TODO
 
    * ~~Test multicast UDP~~
    * Add events
    * Timestamp calculation 
-   * Build format wheel
+   * ~~Build format wheel~~

@@ -2,3 +2,4 @@
 events/
 devices/
 credentials.py
+test.py
