@@ -6,16 +6,13 @@ from sinric._cbhandler import CallBackHandler
 
 class SinricProSocket:
 
-    def __init__(self, apiKey, deviceId, callbacks):
+    def __init__(self, apiKey, deviceId, callbacks, enable_trace=False):
         self.apiKey = apiKey
         self.deviceIds = deviceId
         self.connection = None
         self.callbacks = callbacks
-        self.callbackHandler = CallBackHandler(self.callbacks)
-        self.enableTrace = False
-
-    def enableRequestPrint(self, bool2):
-        self.enableTrace = bool2
+        self.callbackHandler = CallBackHandler(self.callbacks, enable_trace)
+        self.enableTrace = enable_trace
 
     async def connect(self):  # Producer
         self.connection = await websockets.client.connect('ws://23.95.122.232:3001',
@@ -34,6 +31,7 @@ class SinricProSocket:
             try:
                 message = await connection.recv()
                 if self.enableTrace:
+                    print('Request : ')
                     print(message)
                 requestJson = json.loads(message)
                 queue.put([requestJson, True, False])

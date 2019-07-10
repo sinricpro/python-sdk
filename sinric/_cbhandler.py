@@ -11,13 +11,14 @@ from math import floor
 
 # noinspection PyBroadException
 class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController):
-    def __init__(self, callbacks):
+    def __init__(self, callbacks, trace_bool):
         PowerLevel.__init__(self, 0)
         BrightnessController.__init__(self, 0)
         PowerController.__init__(self, 0)
         ColorController.__init__(self, 0)
         ColorTemperatureController.__init__(self, 0, [2200, 2700, 4000, 5500, 7000])
         self.callbacks = callbacks
+        self.trace_response = trace_bool
 
     async def handleCallBacks(self, dataArr, connection, udp_client):
         jsn = dataArr[0]
@@ -41,6 +42,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     }
                 }
                 if resp:
+                    if self.trace_response:
+                        print('Response : ')
+                        print(json.dumps(response))
                     if socketTrace:
                         await connection.send(json.dumps(response))
                     elif udpTrace:
@@ -67,6 +71,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     }
                 }
                 if resp:
+                    if self.trace_response:
+                        print('Response : ')
+                        print(json.dumps(response))
                     if socketTrace:
                         await connection.send(json.dumps(response))
                     elif udpTrace:
@@ -91,6 +98,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "action": jsn[JSON_COMMANDS['ACTION']],
                     "value": {"powerLevel": value}}
                 if resp:
+                    if self.trace_response:
+                        print('Response : ')
+                        print(json.dumps(response))
                     if socketTrace:
                         await connection.send(json.dumps(response))
                     elif udpTrace:
@@ -114,6 +124,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "action": "setBrightness",
                     "value": {"brightness": value}}
                 if resp:
+                    if self.trace_response:
+                        print('Response : ')
+                        print(json.dumps(response))
                     if socketTrace:
                         await connection.send(json.dumps(response))
                     elif udpTrace:
@@ -139,6 +152,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     }
                 }
                 if resp:
+                    if self.trace_response:
+                        print('Response : ')
+                        print(json.dumps(response))
                     if socketTrace:
                         await connection.send(json.dumps(response))
                     elif udpTrace:
@@ -168,6 +184,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     }
                 }
                 if resp:
+                    if self.trace_response:
+                        print('Response : ')
+                        print(json.dumps(response))
                     if socketTrace:
                         await connection.send(json.dumps(response))
                     elif udpTrace:
@@ -194,6 +213,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     }
                 }
                 if resp:
+                    if self.trace_response:
+                        print('Response : ')
+                        print(json.dumps(response))
                     if socketTrace:
                         await connection.send(json.dumps(response))
                     elif udpTrace:
@@ -219,6 +241,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     }
                 }
                 if resp:
+                    if self.trace_response:
+                        print('Response : ')
+                        print(json.dumps(response))
                     if socketTrace:
                         await connection.send(json.dumps(response))
                     elif udpTrace:
@@ -245,6 +270,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     }
                 }
                 if resp:
+                    if self.trace_response:
+                        print('Response : ')
+                        print(json.dumps(response))
                     if socketTrace:
                         await connection.send(json.dumps(response))
                     elif udpTrace:
