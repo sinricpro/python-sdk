@@ -2,7 +2,9 @@ import websockets
 import json
 from sinric._mainqueue import queue
 from sinric._cbhandler import CallBackHandler
-from time import sleep
+from sinric._jsoncommands import JSON_COMMANDS
+from datetime import datetime as dt
+
 
 class SinricProSocket:
 
@@ -35,7 +37,10 @@ class SinricProSocket:
                 message = await connection.recv()
                 if self.enableTrace:
                     print(message)
-                queue.put([json.loads(message), True, False])
+                requestJson = json.loads(message)
+                requestJson[JSON_COMMANDS['TIMESTAMP']] = int(
+                    requestJson[JSON_COMMANDS['TIMESTAMP']]) - dt.now().microsecond
+                queue.put([requestJson, True, False])
             except websockets.exceptions.ConnectionClosed:
                 print('Connection with server closed')
                 break
