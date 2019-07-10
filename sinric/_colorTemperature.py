@@ -2,7 +2,9 @@ from sinric._jsoncommands import JSON_COMMANDS
 
 
 class ColorTemperatureController:
-    def __init__(self, x):
+    def __init__(self, x, arr):
+        self.temperatures_index = x
+        self.temperatures_array = arr
         pass
 
     async def setColorTemperature(self, jsn, set_callback):

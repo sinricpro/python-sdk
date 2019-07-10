@@ -4,7 +4,6 @@ from sinric._jsoncommands import JSON_COMMANDS
 from sinric._powerLevelController import PowerLevel
 from sinric._colorController import ColorController
 from sinric._colorTemperature import ColorTemperatureController
-from datetime import datetime as dt
 import json
 from time import time
 from math import floor
@@ -17,7 +16,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         BrightnessController.__init__(self, 0)
         PowerController.__init__(self, 0)
         ColorController.__init__(self, 0)
-        ColorTemperatureController.__init__(self, 0)
+        ColorTemperatureController.__init__(self, 0, [2200, 2700, 4000, 5500, 7000])
         self.callbacks = callbacks
 
     async def handleCallBacks(self, dataArr, connection, udp_client):
@@ -43,7 +42,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 }
                 if resp:
                     if socketTrace:
-                        print(json.dumps(response))
                         await connection.send(json.dumps(response))
                     elif udpTrace:
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
@@ -87,7 +85,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "message": "OK",
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
-                    "createdAt": str(jsn[JSON_COMMANDS['TIMESTAMP']] + dt.now().microsecond),
+                    "createdAt": floor(time()),
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "type": "response",
                     "action": jsn[JSON_COMMANDS['ACTION']],
@@ -109,7 +107,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "success": resp,
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
-                    "createdAt": str(jsn[JSON_COMMANDS['TIMESTAMP']] + dt.now().microsecond),
+                    "createdAt": floor(time()),
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "deviceAttributes": "",
                     "type": "response",
@@ -131,7 +129,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "success": resp,
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
-                    "createdAt": str(jsn[JSON_COMMANDS['TIMESTAMP']] + dt.now().microsecond),
+                    "createdAt": floor(time()),
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "deviceAttributes": "",
                     "type": "response",
@@ -157,7 +155,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "message": "OK",
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
-                    "createdAt": str(jsn[JSON_COMMANDS['TIMESTAMP']] + dt.now().microsecond),
+                    "createdAt": floor(time()),
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "type": "response",
                     "action": "setColor",
@@ -187,12 +185,63 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                     "message": "OK",
-                    "createdAt": str(jsn[JSON_COMMANDS['TIMESTAMP']] + dt.now().microsecond),
+                    "createdAt": floor(time()),
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "type": "response",
                     "action": "setColorTemperature",
                     "value": {
                         "colorTemperature": jsn[JSON_COMMANDS['VALUE']][JSON_COMMANDS['COLORTEMPERATURE']]
+                    }
+                }
+                if resp:
+                    if socketTrace:
+                        await connection.send(json.dumps(response))
+                    elif udpTrace:
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
+            except Exception as e:
+                print('Callback not defined')
+                print('Error : ', e)
+        elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['INCREASECOLORTEMPERATURE']:
+            try:
+                resp, value = await self.increaseColorTemperature(jsn, self.callbacks['increaseColorTemperature'])
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                    'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
+                    "message": "OK",
+                    "createdAt": floor(time()),
+                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    "type": "response",
+                    "action": "increaseColorTemperature",
+                    "value": {
+                        "colorTemperature": value
+                    }
+                }
+                if resp:
+                    if socketTrace:
+                        await connection.send(json.dumps(response))
+                    elif udpTrace:
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
+            except Exception as e:
+                print('Callback not defined')
+                print('Error : ', e)
+
+        elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['DECREASECOLORTEMPERATURE']:
+            try:
+                resp, value = await self.decreaseColorTemperature(jsn, self.callbacks['decreaseColorTemperature'])
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                    'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
+                    "message": "OK",
+                    "createdAt": floor(time()),
+                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    "type": "response",
+                    "action": "decreaseColorTemperature",
+                    "value": {
+                        "colorTemperature": value
                     }
                 }
                 if resp:
