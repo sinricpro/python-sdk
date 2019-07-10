@@ -6,6 +6,8 @@ from sinric._colorController import ColorController
 from sinric._colorTemperature import ColorTemperatureController
 from datetime import datetime as dt
 import json
+from time import time
+from math import floor
 
 
 # noinspection PyBroadException
@@ -31,7 +33,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                     "success": True,
                     "message": "OK",
-                    "createdAt": str(jsn[JSON_COMMANDS['TIMESTAMP']] + dt.now().microsecond),
+                    "createdAt": floor(time()),
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "type": "response",
                     "action": "setPowerState",
@@ -41,6 +43,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 }
                 if resp:
                     if socketTrace:
+                        print(json.dumps(response))
                         await connection.send(json.dumps(response))
                     elif udpTrace:
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[3])
@@ -57,7 +60,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "message": "OK",
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
-                    "createdAt": str(jsn[JSON_COMMANDS['TIMESTAMP']] + dt.now().microsecond) + dt.now().microsecond,
+                    "createdAt": floor(time()),
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "type": "response",
                     "action": "setPowerLevel",
