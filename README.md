@@ -15,5 +15,5 @@
 
    * ~~Test multicast UDP~~
    * Add events
-   * Timestamp calculation 
+   * ~~Timestamp calculation~~ 
    * ~~Build format wheel~~

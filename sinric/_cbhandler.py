@@ -4,6 +4,7 @@ from sinric._jsoncommands import JSON_COMMANDS
 from sinric._powerLevelController import PowerLevel
 from sinric._colorController import ColorController
 from sinric._colorTemperature import ColorTemperatureController
+from datetime import datetime as dt
 import json
 
 
@@ -30,7 +31,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                     "success": True,
                     "message": "OK",
-                    "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
+                    "createdAt": str(jsn[JSON_COMMANDS['TIMESTAMP']] + dt.now().microsecond),
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "type": "response",
                     "action": "setPowerState",
@@ -56,7 +57,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "message": "OK",
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
-                    "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
+                    "createdAt": str(jsn[JSON_COMMANDS['TIMESTAMP']] + dt.now().microsecond) + dt.now().microsecond,
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "type": "response",
                     "action": "setPowerLevel",
@@ -83,7 +84,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "message": "OK",
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
-                    "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
+                    "createdAt": str(jsn[JSON_COMMANDS['TIMESTAMP']] + dt.now().microsecond),
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "type": "response",
                     "action": jsn[JSON_COMMANDS['ACTION']],
@@ -105,7 +106,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "success": resp,
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
-                    "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
+                    "createdAt": str(jsn[JSON_COMMANDS['TIMESTAMP']] + dt.now().microsecond),
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "deviceAttributes": "",
                     "type": "response",
@@ -127,7 +128,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "success": resp,
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
-                    "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
+                    "createdAt": str(jsn[JSON_COMMANDS['TIMESTAMP']] + dt.now().microsecond),
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "deviceAttributes": "",
                     "type": "response",
@@ -153,7 +154,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "message": "OK",
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
-                    "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
+                    "createdAt": str(jsn[JSON_COMMANDS['TIMESTAMP']] + dt.now().microsecond),
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "type": "response",
                     "action": "setColor",
@@ -183,7 +184,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
                     'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
                     "message": "OK",
-                    "createdAt": jsn[JSON_COMMANDS['TIMESTAMP']],
+                    "createdAt": str(jsn[JSON_COMMANDS['TIMESTAMP']] + dt.now().microsecond),
                     "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
                     "type": "response",
                     "action": "setColorTemperature",
