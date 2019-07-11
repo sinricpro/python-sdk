@@ -4,11 +4,11 @@ from threading import Thread
 
 
 class SinricPro:
-    def __init__(self, api, deviceid, callbacks):
+    def __init__(self, api, deviceid, callbacks, enable_trace=False):
         self.apiKey = api
         self.deviceid = deviceid
         self.callbacks = callbacks
-        self.socket = SinricProSocket(self.apiKey, self.deviceid, self.callbacks)
+        self.socket = SinricProSocket(self.apiKey, self.deviceid, self.callbacks, enable_trace)
         self.connection = asyncio.get_event_loop().run_until_complete(self.socket.connect())
 
     def handle(self):
