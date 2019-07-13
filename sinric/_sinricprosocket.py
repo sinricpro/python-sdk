@@ -23,9 +23,6 @@ class SinricProSocket:
             print('Client Connected')
             return self.connection
 
-    # async def sendMessage(self, message):
-    #     await self.connection.send(json.dumps(message))
-
     async def receiveMessage(self, connection):
         while True:
             try:
