@@ -1,6 +1,7 @@
 from time import time
 from math import floor
 from ._mainqueue import queue
+import uuid
 
 eventNames = {
     'door_bell_event': 'doorBellEvent'
@@ -19,7 +20,7 @@ class Events:
             queue.put([{
                 "payloadVersion": 1,
                 "createdAt": floor(time()),
-                "messageId": "fca894e9-9c47-4447-9313-be4475508a8d",
+                "messageId": str(uuid.uuid4()),
                 "deviceId": deviceId,
                 "type": "event",
                 "action": "DoorbellPress",
