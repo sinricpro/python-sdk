@@ -135,9 +135,33 @@ if __name__ == '__main__':
     client.handle_all(udp_client)
 ```
 
-### TODO
+### Pro DoorBell [Demo](https://github.com/sinricpro/Python-Examples/tree/master/pro_doorbell_example):
+```python
+from sinric import SinricPro
+from credentials import apiKey, deviceId, doorBellId
+from sinric import SinricProUdp
+from sinric import eventNames
+from time import sleep
 
-   * ~~Test multicast UDP~~
-   * Add events
-   * ~~Timestamp calculation~~ 
-   * ~~Build format wheel~~
+'''
+DON'T FORGET TO TURN ON 'Doorbell Press' IN ALEXA APP
+'''
+
+
+def door_bell_event():
+    # while True:
+    client.event_handler.raiseEvent(doorBellId, eventNames['door_bell_event'])
+    sleep(1)
+
+
+request_callbacks = {}
+
+event_callbacks = {
+    'door_bell_event': door_bell_event
+}
+if __name__ == '__main__':
+    client = SinricPro(apiKey, deviceId, request_callbacks, event_callbacks, enable_trace=True)
+    udp_client = SinricProUdp(request_callbacks)
+    udp_client.enableUdpPrint(False)  # Set it to True to start printing request UDP JSON
+    client.handle_all(udp_client)
+```
