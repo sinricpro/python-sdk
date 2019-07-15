@@ -5,7 +5,7 @@ from sinric._events import Events
 
 
 class SinricPro:
-    def __init__(self, api, deviceid, request_callbacks,event_callbacks, enable_trace=False):
+    def __init__(self, api, deviceid, request_callbacks, event_callbacks, enable_trace=False):
         self.apiKey = api
         self.deviceid = deviceid
         self.request_callbacks = request_callbacks
