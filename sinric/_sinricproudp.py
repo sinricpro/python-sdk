@@ -29,7 +29,7 @@ class SinricProUdp:
             data, addr = self.sockServ.recvfrom(1024)
             jsonData = json.loads(data.decode('ascii'))
             if jsonData['deviceId'] in deviceIdArr:
-                queue.put([jsonData, False, True, addr])
+                queue.put([jsonData, 'udp_response', addr])
             else:
                 print('Invalid Device id')
             if self.enablePrint:

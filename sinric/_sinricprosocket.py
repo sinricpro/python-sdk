@@ -31,7 +31,7 @@ class SinricProSocket:
                     print('Request : ')
                     print(message)
                 requestJson = json.loads(message)
-                queue.put([requestJson, True, False])
+                queue.put([requestJson, 'socket_response'])
             except websockets.exceptions.ConnectionClosed:
                 print('Connection with server closed')
                 break
