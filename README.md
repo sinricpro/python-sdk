@@ -134,10 +134,3 @@ if __name__ == '__main__':
     udp_client.enableUdpPrint(False)  # Set it to True to start printing request UDP JSON
     client.handle_all(udp_client)
 ```
-
-### TODO
-
-   * ~~Test multicast UDP~~
-   * Add events
-   * ~~Timestamp calculation~~ 
-   * ~~Build format wheel~~
