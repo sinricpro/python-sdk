@@ -12,7 +12,7 @@ setup(
     description="A python package for your sinric-pro alexa skill",
     long_description=long_description,
     url="https://github.com/sinricpro/Python-SDK",
-    packages=['sinric'],
+    packages=['sinric', 'loguru'],
     install_requires=['websockets'],
     keywords=['alexa', 'alexa-skill', 'sinric', 'sinric-alexa-skill', 'alexa-home-automation', 'sinric-pro',
               'sinric-pro-alexa-skill'],

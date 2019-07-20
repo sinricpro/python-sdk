@@ -11,13 +11,14 @@ from math import floor
 
 # noinspection PyBroadException
 class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController):
-    def __init__(self, callbacks, trace_bool):
+    def __init__(self, callbacks, trace_bool, logger):
         PowerLevel.__init__(self, 0)
         BrightnessController.__init__(self, 0)
         PowerController.__init__(self, 0)
         ColorController.__init__(self, 0)
         ColorTemperatureController.__init__(self, 0, [2200, 2700, 4000, 5500, 7000])
         self.callbacks = callbacks
+        self.logger = logger
         self.trace_response = trace_bool
 
     async def handleCallBacks(self, dataArr, connection, udp_client):
@@ -26,20 +27,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         if jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETPOWERSTATE']:
             try:
                 resp, state = await self.powerState(jsn, self.callbacks['powerState'])
-                response2 = {
-                    "payloadVersion": 1,
-                    "createdAt": floor(time()),
-                    "messageId": jsn[JSON_COMMANDS['MESSAGEID']],
-                    "deviceId": '5d2b443e6ab6e66116c126ec',
-                    "type": 'event',
-                    "action": 'DoorbellPress',
-                    "value": {
-                        "state": "pressed"
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }
                 response = {
                     "payloadVersion": 1,
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
@@ -56,16 +43,14 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 }
                 if resp:
                     if self.trace_response:
-                        print('Response : ')
-                        print(json.dumps(response))
+                        self.logger.info(f"Response : {json.dumps(response)}")
                     if Trace == 'socket_response':
                         await connection.send(json.dumps(response))
                         # await connection.send(json.dumps(response2))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                print('Callback not defined')
-                print('Error : ', e)
+                self.logger.exception("Error Occurred")
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETPOWERLEVEL']:
             try:
@@ -86,15 +71,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 }
                 if resp:
                     if self.trace_response:
-                        print('Response : ')
-                        print(json.dumps(response))
+                        self.logger.info(f"Response : {json.dumps(response)}")
                     if Trace == 'socket_response':
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                print('Callback not defined')
-                print('Error : ', e)
+                self.logger.exception("Error Occurred")
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['ADJUSTPOWERLEVEL']:
             try:
@@ -113,15 +96,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "value": {"powerLevel": value}}
                 if resp:
                     if self.trace_response:
-                        print('Response : ')
-                        print(json.dumps(response))
+                        self.logger.info(f"Response : {json.dumps(response)}")
                     if Trace == 'socket_response':
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                print('Callback not defined')
-                print('Error : ', e)
+                self.logger.exception("Error Occurred")
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETBRIGHTNESS']:
             try:
@@ -139,15 +120,14 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "value": {"brightness": value}}
                 if resp:
                     if self.trace_response:
-                        print('Response : ')
-                        print(json.dumps(response))
+                        self.logger.info(f"Response : {json.dumps(response)}")
                     if Trace == 'socket_response':
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                print('Callback not defined')
-                print('Error : ', e)
+                self.logger.exception("Error Occurred")
+
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['ADJUSTBRIGHTNESS']:
             try:
                 resp, value = await self.adjustBrightness(jsn, self.callbacks['adjustBrightness'])
@@ -167,15 +147,14 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 }
                 if resp:
                     if self.trace_response:
-                        print('Response : ')
-                        print(json.dumps(response))
+                        self.logger.info(f"Response : {json.dumps(response)}")
                     if Trace == 'socket_response':
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                print('Callback not defined')
-                print('Error : ', e)
+                self.logger.exception("Error Occurred")
+
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETCOLOR']:
             try:
                 resp = await self.setColor(jsn, self.callbacks['setColor'])
@@ -199,15 +178,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 }
                 if resp:
                     if self.trace_response:
-                        print('Response : ')
-                        print(json.dumps(response))
+                        self.logger.info(f"Response : {json.dumps(response)}")
                     if Trace == 'socket_response':
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                print('Callback not defined')
-                print('Error : ', e)
+                self.logger.exception("Error Occurred")
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETCOLORTEMPERATURE']:
             try:
@@ -228,15 +205,14 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 }
                 if resp:
                     if self.trace_response:
-                        print('Response : ')
-                        print(json.dumps(response))
+                        self.logger.info(f"Response : {json.dumps(response)}")
                     if Trace == 'socket_response':
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                print('Callback not defined')
-                print('Error : ', e)
+                self.logger.exception("Error Occurred")
+
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['INCREASECOLORTEMPERATURE']:
             try:
                 resp, value = await self.increaseColorTemperature(jsn, self.callbacks['increaseColorTemperature'])
@@ -256,15 +232,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 }
                 if resp:
                     if self.trace_response:
-                        print('Response : ')
-                        print(json.dumps(response))
+                        self.logger.info(f"Response : {json.dumps(response)}")
                     if Trace == 'socket_response':
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                print('Callback not defined')
-                print('Error : ', e)
+                self.logger.exception("Error Occurred")
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['DECREASECOLORTEMPERATURE']:
             try:
@@ -285,15 +259,14 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 }
                 if resp:
                     if self.trace_response:
-                        print('Response : ')
-                        print(json.dumps(response))
+                        self.logger.info(f"Response : {json.dumps(response)}")
                     if Trace == 'socket_response':
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                print('Callback not defined')
-                print('Error : ', e)
+                self.logger.exception("Error Occurred")
+
         if Trace == 'event_response':
             print('Sending Event Response')
             await connection.send(json.dumps(jsn))
