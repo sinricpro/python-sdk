@@ -3,3 +3,4 @@ events/
 devices/
 credentials.py
 test.py
+sinricpro_logfile*

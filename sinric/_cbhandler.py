@@ -267,6 +267,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
             except Exception as e:
                 self.logger.exception("Error Occurred")
 
-        if Trace == 'event_response':
-            print('Sending Event Response')
+        if Trace == 'doorbell_event_response':
+            self.logger.info('Sending Doorbell Event Response')
+            await connection.send(json.dumps(jsn))
+
+        elif Trace == 'temp_hum_event_response':
+            self.logger.info('Sending temperature humidity response')
             await connection.send(json.dumps(jsn))

@@ -2,14 +2,11 @@ import websockets
 import json
 from sinric._mainqueue import queue
 from sinric._cbhandler import CallBackHandler
-from loguru import logger
-
-logger.add("{}.log".format("sinricpro_logfile"), rotation="10 MB")
 
 
 class SinricProSocket:
 
-    def __init__(self, apiKey, deviceId, callbacks, enable_trace=False):
+    def __init__(self, apiKey, deviceId, callbacks, enable_trace=False, logger=None):
         self.apiKey = apiKey
         self.logger = logger
         self.deviceIds = deviceId
@@ -35,8 +32,9 @@ class SinricProSocket:
                     self.logger.info(f"Request : {message}")
                 requestJson = json.loads(message)
                 queue.put([requestJson, 'socket_response'])
-            except websockets.exceptions.ConnectionClosed:
-                print('Connection with server closed')
+            except websockets.exceptions.ConnectionClosed as e:
+                self.logger.info('Connection with server closed')
+                self.logger.exception(e)
                 break
 
     async def handle(self, udp_client):
