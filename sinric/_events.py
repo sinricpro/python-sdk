@@ -43,7 +43,7 @@ class Events:
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
-                    "action": "temperature",
+                    "action": "setTemperature",
                     "value": {
                         "temperature": data.get('temperature'),
                         "humidity": data.get('humidity')
