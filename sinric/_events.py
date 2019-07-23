@@ -18,7 +18,24 @@ class Events:
     # noinspection PyBroadException
     def raiseEvent(self, deviceId, event_name, data={}):
         try:
-            if event_name == 'doorBellEvent':
+            if event_name == 'setPowerState':
+                self.logger.info('setPowerState Event Raised')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "setPowerState",
+                    "value": {
+                        "state": data.get('state')
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                },'setpowerstate_event_response'])
+                pass
+            elif event_name == 'doorBellEvent':
                 self.logger.info('Door Bell Event Raised')
                 queue.put([{
                     "payloadVersion": 1,

@@ -4,18 +4,21 @@ from sinric._jsoncommands import JSON_COMMANDS
 from sinric._powerLevelController import PowerLevel
 from sinric._colorController import ColorController
 from sinric._colorTemperature import ColorTemperatureController
+from sinric._thermostatController import ThermostateMode
 import json
 from time import time
 from math import floor
 
 
 # noinspection PyBroadException
-class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController):
+class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController,
+                      ThermostateMode):
     def __init__(self, callbacks, trace_bool, logger):
         PowerLevel.__init__(self, 0)
         BrightnessController.__init__(self, 0)
         PowerController.__init__(self, 0)
         ColorController.__init__(self, 0)
+        ThermostateMode.__init__(self, 0)
         ColorTemperatureController.__init__(self, 0, [2200, 2700, 4000, 5500, 7000])
         self.callbacks = callbacks
         self.logger = logger
@@ -267,10 +270,37 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
             except Exception as e:
                 self.logger.exception("Error Occurred")
 
+        elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETTHERMOSTATMODE']:
+            try:
+                resp, value = await self.setThermostateMode(jsn, self.callbacks['setThermostatMode'])
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                    'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
+                    "message": "OK",
+                    "createdAt": floor(time()),
+                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    "type": "response",
+                    "action": "setThermostatMode",
+                    "value": {
+                        "thermostatMode": value
+                    }
+                }
+                # Value can be "HEAT", "COOL" or "AUTO"
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception as e:
+                self.logger.exception("Error Occurred")
+
         if Trace == 'doorbell_event_response':
             self.logger.info('Sending Doorbell Event Response')
             await connection.send(json.dumps(jsn))
-
         elif Trace == 'temp_hum_event_response':
             self.logger.info('Sending temperature humidity response')
             await connection.send(json.dumps(jsn))
