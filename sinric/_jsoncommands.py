@@ -30,6 +30,7 @@ JSON_COMMANDS = {
     'ADJUSTBRIGHTNESS': 'adjustBrightness',
     'MESSAGEID': 'messageId',
     'CLIENTID': 'clientId',
-    'SETTHERMOSTATMODE': 'setThermostatMode'
+    'SETTHERMOSTATMODE': 'setThermostatMode',
+    'SETRANGEVALUE': 'setRangeValue'
 
 }

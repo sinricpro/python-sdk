@@ -1,6 +1,7 @@
 from time import time
 from math import floor
 from ._mainqueue import queue
+from ._jsoncommands import JSON_COMMANDS
 import uuid
 
 eventNames = {
@@ -18,7 +19,7 @@ class Events:
     # noinspection PyBroadException
     def raiseEvent(self, deviceId, event_name, data={}):
         try:
-            if event_name == 'setPowerState':
+            if event_name == JSON_COMMANDS.get('SETPOWERSTATE'):
                 self.logger.info('setPowerState Event Raised')
                 queue.put([{
                     "payloadVersion": 1,
@@ -33,8 +34,25 @@ class Events:
                     "cause": {
                         "type": "PHYSICAL_INTERACTION"
                     }
-                },'setpowerstate_event_response'])
-                pass
+                }, 'setpowerstate_event_response'])
+
+            elif event_name == JSON_COMMANDS.get('SETPOWERLEVEL'):
+                self.logger.info('setPowerLevel event raised')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "setPowerLevel",
+                    "value": {
+                        "powerLevel": data.get('powerLevel')
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                }, 'setPowerLevel_event_response'])
+
             elif event_name == 'doorBellEvent':
                 self.logger.info('Door Bell Event Raised')
                 queue.put([{
