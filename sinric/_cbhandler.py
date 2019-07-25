@@ -13,12 +13,12 @@ from math import floor
 
 # noinspection PyBroadException
 class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController,
-                      ThermostateMode,RangeValueController):
+                      ThermostateMode, RangeValueController):
     def __init__(self, callbacks, trace_bool, logger):
         PowerLevel.__init__(self, 0)
         BrightnessController.__init__(self, 0)
         PowerController.__init__(self, 0)
-        RangeValueController.__init__(self,0)
+        RangeValueController.__init__(self, 0)
         ColorController.__init__(self, 0)
         ThermostateMode.__init__(self, 0)
         ColorTemperatureController.__init__(self, 0, [2200, 2700, 4000, 5500, 7000])
@@ -54,7 +54,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         # await connection.send(json.dumps(response2))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
-            except Exception as e:
+            except Exception:
                 self.logger.exception("Error Occurred")
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETPOWERLEVEL']:
@@ -81,7 +81,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
-            except Exception as e:
+            except Exception:
                 self.logger.exception("Error Occurred")
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['ADJUSTPOWERLEVEL']:
@@ -106,7 +106,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
-            except Exception as e:
+            except Exception:
                 self.logger.exception("Error Occurred")
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETBRIGHTNESS']:
@@ -130,7 +130,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
-            except Exception as e:
+            except Exception:
                 self.logger.exception("Error Occurred")
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['ADJUSTBRIGHTNESS']:
@@ -157,7 +157,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
-            except Exception as e:
+            except Exception:
                 self.logger.exception("Error Occurred")
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETCOLOR']:
@@ -188,7 +188,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
-            except Exception as e:
+            except Exception:
                 self.logger.exception("Error Occurred")
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETCOLORTEMPERATURE']:
@@ -215,7 +215,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
-            except Exception as e:
+            except Exception:
                 self.logger.exception("Error Occurred")
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['INCREASECOLORTEMPERATURE']:
@@ -242,7 +242,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
-            except Exception as e:
+            except Exception:
                 self.logger.exception("Error Occurred")
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['DECREASECOLORTEMPERATURE']:
@@ -269,7 +269,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
-            except Exception as e:
+            except Exception:
                 self.logger.exception("Error Occurred")
 
         elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETTHERMOSTATMODE']:
@@ -297,13 +297,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(json.dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
-            except Exception as e:
+            except Exception:
                 self.logger.exception("Error Occurred")
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION'))  == JSON_COMMANDS.get('SETRANGEVALUE'):
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == JSON_COMMANDS.get('SETRANGEVALUE'):
             try:
-                resp,value =await self.rangeValueControl(jsn,self.callbacks.get('setRangeValue'))
-                response={
+                resp, value = await self.rangeValueControl(jsn, self.callbacks.get('setRangeValue'))
+                response = {
                     "payloadVersion": 1,
                     "success": resp,
                     'clientId': jsn[JSON_COMMANDS['CLIENTID']],
