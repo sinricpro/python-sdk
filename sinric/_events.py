@@ -53,6 +53,66 @@ class Events:
                     }
                 }, 'setPowerLevel_event_response'])
 
+
+            elif event_name == JSON_COMMANDS.get('SETBRIGHTNESS'):
+                self.logger.info('setBrightness event raised')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "setBrightness",
+                    "value": {
+                        "powerLevel": data.get('brightness')
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                }, 'setBrightness_event_response'])
+
+
+            elif event_name == JSON_COMMANDS.get('SETCOLOR'):
+                self.logger.info('setColor event raised')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "setColor",
+                    "value": {
+                        "color": {
+                            "r": data.get('r'),
+                            "g": data.get('g'),
+                            "b": data.get('b')
+                        }
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                }, 'setColor_event_response'])
+
+
+            elif event_name == JSON_COMMANDS.get('SETCOLORTEMPERATURE'):
+                self.logger.info('setColor event raised')
+                queue.put([{
+                    "payloadVersion": 1,
+                     "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "setColorTemperature",
+                    "value": {
+                        "colorTemperature": 2400
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                }, 'setColorTemperature_event_response'])
+
+            ##########################DOOR BELL EVENT####################################
+
             elif event_name == 'doorBellEvent':
                 self.logger.info('Door Bell Event Raised')
                 queue.put([{
@@ -88,5 +148,79 @@ class Events:
                     }
 
                 }, 'temp_hum_event_response'])
+
+            elif event_name == 'setThermostatMode':
+                self.logger.info('Raised Thermostat event')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "setThermostatMode",
+                    "value": {
+                        "thermostatMode": data.get('Mode')
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                }, 'setThermostatMode_event_response'])
+
+            elif event_name == 'setRangeValue':
+                self.logger.info('Raised Range value event')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "setRangeValue",
+                    "value": {
+                        "rangeValue": data.get('rangeValue')
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                },'setRangeValue_event_response'])
+
+
+
+            elif event_name == 'motion':
+                self.logger.info('Raised motion event')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "motion",
+                    "value": {
+                        "state": data.get('state')
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                },'motion_event_response'])
+
+
+            elif event_name == 'setContactState':
+                self.logger.info('Raised contact event')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "setContactState",
+                    "value": {
+                        "state": data.get('state')
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+
+                },'contact_event_response'])
+
+
         except Exception:
             self.logger.exception('Error Occurred')
