@@ -98,7 +98,7 @@ class Events:
                 self.logger.info('setColor event raised')
                 queue.put([{
                     "payloadVersion": 1,
-                     "createdAt": floor(time()),
+                    "createdAt": floor(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -181,7 +181,7 @@ class Events:
                     "cause": {
                         "type": "PHYSICAL_INTERACTION"
                     }
-                },'setRangeValue_event_response'])
+                }, 'setRangeValue_event_response'])
 
 
 
@@ -200,7 +200,7 @@ class Events:
                     "cause": {
                         "type": "PHYSICAL_INTERACTION"
                     }
-                },'motion_event_response'])
+                }, 'motion_event_response'])
 
 
             elif event_name == 'setContactState':
@@ -219,8 +219,137 @@ class Events:
                         "type": "PHYSICAL_INTERACTION"
                     }
 
-                },'contact_event_response'])
+                }, 'contact_event_response'])
 
+            elif event_name == 'setVolume':
+                self.logger.info('Raised set volume event')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "setVolume",
+                    "value": {
+                        "volume": data.get('volume')
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                }, 'set_volume_event_response'])
+
+
+            elif event_name == 'selectInput':
+                self.logger.info('Raised select input event')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "selectInput",
+                    "value": {
+                        "input": data.get('input')
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                }, 'select_input_event_response'])
+
+
+            elif event_name == 'mediaControl':
+                self.logger.info('Media control event')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "mediaControl",
+                    "value": {
+                        "control": data.get('control')
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                }, 'media_control_event_response'])
+
+            elif event_name=='changeChannel':
+                self.logger.info('Change channel event raised')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "changeChannel",
+                    "value": {
+                        "channel": {
+                            "name": data.get('name')
+                        }
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                },'change_channel_event_response'])
+
+            elif event_name == 'setBands':
+                self.logger.info('Set Bands event raised')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "setBands",
+                    "value": {
+                        "bands": [
+                            {
+                                "name": data.get('name'),
+                                "level":data.get('level')
+                            }
+                        ]
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                },'set_bands_event_response'])
+
+
+            elif event_name == 'setMode':
+                self.logger.info('Set Mode event raised')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "setMode",
+                    "value": {
+                        "mode": data.get('mode')
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                },'set_mode_event_raised'])
+
+
+            elif event_name == 'setLockState':
+                self.logger.info('setLockState event raised')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "setLockState",
+                    "value": {
+                        "state": data.get('state')
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                }, 'set_lock_event_raised'])
 
         except Exception:
             self.logger.exception('Error Occurred')
