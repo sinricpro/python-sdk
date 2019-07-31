@@ -31,6 +31,8 @@ JSON_COMMANDS = {
     'MESSAGEID': 'messageId',
     'CLIENTID': 'clientId',
     'SETTHERMOSTATMODE': 'setThermostatMode',
-    'SETRANGEVALUE': 'setRangeValue'
+    'SETRANGEVALUE': 'setRangeValue',
+    'TARGETTEMPERATURE': 'targetTemperature',
+
 
 }

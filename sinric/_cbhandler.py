@@ -6,6 +6,7 @@ from sinric._colorController import ColorController
 from sinric._colorTemperature import ColorTemperatureController
 from sinric._thermostatController import ThermostateMode
 from sinric._rangeValueController import RangeValueController
+from sinric._temperatureController import TemperatureController
 import json
 from time import time
 from math import floor
@@ -13,7 +14,7 @@ from math import floor
 
 # noinspection PyBroadException
 class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController,
-                      ThermostateMode, RangeValueController):
+                      ThermostateMode, RangeValueController, TemperatureController):
     def __init__(self, callbacks, trace_bool, logger):
         PowerLevel.__init__(self, 0)
         BrightnessController.__init__(self, 0)
@@ -21,6 +22,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         RangeValueController.__init__(self, 0)
         ColorController.__init__(self, 0)
         ThermostateMode.__init__(self, 0)
+        TemperatureController.__init__(self, 0)
         ColorTemperatureController.__init__(self, 0, [2200, 2700, 4000, 5500, 7000])
         self.callbacks = callbacks
         self.logger = logger
@@ -317,6 +319,39 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         "rangeValue": value
                     }
                 }
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occured')
+
+
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == JSON_COMMANDS.get('TARGETTEMPERATURE'):
+            try:
+                resp, value = await  self.targetTemperature(jsn, self.callbacks.get('targetTemperature'))
+
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    "message": "OK",
+                    "createdAt": floor(time()),
+                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
+                    'messageId': jsn[JSON_COMMANDS['MESSAGEID']],
+                    "type": "response",
+                    "action": "targetTemperature",
+                    "value": {
+                        "temperature": value.get('temperature'),
+                        "schedule": {
+                            "duration": value.get('duration') | ""
+                        }
+                    }
+                }
+
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
