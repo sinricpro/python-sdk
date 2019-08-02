@@ -9,4 +9,5 @@ class TemperatureController:
         return callback(jsn.get(JSON_COMMANDS['DEVICEID']), jsn.get(JSON_COMMANDS.get('VALUE')).get('temperature'),
                         jsn.get(JSON_COMMANDS.get('VALUE')).get('schedule').get('duration'))
 
-
+    async def adjustTemperature(self, jsn, callback):
+        return callback(jsn.get(JSON_COMMANDS['DEVICEID']), jsn.get(JSON_COMMANDS.get('VALUE')).get('temperature'))

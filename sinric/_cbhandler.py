@@ -359,8 +359,38 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
             except Exception:
-                self.logger.exception('Error Occured')
+                self.logger.exception('Error Occurred')
 
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == JSON_COMMANDS.get('ADJUSTTEMPERATURE'):
+            try:
+                resp, value = await self.targetTemperature(jsn, self.callbacks.get('adjustTemperature'))
+
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    "createdAt": floor(time()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
+                    "deviceAttributes": [],
+                    "type": "request",
+                    "action": "adjustTemperature",
+                    "value": {
+                        "temperature": value
+                    }
+                }
+
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occurred')
+
+        ############################ EVENTS ###########################################################
         if Trace == 'doorbell_event_response':
             self.logger.info('Sending Doorbell Event Response')
             await connection.send(json.dumps(jsn))
