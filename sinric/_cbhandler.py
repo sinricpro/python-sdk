@@ -8,7 +8,6 @@ from sinric._thermostatController import ThermostateMode
 from sinric._rangeValueController import RangeValueController
 from sinric._temperatureController import TemperatureController
 import json
-import uuid
 from time import time
 from math import floor
 
@@ -37,12 +36,12 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 resp, state = await self.powerState(jsn, self.callbacks['powerState'])
                 response = {
                     "payloadVersion": 1,
-                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
-                    'messageId': str(uuid.uuid4()),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get(JSON_COMMANDS.get('MESSAGEID')),
                     "success": True,
                     "message": "OK",
                     "createdAt": floor(time()),
-                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
                     "type": "response",
                     "action": "setPowerState",
                     "value": {
@@ -67,10 +66,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "payloadVersion": 1,
                     "success": resp,
                     "message": "OK",
-                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
-                    'messageId': str(uuid.uuid4()),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
                     "createdAt": floor(time()),
-                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
                     "type": "response",
                     "action": "setPowerLevel",
                     "value": {
@@ -95,10 +94,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "payloadVersion": 1,
                     "success": resp,
                     "message": "OK",
-                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
-                    'messageId': str(uuid.uuid4()),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
                     "createdAt": floor(time()),
-                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
                     "type": "response",
                     "action": jsn[JSON_COMMANDS['ACTION']],
                     "value": {"powerLevel": value}}
@@ -118,10 +117,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = {
                     "payloadVersion": 1,
                     "success": resp,
-                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
-                    'messageId': str(uuid.uuid4()),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
                     "createdAt": floor(time()),
-                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
                     "deviceAttributes": "",
                     "type": "response",
                     "action": "setBrightness",
@@ -142,10 +141,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = {
                     "payloadVersion": 1,
                     "success": resp,
-                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
-                    'messageId': str(uuid.uuid4()),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
                     "createdAt": floor(time()),
-                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
                     "deviceAttributes": "",
                     "type": "response",
                     "action": "adjustBrightness",
@@ -170,10 +169,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "payloadVersion": 1,
                     "success": resp,
                     "message": "OK",
-                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
-                    'messageId': str(uuid.uuid4()),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
                     "createdAt": floor(time()),
-                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
                     "type": "response",
                     "action": "setColor",
                     "value": {
@@ -200,11 +199,11 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = {
                     "payloadVersion": 1,
                     "success": resp,
-                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
-                    'messageId': str(uuid.uuid4()),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
                     "message": "OK",
                     "createdAt": floor(time()),
-                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
                     "type": "response",
                     "action": "setColorTemperature",
                     "value": {
@@ -227,11 +226,11 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = {
                     "payloadVersion": 1,
                     "success": resp,
-                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
-                    'messageId': str(uuid.uuid4()),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
                     "message": "OK",
                     "createdAt": floor(time()),
-                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
                     "type": "response",
                     "action": "increaseColorTemperature",
                     "value": {
@@ -254,11 +253,11 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = {
                     "payloadVersion": 1,
                     "success": resp,
-                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
-                    'messageId': str(uuid.uuid4()),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
                     "message": "OK",
                     "createdAt": floor(time()),
-                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
                     "type": "response",
                     "action": "decreaseColorTemperature",
                     "value": {
@@ -281,11 +280,11 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = {
                     "payloadVersion": 1,
                     "success": resp,
-                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
-                    'messageId': str(uuid.uuid4()),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
                     "message": "OK",
                     "createdAt": floor(time()),
-                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
                     "type": "response",
                     "action": "setThermostatMode",
                     "value": {
@@ -309,11 +308,11 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = {
                     "payloadVersion": 1,
                     "success": resp,
-                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
-                    'messageId': str(uuid.uuid4()),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
                     "message": "OK",
                     "createdAt": floor(time()),
-                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
                     "type": "response",
                     "action": "setRangeValue",
                     "value": {
@@ -328,8 +327,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
             except Exception:
-                self.logger.exception('Error Occured')
-
+                self.logger.exception('Error Occurred')
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == JSON_COMMANDS.get('TARGETTEMPERATURE'):
             try:
@@ -340,9 +338,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "success": resp,
                     "message": "OK",
                     "createdAt": floor(time()),
-                    "deviceId": jsn[JSON_COMMANDS['DEVICEID']],
-                    'clientId': jsn[JSON_COMMANDS['CLIENTID']],
-                    'messageId': str(uuid.uuid4()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
                     "type": "response",
                     "action": "targetTemperature",
                     "value": {
