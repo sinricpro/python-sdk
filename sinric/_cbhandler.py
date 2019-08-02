@@ -304,7 +304,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == JSON_COMMANDS.get('SETRANGEVALUE'):
             try:
-                resp, value = await self.rangeValueControl(jsn, self.callbacks.get('setRangeValue'))
+                resp, value = await self.setRangeValue(jsn, self.callbacks.get('setRangeValue'))
                 response = {
                     "payloadVersion": 1,
                     "success": resp,
@@ -315,6 +315,35 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
                     "type": "response",
                     "action": "setRangeValue",
+                    "value": {
+                        "rangeValue": value
+                    }
+                }
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occurred')
+
+
+
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == JSON_COMMANDS.get('ADJUSTRANGEVALUE'):
+            try:
+                resp, value = await self.setRangeValue(jsn, self.callbacks.get('adjustRangeValue'))
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
+                    "message": "OK",
+                    "createdAt": floor(time()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    "type": "response",
+                    "action": "adjustRangeValue",
                     "value": {
                         "rangeValue": value
                     }
