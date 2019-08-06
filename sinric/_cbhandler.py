@@ -7,6 +7,7 @@ from sinric._colorTemperature import ColorTemperatureController
 from sinric._thermostatController import ThermostateMode
 from sinric._rangeValueController import RangeValueController
 from sinric._temperatureController import TemperatureController
+from sinric._tvcontorller import TvController
 import json
 from time import time
 from math import floor
@@ -14,7 +15,7 @@ from math import floor
 
 # noinspection PyBroadException
 class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController,
-                      ThermostateMode, RangeValueController, TemperatureController):
+                      ThermostateMode, RangeValueController, TemperatureController, TvController):
     def __init__(self, callbacks, trace_bool, logger):
         PowerLevel.__init__(self, 0)
         BrightnessController.__init__(self, 0)
@@ -23,6 +24,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         ColorController.__init__(self, 0)
         ThermostateMode.__init__(self, 0)
         TemperatureController.__init__(self, 0)
+        TvController.__init__(self, 0)
         ColorTemperatureController.__init__(self, 0, [2200, 2700, 4000, 5500, 7000])
         self.callbacks = callbacks
         self.logger = logger
@@ -402,10 +404,195 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
                     'messageId': jsn.get('MESSAGEID'),
                     "deviceAttributes": [],
-                    "type": "request",
+                    "type": "response",
                     "action": "adjustTemperature",
                     "value": {
                         "temperature": value
+                    }
+                }
+
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occurred')
+
+
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setVolume':
+            try:
+                resp, value = await self.setVolume(jsn, self.callbacks.get('setVolume'))
+
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    "createdAt": floor(time()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
+                    "deviceAttributes": [],
+                    "type": "response",
+                    "action": "setVolume",
+                    "value": {
+                        "volume": value
+                    }
+                }
+
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occurred')
+
+
+
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'adjustVolume':
+            try:
+                resp, value = await self.adjustVolume(jsn, self.callbacks.get('adjustVolume'))
+
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    "createdAt": floor(time()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
+                    "deviceAttributes": [],
+                    "type": "response",
+                    "action": "adjustVolume",
+                    "value": {
+                        "volume": value
+                    }
+                }
+
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occurred')
+
+
+
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'mediaControl':
+            try:
+                resp, value = await self.mediaControl(jsn, self.callbacks.get('mediaControl'))
+
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    "createdAt": floor(time()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
+                    "deviceAttributes": [],
+                    "type": "response",
+                    "action": "mediaControl",
+                    "value": {
+                        "control": value
+                    }
+                }
+
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occurred')
+
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'selectInput':
+            try:
+                resp, value = await self.selectInput(jsn, self.callbacks.get('selectInput'))
+
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    "createdAt": floor(time()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
+                    "deviceAttributes": [],
+                    "type": "response",
+                    "action": "selectInput",
+                    "value": {
+                        "input": value
+                    }
+                }
+
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occurred')
+
+
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'changeChannel':
+            try:
+                resp, value = await self.changeChannel(jsn, self.callbacks.get('changeChannel'))
+
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    "createdAt": floor(time()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
+                    "deviceAttributes": [],
+                    "type": "response",
+                    "action": "changeChannel",
+                    "value": {
+                        "channel": {
+                            "name": value
+                        }
+                    }
+                }
+
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occurred')
+
+
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'skipChannels':
+            try:
+                resp, value = await self.skipChannels(jsn, self.callbacks.get('skipChannels'))
+
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    "createdAt": floor(time()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
+                    "deviceAttributes": [],
+                    "type": "response",
+                    "action": "skipChannels",
+                    "value": {
+                        "channel": {
+                            "name": value
+                        }
                     }
                 }
 

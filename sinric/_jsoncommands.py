@@ -35,5 +35,9 @@ JSON_COMMANDS = {
     'TARGETTEMPERATURE': 'targetTemperature',
     'ADJUSTTEMPERATURE': 'adjustTemperature',
     'ADJUSTRANGEVALUE': 'adjustRangeValue',
+    'SETVOLUME': 'setVolume',
+    'ADJUSTVOLUME': 'adjustVolume',
+    'SETMUTE': 'setMute',
+    'MEDIACONTROL': 'mediaControl',
 
 }
