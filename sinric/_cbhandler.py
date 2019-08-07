@@ -611,7 +611,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setBands':
             try:
-                resp, value = await self.skipChannels(jsn, self.callbacks.get('setBands'))
+                resp, value = await self.setBands(jsn, self.callbacks.get('setBands'))
 
                 response = {
                     "payloadVersion": 1,
@@ -645,7 +645,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'adjustBands':
             try:
-                resp, value = await self.skipChannels(jsn, self.callbacks.get('adjustBands'))
+                resp, value = await self.adjustBands(jsn, self.callbacks.get('adjustBands'))
 
                 response = {
                     "payloadVersion": 1,
@@ -680,7 +680,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'resetBands':
             try:
-                resp, value = await self.skipChannels(jsn, self.callbacks.get('resetBands'))
+                resp, value = await self.resetBands(jsn, self.callbacks.get('resetBands'))
 
                 response = {
                     "payloadVersion": 1,
@@ -722,7 +722,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setMode':
             try:
-                resp, value = await self.skipChannels(jsn, self.callbacks.get('setMode'))
+                resp, value = await self.setMode(jsn, self.callbacks.get('setMode'))
 
                 response = {
                     "payloadVersion": 1,
