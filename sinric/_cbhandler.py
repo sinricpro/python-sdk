@@ -8,6 +8,7 @@ from sinric._thermostatController import ThermostateMode
 from sinric._rangeValueController import RangeValueController
 from sinric._temperatureController import TemperatureController
 from sinric._tvcontorller import TvController
+from sinric._speakerController import SpeakerController
 import json
 from time import time
 from math import floor
@@ -15,7 +16,7 @@ from math import floor
 
 # noinspection PyBroadException
 class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController,
-                      ThermostateMode, RangeValueController, TemperatureController, TvController):
+                      ThermostateMode, RangeValueController, TemperatureController, TvController, SpeakerController):
     def __init__(self, callbacks, trace_bool, logger):
         PowerLevel.__init__(self, 0)
         BrightnessController.__init__(self, 0)
@@ -25,6 +26,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         ThermostateMode.__init__(self, 0)
         TemperatureController.__init__(self, 0)
         TvController.__init__(self, 0)
+        SpeakerController.__init__(self, 0)
         ColorTemperatureController.__init__(self, 0, [2200, 2700, 4000, 5500, 7000])
         self.callbacks = callbacks
         self.logger = logger
@@ -593,6 +595,147 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         "channel": {
                             "name": value
                         }
+                    }
+                }
+
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occurred')
+
+
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setBands':
+            try:
+                resp, value = await self.skipChannels(jsn, self.callbacks.get('setBands'))
+
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    "createdAt": floor(time()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
+                    "deviceAttributes": [],
+                    "type": "response",
+                    "action": "setBands",
+                    "value": {
+                        "bands": [
+                            {
+                                "name": value.get('name'),
+                                "level": value.get('level')
+                            }
+                        ]
+                    }
+                }
+
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occurred')
+
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'adjustBands':
+            try:
+                resp, value = await self.skipChannels(jsn, self.callbacks.get('adjustBands'))
+
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    "createdAt": floor(time()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
+                    "deviceAttributes": [],
+                    "type": "response",
+                    "action": "adjustBands",
+                    "value": {
+                        "bands": [
+                            {
+                                "name": value.get('name'),
+                                "level": value.get('level')
+                            }
+                        ]
+                    }
+                }
+
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occurred')
+
+
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'resetBands':
+            try:
+                resp, value = await self.skipChannels(jsn, self.callbacks.get('resetBands'))
+
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    "createdAt": floor(time()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
+                    "deviceAttributes": [],
+                    "type": "response",
+                    "action": "resetBands",
+                    "value": {
+                        "bands": [
+                            {
+                                "name": "BASS",
+                                "level": 0
+                            },
+                            {
+                                "name": "MIDRANGE",
+                                "level": 0
+                            },
+                            {
+                                "name": "TREBLE",
+                                "level": 0
+                            }]
+                    }
+                }
+
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occurred')
+
+
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setMode':
+            try:
+                resp, value = await self.skipChannels(jsn, self.callbacks.get('setMode'))
+
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    "createdAt": floor(time()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get('MESSAGEID'),
+                    "deviceAttributes": [],
+                    "type": "response",
+                    "action": "setMode",
+                    "value": {
+                        "mode": value
                     }
                 }
 

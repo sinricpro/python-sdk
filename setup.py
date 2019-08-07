@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = "0.0.7"
+VERSION = "0.0.8"
 
 with open('README.rst', 'r') as f:
     long_description = f.read()
@@ -12,8 +12,8 @@ setup(
     description="A python package for your sinric-pro alexa skill",
     long_description=long_description,
     url="https://github.com/sinricpro/Python-SDK",
-    packages=['sinric', 'loguru'],
-    install_requires=['websockets'],
+    packages=['sinric'],
+    install_requires=["websockets","loguru"],
     keywords=['alexa', 'alexa-skill', 'sinric', 'sinric-alexa-skill', 'alexa-home-automation', 'sinric-pro',
               'sinric-pro-alexa-skill'],
     classifiers=[
