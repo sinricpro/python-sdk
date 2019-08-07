@@ -274,7 +274,7 @@ class Events:
                     }
                 }, 'media_control_event_response'])
 
-            elif event_name=='changeChannel':
+            elif event_name == 'changeChannel':
                 self.logger.info('Change channel event raised')
                 queue.put([{
                     "payloadVersion": 1,
@@ -291,7 +291,7 @@ class Events:
                     "cause": {
                         "type": "PHYSICAL_INTERACTION"
                     }
-                },'change_channel_event_response'])
+                }, 'change_channel_event_response'])
 
             elif event_name == 'setBands':
                 self.logger.info('Set Bands event raised')
@@ -306,14 +306,14 @@ class Events:
                         "bands": [
                             {
                                 "name": data.get('name'),
-                                "level":data.get('level')
+                                "level": data.get('level')
                             }
                         ]
                     },
                     "cause": {
                         "type": "PHYSICAL_INTERACTION"
                     }
-                },'set_bands_event_response'])
+                }, 'set_bands_event_response'])
 
 
             elif event_name == 'setMode':
@@ -331,7 +331,7 @@ class Events:
                     "cause": {
                         "type": "PHYSICAL_INTERACTION"
                     }
-                },'set_mode_event_raised'])
+                }, 'set_mode_event_response'])
 
 
             elif event_name == 'setLockState':
@@ -349,7 +349,37 @@ class Events:
                     "cause": {
                         "type": "PHYSICAL_INTERACTION"
                     }
-                }, 'set_lock_event_raised'])
+                }, 'set_lock_event_response'])
+
+
+            elif event_name == 'resetBands':
+                self.logger.info('resetBands event raised')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": floor(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "resetBands",
+                    "value": {
+                        "bands": [
+                            {
+                                "name": "BASS",
+                                "level": 0
+                            },
+                            {
+                                "name": "MIDRANGE",
+                                "level": 0
+                            },
+                            {
+                                "name": "TREBLE",
+                                "level": 0
+                            }]
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                }, 'reset_bands_event_response'])
 
         except Exception:
             self.logger.exception('Error Occurred')
