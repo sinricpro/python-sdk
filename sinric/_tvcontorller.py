@@ -7,10 +7,10 @@ class TvController:
         pass
 
     async def setVolume(self, jsn, callback):
-        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE').get('volume')))
+        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE')).get('volume'))
 
     async def adjustVolume(self, jsn, callback):
-        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE').get('volume')))
+        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE')).get('volume'))
 
     async def setMute(self, jsn, callback):
         return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), )
@@ -19,10 +19,10 @@ class TvController:
         return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE')).get('control'))
 
     async def selectInput(self, jsn, callback):
-        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE').get('input')))
+        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE')).get('input'))
 
     async def changeChannel(self, jsn, callback):
         return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get('value').get('channel').get('name'))
 
     async def skipChannels(self, jsn, callback):
-        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE').get('channelCount')))
+        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE')).get('channelCount'))
