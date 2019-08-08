@@ -23,7 +23,7 @@ class Events:
                 self.logger.info('setPowerState Event Raised')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -40,7 +40,7 @@ class Events:
                 self.logger.info('setPowerLevel event raised')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -58,7 +58,7 @@ class Events:
                 self.logger.info('setBrightness event raised')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -76,7 +76,7 @@ class Events:
                 self.logger.info('setColor event raised')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -98,7 +98,7 @@ class Events:
                 self.logger.info('setColor event raised')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -117,7 +117,7 @@ class Events:
                 self.logger.info('Door Bell Event Raised')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -134,7 +134,7 @@ class Events:
                 self.logger.info('Raised TH event')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -153,7 +153,7 @@ class Events:
                 self.logger.info('Raised Thermostat event')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -170,7 +170,7 @@ class Events:
                 self.logger.info('Raised Range value event')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -189,7 +189,7 @@ class Events:
                 self.logger.info('Raised motion event')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -207,7 +207,7 @@ class Events:
                 self.logger.info('Raised contact event')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -225,7 +225,7 @@ class Events:
                 self.logger.info('Raised set volume event')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -243,7 +243,7 @@ class Events:
                 self.logger.info('Raised select input event')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -261,7 +261,7 @@ class Events:
                 self.logger.info('Media control event')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -278,7 +278,7 @@ class Events:
                 self.logger.info('Change channel event raised')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -297,7 +297,7 @@ class Events:
                 self.logger.info('Set Bands event raised')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -320,7 +320,7 @@ class Events:
                 self.logger.info('Set Mode event raised')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -338,7 +338,7 @@ class Events:
                 self.logger.info('setLockState event raised')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
@@ -356,7 +356,7 @@ class Events:
                 self.logger.info('resetBands event raised')
                 queue.put([{
                     "payloadVersion": 1,
-                    "createdAt": floor(time()),
+                    "createdAt": int(time()),
                     "messageId": str(uuid.uuid4()),
                     "deviceId": deviceId,
                     "type": "event",
