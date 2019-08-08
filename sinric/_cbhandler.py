@@ -680,7 +680,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'resetBands':
             try:
-                resp, value = await self.resetBands(jsn, self.callbacks.get('resetBands'))
+                resp = await self.resetBands(jsn, self.callbacks.get('resetBands'))
 
                 response = {
                     "payloadVersion": 1,

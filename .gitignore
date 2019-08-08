@@ -4,3 +4,6 @@ devices/
 credentials.py
 test.py
 sinricpro_logfile*
+tests/
+test_bulb.py
+credentials.py

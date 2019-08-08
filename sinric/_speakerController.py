@@ -3,7 +3,7 @@ from ._jsoncommands import JSON_COMMANDS
 
 class SpeakerController:
 
-    def __init__(self):
+    def __init__(self, x):
         pass
 
     async def setBands(self, jsn, callback):

@@ -3,6 +3,7 @@ from ._jsoncommands import JSON_COMMANDS
 
 class TvController:
     def __init__(self, x):
+        self.volume = x
         pass
 
     async def setVolume(self, jsn, callback):
@@ -15,7 +16,7 @@ class TvController:
         return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), )
 
     async def mediaControl(self, jsn, callback):
-        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE').get('control')))
+        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE')).get('control'))
 
     async def selectInput(self, jsn, callback):
         return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE').get('input')))
