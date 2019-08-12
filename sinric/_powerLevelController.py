@@ -1,6 +1,5 @@
 from sinric._jsoncommands import JSON_COMMANDS
 
-
 class PowerLevel:
     def __init__(self, x):
         self.power_level = x

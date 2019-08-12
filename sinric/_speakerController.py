@@ -4,6 +4,7 @@ from ._jsoncommands import JSON_COMMANDS
 class SpeakerController:
 
     def __init__(self, x):
+        self.band=0
         pass
 
     async def setBands(self, jsn, callback):
@@ -12,9 +13,15 @@ class SpeakerController:
         return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), bands.get('name'), bands.get('level'))
 
     async def adjustBands(self, jsn, callback):
+
         value = jsn.get('value')
         bands = value.get('bands')[0]
-        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), bands.get('name'), bands.get('levelDelta'),
+        self.band += bands.get('levelDelta')
+        if(self.band < 0):
+            self.band=0
+        elif self.band > 100:
+            self.band=100
+        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), bands.get('name'), self.band,
                         bands.get('levelDirection'))
 
     async def resetBands(self, jsn, callback):

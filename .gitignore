@@ -7,3 +7,4 @@ sinricpro_logfile*
 tests/
 test_bulb.py
 credentials.py
+test_eve*
