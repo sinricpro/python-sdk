@@ -10,7 +10,12 @@ class TvController:
         return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE')).get('volume'))
 
     async def adjustVolume(self, jsn, callback):
-        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE')).get('volume'))
+        self.volume += jsn.get(JSON_COMMANDS.get('VALUE')).get('volume')
+        if self.volume > 100:
+            self.volume = 100
+        elif self.volume < 0:
+            self.volume = 0
+        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), self.volume)
 
     async def setMute(self, jsn, callback):
         return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), )
