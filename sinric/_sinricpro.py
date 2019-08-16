@@ -6,9 +6,8 @@ from loguru import logger
 
 logger.add("{}.log".format("sinricpro_logfile"), rotation="10 MB")
 
-
 class SinricPro:
-    def __init__(self, api, deviceid, request_callbacks, event_callbacks, enable_trace=False):
+    def __init__(self, api, deviceid, request_callbacks, event_callbacks=None, enable_trace=False):
         self.apiKey = api
         self.deviceid = deviceid
         self.logger = logger
@@ -31,11 +30,13 @@ class SinricPro:
     def handle_all(self, udp_client):
         t1 = Thread(target=self.handle_clients, args=(self.socket.handle, udp_client))
         t2 = Thread(target=udp_client.listen)
-        t3 = Thread(target=self.event_callbacks['Events'])
+
         t1.setDaemon(True)
         t2.setDaemon(True)
-        t3.setDaemon(True)
         t1.start()
         t2.start()
-        t3.start()
+        if self.event_callbacks != None:
+            t3 = Thread(target=self.event_callbacks['Events'])
+            t3.setDaemon(True)
+            t3.start()
         self.handle()
