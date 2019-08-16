@@ -6,4 +6,4 @@ class PowerController:
         pass
 
     async def powerState(self, jsn, power_state_callback):
-        return power_state_callback(jsn[JSON_COMMANDS['DEVICEID']], jsn[JSON_COMMANDS['VALUE']])
+        return power_state_callback(jsn[JSON_COMMANDS['DEVICEID']], jsn[JSON_COMMANDS['VALUE']]['state'])
