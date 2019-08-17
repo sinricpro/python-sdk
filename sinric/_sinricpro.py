@@ -30,7 +30,6 @@ class SinricPro:
     def handle_all(self, udp_client):
         t1 = Thread(target=self.handle_clients, args=(self.socket.handle, udp_client))
         t2 = Thread(target=udp_client.listen)
-
         t1.setDaemon(True)
         t2.setDaemon(True)
         t1.start()
