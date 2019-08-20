@@ -11,14 +11,17 @@ from sinric._tvcontorller import TvController
 from sinric._speakerController import SpeakerController
 import json
 from time import time
+from ._dataTracker import DataTracker
 from math import floor
 
 
 # noinspection PyBroadException
 class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController,
-                      ThermostateMode, RangeValueController, TemperatureController, TvController, SpeakerController):
-    def __init__(self, callbacks, trace_bool, logger):
+                      ThermostateMode, RangeValueController, TemperatureController, TvController, SpeakerController,
+                      DataTracker):
+    def __init__(self, callbacks, trace_bool, logger, enable_track=False):
         PowerLevel.__init__(self, 0)
+        self.enable_track = enable_track
         BrightnessController.__init__(self, 0)
         PowerController.__init__(self, 0)
         RangeValueController.__init__(self, 0)
@@ -31,6 +34,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         self.callbacks = callbacks
         self.logger = logger
         self.trace_response = trace_bool
+        self.data_tracker = DataTracker(self.enable_track)
+
+    def dumpData(self, key, val):
+        f = open('localdata.json', 'w')
+        data = json.load(f)
+        json.dump(data.update({key: val}), f)
+        f.close()
 
     async def handleCallBacks(self, dataArr, connection, udp_client):
         jsn = dataArr[0]
@@ -80,6 +90,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         "powerLevel": value
                     }
                 }
+                if self.enable_track:
+                    self.data_tracker.writeData('powerLevel', value)
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
@@ -105,6 +117,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "type": "response",
                     "action": jsn[JSON_COMMANDS['ACTION']],
                     "value": {"powerLevel": value}}
+                if self.enable_track:
+                    self.data_tracker.writeData('powerLevel', value)
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
@@ -129,6 +143,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "type": "response",
                     "action": "setBrightness",
                     "value": {"brightness": value}}
+                if self.enable_track:
+                    self.data_tracker.writeData('brightness', value)
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
@@ -156,6 +172,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         "brightness": value
                     }
                 }
+                if self.enable_track:
+                    self.data_tracker.writeData('brightness', value)
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
@@ -214,6 +232,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         "colorTemperature": jsn[JSON_COMMANDS['VALUE']][JSON_COMMANDS['COLORTEMPERATURE']]
                     }
                 }
+                if self.enable_track:
+                    self.data_tracker.writeData('colorTemperature',
+                                                jsn[JSON_COMMANDS['VALUE']][JSON_COMMANDS['COLORTEMPERATURE']])
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
@@ -241,6 +262,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         "colorTemperature": value
                     }
                 }
+                if self.enable_track:
+                    self.data_tracker.writeData('colorTemperature', value)
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
@@ -268,6 +291,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         "colorTemperature": value
                     }
                 }
+                if self.enable_track:
+                    self.data_tracker.writeData('colorTemperature', value)
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
@@ -323,6 +348,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         "rangeValue": value
                     }
                 }
+                if self.enable_track:
+                    self.data_tracker.writeData('rangeValue', value)
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
@@ -352,6 +379,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         "rangeValue": value
                     }
                 }
+                if self.enable_track:
+                    self.data_tracker.writeData('rangeValue', value)
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
@@ -383,7 +412,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         }
                     }
                 }
-
+                if self.enable_track:
+                    self.data_tracker.writeData('temperature', value)
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
@@ -412,7 +442,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         "temperature": value
                     }
                 }
-
+                if self.enable_track:
+                    self.data_tracker.writeData('temperature', value)
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
@@ -442,7 +473,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         "volume": value
                     }
                 }
-
+                if self.enable_track:
+                    self.data_tracker.writeData('volume', value)
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
@@ -473,6 +505,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         "volume": value
                     }
                 }
+                if self.enable_track:
+                    self.data_tracker.writeData('volume', value)
 
                 if resp:
                     if self.trace_response:
@@ -632,7 +666,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         ]
                     }
                 }
-
+                if self.enable_track:
+                    self.data_tracker.writeData('band', {"name": value.get('name'),
+                                                         "level": value.get('level')})
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
@@ -666,7 +702,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         ]
                     }
                 }
-
+                if self.enable_track:
+                    self.data_tracker.writeData('bands', {"name": value.get('name'),
+                                                         "level": value.get('level')})
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
