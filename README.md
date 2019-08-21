@@ -19,8 +19,8 @@ from credentials import apiKey, deviceId
 
 def onPowerState(did, state):
     # Alexa, turn ON/OFF Device
-    print(did, state['state'])
-    return True, state['state']
+    print(did, state)
+    return True, state
 
 
 callbacks = {
@@ -43,8 +43,8 @@ from credentials import apiKey, deviceId
 
 def onPowerState(did, state):
     # Alexa, turn ON/OFF Device
-    print(did, state['state'])
-    return True, state['state']
+    print(did, state)
+    return True, state
 
 
 def onSetPowerLevel(did, state):
@@ -81,8 +81,8 @@ from sinric import SinricProUdp
 
 def onPowerState(did, state):
     # Alexa, turn ON/OFF Device
-    print(did, state['state'])
-    return True, state['state']
+    print(did, state)
+    return True, state
 
 
 def onSetBrightness(did, state):
