@@ -20,6 +20,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                       ThermostateMode, RangeValueController, TemperatureController, TvController, SpeakerController,
                       DataTracker):
     def __init__(self, callbacks, trace_bool, logger, enable_track=False):
+        self.data_tracker = DataTracker(enable_track)
         PowerLevel.__init__(self, 0)
         self.enable_track = enable_track
         BrightnessController.__init__(self, 0)
@@ -34,7 +35,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         self.callbacks = callbacks
         self.logger = logger
         self.trace_response = trace_bool
-        self.data_tracker = DataTracker(self.enable_track)
 
     def dumpData(self, key, val):
         f = open('localdata.json', 'w')

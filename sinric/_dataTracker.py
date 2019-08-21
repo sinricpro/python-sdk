@@ -6,7 +6,7 @@ class DataTracker:
     def __init__(self, enable_track):
         self.enable_track = enable_track
         if os.path.exists('localdata.json'):
-            f = open('localdata.json')
+            f = open('localdata.json','r')
             self.data = json.load(f)
             f.close()
         else:

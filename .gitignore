@@ -1,7 +1,7 @@
 .idea/
 events/
 devices/
-credentials.py
+cred*
 test.py
 sinricpro_logfile*
 tests/
