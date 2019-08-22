@@ -643,6 +643,35 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 self.logger.exception('Error Occurred')
 
 
+
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setMute':
+            try:
+                resp, value = await self.setMute(jsn, self.callbacks.get('setMute'))
+                response = {
+                    "payloadVersion": 1,
+                    "success": True,
+                    "createdAt": int(time()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get(JSON_COMMANDS.get('MESSAGEID')),
+                    "deviceAttributes": [],
+                    "type": "response",
+                    "action": "setMute",
+                    "value": {
+                        "mute": value
+                    }
+                }
+
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occurred')
+
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setBands':
             try:
                 resp, value = await self.setBands(jsn, self.callbacks.get('setBands'))
@@ -756,6 +785,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
             except Exception:
                 self.logger.exception('Error Occurred')
+
+
 
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setMode':

@@ -21,7 +21,7 @@ class TvController:
         return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), self.volume)
 
     async def setMute(self, jsn, callback):
-        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), )
+        return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get('value').get('mute'))
 
     async def mediaControl(self, jsn, callback):
         return callback(jsn.get(JSON_COMMANDS.get('DEVICEID')), jsn.get(JSON_COMMANDS.get('VALUE')).get('control'))
