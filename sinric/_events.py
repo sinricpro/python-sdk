@@ -381,5 +381,25 @@ class Events:
                     }
                 }, 'reset_bands_event_response'])
 
+            elif event_name == 'setMute':
+                self.logger.info('setMute event raised')
+                queue.put([{
+                    "payloadVersion": 1,
+                    "createdAt": int(time()),
+                    "messageId": str(uuid.uuid4()),
+                    "deviceId": deviceId,
+                    "type": "event",
+                    "action": "setMute",
+                    "value": {
+                        "mute": data.get('mute',False)
+                    },
+                    "cause": {
+                        "type": "PHYSICAL_INTERACTION"
+                    }
+                }, 'reset_bands_event_response'])
+
         except Exception:
             self.logger.exception('Error Occurred')
+
+
+

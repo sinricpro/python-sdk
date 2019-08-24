@@ -12,13 +12,14 @@ from sinric._speakerController import SpeakerController
 import json
 from time import time
 from ._dataTracker import DataTracker
+from ._lockController import LockStateController
 from math import floor
 
 
 # noinspection PyBroadException
 class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController,
                       ThermostateMode, RangeValueController, TemperatureController, TvController, SpeakerController,
-                      DataTracker):
+                      LockStateController, DataTracker):
     def __init__(self, callbacks, trace_bool, logger, enable_track=False):
         self.data_tracker = DataTracker(enable_track)
         PowerLevel.__init__(self, 0)
@@ -30,6 +31,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         ThermostateMode.__init__(self, 0)
         TemperatureController.__init__(self, 0)
         TvController.__init__(self, 0)
+        LockStateController.__init__(self)
         SpeakerController.__init__(self, 0)
         ColorTemperatureController.__init__(self, 0, [2200, 2700, 4000, 5500, 7000])
         self.callbacks = callbacks
@@ -733,7 +735,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 }
                 if self.enable_track:
                     self.data_tracker.writeData('bands', {"name": value.get('name'),
-                                                         "level": value.get('level')})
+                                                          "level": value.get('level')})
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {json.dumps(response)}")
@@ -805,6 +807,35 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "action": "setMode",
                     "value": {
                         "mode": value
+                    }
+                }
+
+                if resp:
+                    if self.trace_response:
+                        self.logger.info(f"Response : {json.dumps(response)}")
+                    if Trace == 'socket_response':
+                        await connection.send(json.dumps(response))
+                    elif Trace == 'udp_response':
+                        udp_client.sendResponse(json.dumps(response).encode('ascii'), dataArr[2])
+            except Exception:
+                self.logger.exception('Error Occurred')
+
+
+        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setLockState':
+            try:
+                resp, value = await self.setLockState(jsn, self.callbacks.get('setLockState'))
+                response = {
+                    "payloadVersion": 1,
+                    "success": resp,
+                    "createdAt": int(time()),
+                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
+                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
+                    'messageId': jsn.get(JSON_COMMANDS.get('MESSAGEID')),
+                    "deviceAttributes": [],
+                    "type": "response",
+                    "action": "setLockState",
+                    "value": {
+                        "state": value.upper() + 'ED'
                     }
                 }
 

@@ -11,8 +11,8 @@ class DataTracker:
             f.close()
         else:
             f = open('localdata.json', 'w')
-            data = {'volume': 0, 'powerLevel': 0, 'brightness': 0, 'bands': 0, 'colorTemperature': 0, 'temperature': 0,
-                    'rangeValue': 0, "bands": {"name": "", "level": 0}}
+            data = {'volume': 0, 'powerLevel': 0, 'brightness': 0, 'colorTemperature': 0, 'temperature': 0,
+                    'rangeValue': 0, "bands": {"name": "", "level": 0},"lockState": True}
             json.dump(data, f)
             self.data = data
             f.close()
