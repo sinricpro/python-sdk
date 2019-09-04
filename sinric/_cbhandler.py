@@ -13,8 +13,8 @@ import json
 from time import time
 from ._dataTracker import DataTracker
 from ._lockController import LockStateController
-from math import floor
 
+# TODO fix target temperature Duration
 
 # noinspection PyBroadException
 class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController,
@@ -408,9 +408,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "type": "response",
                     "action": "targetTemperature",
                     "value": {
-                        "temperature": value.get('temperature'),
+                        "temperature": value,
                         "schedule": {
-                            "duration": value.get('duration') | ""
+                            "duration": ""
                         }
                     }
                 }

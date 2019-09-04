@@ -1,0 +1,9 @@
+__pycache__/
+build/
+dist/
+README.md
+README.rst
+test.py
+test_events.py
+sinricpro_logfile.log
+localdata.json
