@@ -17,8 +17,8 @@ class DataTracker:
             self.data = data
             f.close()
 
-    @classmethod
-    def readData(self, key):
+    @staticmethod
+    def readData(key):
         f = open('localdata.json', 'r')
         data = json.load(f).get(key, False)
         f.close()
