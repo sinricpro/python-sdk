@@ -6,8 +6,8 @@ from sinric._cbhandler import CallBackHandler
 
 class SinricProSocket:
 
-    def __init__(self, apiKey, deviceId, callbacks, enable_trace=False, logger=None, enable_track=False):
-        self.apiKey = apiKey
+    def __init__(self, appKey, deviceId, callbacks, enable_trace=False, logger=None, enable_track=False):
+        self.appKey = appKey
         self.enable_track = enable_track
         self.logger = logger
         self.deviceIds = deviceId
@@ -17,8 +17,8 @@ class SinricProSocket:
         self.enableTrace = enable_trace
 
     async def connect(self):  # Producer
-        self.connection = await websockets.client.connect('ws://23.95.122.232:3001',
-                                                          extra_headers={'Authorization': self.apiKey,
+        self.connection = await websockets.client.connect('ws://ws.sinric.pro',
+                                                          extra_headers={'appkey': self.appKey,
                                                                          'deviceids': self.deviceIds},
                                                           ping_interval=30000, ping_timeout=10000)
         if self.connection.open:
