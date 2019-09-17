@@ -6,14 +6,15 @@ from sinric._cbhandler import CallBackHandler
 
 class SinricProSocket:
 
-    def __init__(self, appKey, deviceId, callbacks, enable_trace=False, logger=None, enable_track=False):
+    def __init__(self, appKey, deviceId, callbacks, enable_trace=False, logger=None, enable_track=False,secretKey = ""):
         self.appKey = appKey
+        self.secretKey = secretKey
         self.enable_track = enable_track
         self.logger = logger
         self.deviceIds = deviceId
         self.connection = None
         self.callbacks = callbacks
-        self.callbackHandler = CallBackHandler(self.callbacks, enable_trace, self.logger, self.enable_track)
+        self.callbackHandler = CallBackHandler(self.callbacks, enable_trace, self.logger, self.enable_track,secretKey=self.secretKey)
         self.enableTrace = enable_trace
 
     async def connect(self):  # Producer
