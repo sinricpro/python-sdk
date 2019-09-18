@@ -13,7 +13,7 @@ from json import dumps, load, dump
 from time import time
 from uuid import uuid4
 from base64 import b64encode, b64decode
-import hmac
+import hmac as sinricHmac
 from hashlib import sha256
 from ._dataTracker import DataTracker
 from ._lockController import LockStateController
@@ -26,7 +26,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                       ThermostateMode, RangeValueController, TemperatureController, TvController, SpeakerController,
                       LockStateController, DataTracker):
     def __init__(self, callbacks, trace_bool, logger, enable_track=False, secretKey=""):
-        self.myHmac = hmac.new(key=secretKey.encode('utf-8'), digestmod=sha256)
+        self.myHmac = None
         self.secretKey = secretKey
         self.data_tracker = DataTracker(enable_track)
         PowerLevel.__init__(self, 0)
@@ -52,10 +52,12 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         f.close()
 
     async def handleCallBacks(self, dataArr, connection, udp_client):
+
         jsn = dataArr[0]
+
         Trace = dataArr[1]
 
-        def jsnHandle(action, resp ,dataDict):
+        def jsnHandle(action, resp, dataDict) -> dict:
             header = {
                 "payloadVersion": 2,
                 "signatureVersion": 1
@@ -66,13 +68,14 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 "createdAt": int(time()),
                 "deviceId": jsn.get("payload").get("deviceId", ""),
                 "message": "OK",
-                "replyToken": jsn.get("payload","").get("replyToken",str(uuid4())),
+                "replyToken": jsn.get("payload", "").get("replyToken", str(uuid4())),
                 "success": resp,
                 "type": "response",
                 "value": dataDict
             }
 
-            replyHmac = hmac.new(self.secretKey.encode('utf-8'),dumps(payload, separators=(',', ':'), sort_keys=True).encode('utf-8'),sha256)
+            replyHmac = sinricHmac.new(self.secretKey.encode('utf-8'),
+                                 dumps(payload, separators=(',', ':'), sort_keys=True).encode('utf-8'), sha256)
 
             encodedHmac = b64encode(replyHmac.digest())
 
@@ -80,44 +83,35 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 "HMAC": encodedHmac.decode('utf-8')
             }
 
-            return {"header":header,"payload":payload,"signature": signature}
+            return {"header": header, "payload": payload, "signature": signature}
 
         def verfiySignature(payload, hmac) -> bool:
-            self.myHmac.update(dumps(payload, separators=(',', ':'), sort_keys=True).encode('utf-8'))
-            return b64encode(self.myHmac.digest()) == hmac
+            self.myHmac = sinricHmac.new(self.secretKey.encode('utf-8'),dumps(payload,separators=(',',':'),sort_keys=True).encode('utf-8'),sha256)
+            print("My Hmac : "+ b64encode(self.myHmac.digest()).decode('utf-8'), "  Server Hmac = "+hmac)
+            return b64encode(self.myHmac.digest()).decode('utf-8') == hmac
 
-        if jsn['payload']['action'] == JSON_COMMANDS['SETPOWERSTATE']:
+        if jsn.get('payload').get('action') == JSON_COMMANDS.get('SETPOWERSTATE'):
             try:
+                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, state = await self.powerState(jsn, self.callbacks['powerState'])
-                response = jsnHandle("setPowerState",resp,{"state": state})
+                response = jsnHandle("setPowerState", resp, {"state": state})
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {dumps(response)}")
                     if Trace == 'socket_response':
                         await connection.send(dumps(response))
-                        # await connection.send(dumps(response2))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
-                self.logger.exception("Error Occurred")
+            except Exception as e:
+                self.logger.exception(e)
 
-        elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETPOWERLEVEL']:
+        elif jsn.get('payload').get('action') == JSON_COMMANDS['SETPOWERLEVEL']:
             try:
                 resp, value = await self.setPowerLevel(jsn, self.callbacks['setPowerLevel'])
-                response = {
-                    "payloadVersion": 1,
-                    "success": resp,
-                    "message": "OK",
-                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
-                    'messageId': jsn.get(JSON_COMMANDS.get('MESSAGEID')),
-                    "createdAt": int(time()),
-                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
-                    "type": "response",
-                    "action": "setPowerLevel",
-                    "value": {
-                        "powerLevel": value
-                    }
-                }
+
+                response = jsnHandle("setPowerLevel", resp, {
+                    "powerLevel": value
+                })
                 print(response)
                 resp = False
                 if self.enable_track:
@@ -129,10 +123,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
-                self.logger.exception("Error Occurred")
+            except Exception as e:
+                self.logger.exception(str(e))
 
-        elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['ADJUSTPOWERLEVEL']:
+        elif jsn.get('payload').get('action') == JSON_COMMANDS['ADJUSTPOWERLEVEL']:
             try:
                 resp, value = await self.adjustPowerLevel(jsn,
                                                           self.callbacks['adjustPowerLevel'])
@@ -145,7 +139,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "createdAt": int(time()),
                     "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
                     "type": "response",
-                    "action": jsn[JSON_COMMANDS['ACTION']],
+                    "action": jsn.get('payload').get('action'),
                     "value": {"powerLevel": value}}
                 if self.enable_track:
                     self.data_tracker.writeData('powerLevel', value)
@@ -156,10 +150,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
-                self.logger.exception("Error Occurred")
+            except Exception as e:
+                self.logger.exception(e)
 
-        elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETBRIGHTNESS']:
+        elif jsn.get('payload').get('action') == JSON_COMMANDS['SETBRIGHTNESS']:
             try:
                 resp, value = await self.setBrightness(jsn, self.callbacks['setBrightness'])
                 response = {
@@ -182,10 +176,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
-                self.logger.exception("Error Occurred")
+            except Exception as e:
+                self.logger.exception(e)
 
-        elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['ADJUSTBRIGHTNESS']:
+        elif jsn.get('payload').get('action') == JSON_COMMANDS['ADJUSTBRIGHTNESS']:
             try:
                 resp, value = await self.adjustBrightness(jsn, self.callbacks['adjustBrightness'])
                 response = {
@@ -211,10 +205,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
-                self.logger.exception("Error Occurred")
+            except Exception as e:
+                self.logger.exception(e)
 
-        elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETCOLOR']:
+        elif jsn.get('payload').get('action') == JSON_COMMANDS['SETCOLOR']:
             try:
                 resp = await self.setColor(jsn, self.callbacks['setColor'])
                 response = {
@@ -242,10 +236,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
-                self.logger.exception("Error Occurred")
+            except Exception as e:
+                self.logger.exception(e)
 
-        elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETCOLORTEMPERATURE']:
+        elif jsn.get('payload').get('action') == JSON_COMMANDS['SETCOLORTEMPERATURE']:
             try:
                 resp = await self.setColorTemperature(jsn, self.callbacks['setColorTemperature'])
                 response = {
@@ -272,10 +266,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
-                self.logger.exception("Error Occurred")
+            except Exception as e:
+                self.logger.exception(e)
 
-        elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['INCREASECOLORTEMPERATURE']:
+        elif jsn.get('payload').get('action') == JSON_COMMANDS['INCREASECOLORTEMPERATURE']:
             try:
                 resp, value = await self.increaseColorTemperature(jsn, self.callbacks['increaseColorTemperature'])
                 response = {
@@ -301,10 +295,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
-                self.logger.exception("Error Occurred")
+            except Exception as e:
+                self.logger.exception(e)
 
-        elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['DECREASECOLORTEMPERATURE']:
+        elif jsn.get('payload').get('action') == JSON_COMMANDS['DECREASECOLORTEMPERATURE']:
             try:
                 resp, value = await self.decreaseColorTemperature(jsn, self.callbacks['decreaseColorTemperature'])
                 response = {
@@ -330,10 +324,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
-                self.logger.exception("Error Occurred")
+            except Exception as e:
+                self.logger.exception(e)
 
-        elif jsn[JSON_COMMANDS['ACTION']] == JSON_COMMANDS['SETTHERMOSTATMODE']:
+        elif jsn.get('payload').get('action') == JSON_COMMANDS['SETTHERMOSTATMODE']:
             try:
                 resp, value = await self.setThermostateMode(jsn, self.callbacks['setThermostatMode'])
                 response = {
@@ -358,8 +352,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
-                self.logger.exception("Error Occurred")
+            except Exception as e:
+                self.logger.exception(e)
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == JSON_COMMANDS.get('SETRANGEVALUE'):
             try:
@@ -387,7 +381,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
 
@@ -418,7 +412,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == JSON_COMMANDS.get('TARGETTEMPERATURE'):
@@ -451,7 +445,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == JSON_COMMANDS.get('ADJUSTTEMPERATURE'):
@@ -481,7 +475,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
 
@@ -512,7 +506,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
 
@@ -545,7 +539,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
 
@@ -576,7 +570,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'selectInput':
@@ -605,7 +599,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
 
@@ -637,7 +631,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
 
@@ -669,7 +663,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
 
@@ -699,7 +693,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setBands':
@@ -735,7 +729,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'adjustBands':
@@ -771,7 +765,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
 
@@ -813,7 +807,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
 
@@ -845,7 +839,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
 
@@ -874,7 +868,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         await connection.send(dumps(response))
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
-            except Exception:
+            except Exception as e:
                 self.logger.exception('Error Occurred')
 
         ############################ EVENTS ###########################################################
