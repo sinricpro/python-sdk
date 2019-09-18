@@ -10,8 +10,8 @@ class PowerLevel:
 
 
     async def setPowerLevel(self, jsn, power_level_callback):
-        self.power_level = jsn[JSON_COMMANDS['VALUE']][JSON_COMMANDS['POWERLEVEL']]
-        return power_level_callback(jsn[JSON_COMMANDS['DEVICEID']],
+        self.power_level = jsn.get("payload").get("powerLevel")
+        return power_level_callback(jsn.get("payload").get("deviceId"),
                                     self.power_level)
 
     async def adjustPowerLevel(self, jsn, adjust_power_level_cb):

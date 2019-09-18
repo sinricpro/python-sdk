@@ -75,7 +75,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
             }
 
             replyHmac = sinricHmac.new(self.secretKey.encode('utf-8'),
-                                 dumps(payload, separators=(',', ':'), sort_keys=True).encode('utf-8'), sha256)
+                                       dumps(payload, separators=(',', ':'), sort_keys=True).encode('utf-8'), sha256)
 
             encodedHmac = b64encode(replyHmac.digest())
 
@@ -86,8 +86,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
             return {"header": header, "payload": payload, "signature": signature}
 
         def verfiySignature(payload, hmac) -> bool:
-            self.myHmac = sinricHmac.new(self.secretKey.encode('utf-8'),dumps(payload,separators=(',',':'),sort_keys=True).encode('utf-8'),sha256)
-            print("My Hmac : "+ b64encode(self.myHmac.digest()).decode('utf-8'), "  Server Hmac = "+hmac)
+            self.myHmac = sinricHmac.new(self.secretKey.encode('utf-8'),
+                                         dumps(payload, separators=(',', ':'), sort_keys=True).encode('utf-8'), sha256)
             return b64encode(self.myHmac.digest()).decode('utf-8') == hmac
 
         if jsn.get('payload').get('action') == JSON_COMMANDS.get('SETPOWERSTATE'):
@@ -107,13 +107,12 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETPOWERLEVEL']:
             try:
+                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setPowerLevel(jsn, self.callbacks['setPowerLevel'])
 
                 response = jsnHandle("setPowerLevel", resp, {
                     "powerLevel": value
                 })
-                print(response)
-                resp = False
                 if self.enable_track:
                     self.data_tracker.writeData('powerLevel', value)
                 if resp:
@@ -128,19 +127,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['ADJUSTPOWERLEVEL']:
             try:
+                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.adjustPowerLevel(jsn,
                                                           self.callbacks['adjustPowerLevel'])
-                response = {
-                    "payloadVersion": 1,
-                    "success": resp,
-                    "message": "OK",
-                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
-                    'messageId': jsn.get(JSON_COMMANDS.get('MESSAGEID')),
-                    "createdAt": int(time()),
-                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
-                    "type": "response",
-                    "action": jsn.get('payload').get('action'),
-                    "value": {"powerLevel": value}}
+                response = jsnHandle(action="adjustPowerLevel", resp=resp,dataDict={"powerLevel": value})
                 if self.enable_track:
                     self.data_tracker.writeData('powerLevel', value)
                 if resp:
@@ -155,18 +145,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETBRIGHTNESS']:
             try:
+                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setBrightness(jsn, self.callbacks['setBrightness'])
-                response = {
-                    "payloadVersion": 1,
-                    "success": resp,
-                    'clientId': jsn.get(JSON_COMMANDS.get('CLIENTID')),
-                    'messageId': jsn.get(JSON_COMMANDS.get('MESSAGEID')),
-                    "createdAt": int(time()),
-                    "deviceId": jsn.get(JSON_COMMANDS.get('DEVICEID')),
-                    "deviceAttributes": "",
-                    "type": "response",
-                    "action": "setBrightness",
-                    "value": {"brightness": value}}
+                response = jsnHandle(action="setBrightness", resp=resp, dataDict={"brightness": value})
                 if self.enable_track:
                     self.data_tracker.writeData('brightness', value)
                 if resp:
