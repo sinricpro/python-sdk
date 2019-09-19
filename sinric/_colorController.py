@@ -6,7 +6,7 @@ class ColorController:
         pass
 
     async def setColor(self, jsn, set_color_callback):
-        return set_color_callback(jsn[JSON_COMMANDS['DEVICEID']],
-                                  jsn[JSON_COMMANDS['VALUE']][JSON_COMMANDS['COLOR']][JSON_COMMANDS['COLOR_R']],
-                                  jsn[JSON_COMMANDS['VALUE']][JSON_COMMANDS['COLOR']][JSON_COMMANDS['COLOR_G']],
-                                  jsn[JSON_COMMANDS['VALUE']][JSON_COMMANDS['COLOR']][JSON_COMMANDS['COLOR_B']])
+        return set_color_callback(jsn.get("payload").get("deviceId"),
+                                  jsn.get("payload").get("value").get("color").get("r"),
+                                  jsn.get("payload").get("value").get("color").get("g"),
+                                  jsn.get("payload").get("value").get("color").get("b"))
