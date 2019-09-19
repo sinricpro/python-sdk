@@ -8,11 +8,11 @@ class ColorTemperatureController:
         pass
 
     async def setColorTemperature(self, jsn, set_callback):
-        return set_callback(jsn[JSON_COMMANDS['DEVICEID']],
-                            jsn[JSON_COMMANDS['VALUE']][JSON_COMMANDS['COLORTEMPERATURE']])
+        return set_callback(jsn.get("payload").get("deviceId"),
+                            jsn.get("payload").get("value").get("colorTemperature"))
 
     async def increaseColorTemperature(self, jsn, increase_callback):
-        return increase_callback(jsn[JSON_COMMANDS['DEVICEID']], jsn[JSON_COMMANDS['VALUE']])
+        return increase_callback(jsn.get("payload").get("deviceId"), jsn.get("payload").get("value"))
 
     async def decreaseColorTemperature(self, jsn, decrease_callback):
-        return decrease_callback(jsn[JSON_COMMANDS['DEVICEID']], jsn[JSON_COMMANDS['VALUE']])
+        return decrease_callback(jsn.get("payload").get("deviceId"), jsn.get("payload").get("value"))
