@@ -33,16 +33,16 @@ class Events:
                     "HMAC": hmacSignature.decode('utf-8')
                 }
                 return signature
-            if event_name == JSON_COMMANDS.get('SETPOWERSTATE'):
-                self.logger.info('setPowerState Event Raised')
 
+
+            def jsnHandle(action,deviceId,value) -> dict:
                 header = {
                     "payloadVersion": 2,
                     "signatureVersion": 1
                 }
 
                 payload = {
-                    "action": "setPowerState",
+                    "action": action,
                     "cause": {
                         "type": "PHYSICAL_INTERACTION"
                     },
@@ -50,31 +50,24 @@ class Events:
                     "deviceId": deviceId,
                     "replyToken": str(uuid),
                     "type": "event",
-                    "value": {
-                        "state": data.get("state", "Off")
-                    }
+                    "value": value
                 }
                 signature = getSignature(payload)
-                queue.put([{"header":header,"payload":payload,"signature":signature}, 'setpowerstate_event_response'])
+                return {"header":header,"payload":payload,"signature":signature}
+
+
+            if event_name == JSON_COMMANDS.get('SETPOWERSTATE'):
+                self.logger.info('setPowerState Event Raised')
+
+
+                queue.put([jsnHandle("setPowerState",deviceId,{"state": data.get("state", "Off")}), 'setpowerstate_event_response'])
 
             elif event_name == JSON_COMMANDS.get('SETPOWERLEVEL'):
                 self.logger.info('setPowerLevel event raised')
 
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "setPowerLevel",
-                    "value": {
+                queue.put([jsnHandle("setPowerLevel",deviceId,{
                         "powerLevel": data.get('powerLevel')
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'setPowerLevel_event_response'])
-
+                    }),'setPowerLevel_event_response'])
 
             elif event_name == JSON_COMMANDS.get('SETBRIGHTNESS'):
                 self.logger.info('setBrightness event raised')
