@@ -1,14 +1,24 @@
 #  Python3 SDK for Sinric Pro
 [![](https://img.shields.io/pypi/format/sinricpro.svg)](https://github.com/sinricpro/Python-SDK) [![](https://img.shields.io/pypi/v/sinricpro.svg)](https://github.com/sinricpro/Python-SDK) [![](https://img.shields.io/github/repo-size/sinricpro/Python-SDK.svg)](https://github.com/sinricpro/Python-SDK) [![](https://img.shields.io/badge/author-Dhanush-orange.svg)](https://github.com/imdhanush)
 
-### Python-2.7 not supported
-### Get your credentials from [sinric-pro-website](https://sinric.pro)
+# Python-2.7 not supported
+
+### Check the examples [here](https://github.com/sinricpro/Python-Examples)
 
 ### Install
         python3 -m pip install sinricpro --user
    
 ### Upgarde
         python3 -m pip install sinricpro --upgrade --user
+### Virtual Env
+        python3 -m pip install virtualenv --user
+    
+        python3 -m virtualenv sinricenv
+    
+        source sinricenv/bin/activate
+    
+        pip install sinricpro
+    
 
 ### Pro Switch [Demo](https://github.com/sinricpro/Python-Examples/tree/master/pro_switch_example):
 ```python

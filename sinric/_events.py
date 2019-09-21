@@ -1,5 +1,4 @@
 from time import time
-from math import floor
 from ._mainqueue import queue
 from ._jsoncommands import JSON_COMMANDS
 import uuid
@@ -71,42 +70,21 @@ class Events:
 
             elif event_name == JSON_COMMANDS.get('SETBRIGHTNESS'):
                 self.logger.info('setBrightness event raised')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "setBrightness",
-                    "value": {
-                        "powerLevel": data.get('brightness')
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'setBrightness_event_response'])
 
+                queue.put([jsnHandle("setBrightness", deviceId, {
+                        "powerLevel": data.get('brightness')
+                    }), 'setBrightness_event_response'])
 
             elif event_name == JSON_COMMANDS.get('SETCOLOR'):
                 self.logger.info('setColor event raised')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "setColor",
-                    "value": {
+
+                queue.put([jsnHandle("setColor", deviceId, {
                         "color": {
                             "r": data.get('r'),
                             "g": data.get('g'),
                             "b": data.get('b')
                         }
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'setColor_event_response'])
+                    }), 'setColor_event_response'])
 
 
             elif event_name == JSON_COMMANDS.get('SETCOLORTEMPERATURE'):
