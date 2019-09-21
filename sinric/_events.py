@@ -3,6 +3,10 @@ from math import floor
 from ._mainqueue import queue
 from ._jsoncommands import JSON_COMMANDS
 import uuid
+from hashlib import sha256
+import hmac as sinricProHmac
+from json import dumps
+from base64 import b64encode
 
 eventNames = {
     'door_bell_event': 'doorBellEvent',
@@ -12,32 +16,50 @@ eventNames = {
 
 # noinspection PyBroadException
 class Events:
-    def __init__(self, connection, logger=None):
+    def __init__(self, connection, logger=None, secretKey=""):
         self.connection = connection
         self.logger = logger
+        self.secretKey = secretKey
 
     # noinspection PyBroadException
     def raiseEvent(self, deviceId, event_name, data={}):
         try:
+            def getSignature(payload)->dict:
+                myHmac = sinricProHmac.new(key=self.secretKey.encode('utf-8'),
+                                           msg=dumps(payload, separators=(",", ":"), sort_keys=True).encode('utf-8'),
+                                           digestmod=sha256)
+                hmacSignature = b64encode(myHmac.digest())
+                signature = {
+                    "HMAC": hmacSignature.decode('utf-8')
+                }
+                return signature
             if event_name == JSON_COMMANDS.get('SETPOWERSTATE'):
                 self.logger.info('setPowerState Event Raised')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
+
+                header = {
+                    "payloadVersion": 2,
+                    "signatureVersion": 1
+                }
+
+                payload = {
                     "action": "setPowerState",
-                    "value": {
-                        "state": data.get('state')
-                    },
                     "cause": {
                         "type": "PHYSICAL_INTERACTION"
+                    },
+                    "createdAt": int(time()),
+                    "deviceId": deviceId,
+                    "replyToken": str(uuid),
+                    "type": "event",
+                    "value": {
+                        "state": data.get("state", "Off")
                     }
-                }, 'setpowerstate_event_response'])
+                }
+                signature = getSignature(payload)
+                queue.put([{"header":header,"payload":payload,"signature":signature}, 'setpowerstate_event_response'])
 
             elif event_name == JSON_COMMANDS.get('SETPOWERLEVEL'):
                 self.logger.info('setPowerLevel event raised')
+
                 queue.put([{
                     "payloadVersion": 1,
                     "createdAt": int(time()),
@@ -391,7 +413,7 @@ class Events:
                     "type": "event",
                     "action": "setMute",
                     "value": {
-                        "mute": data.get('mute',False)
+                        "mute": data.get('mute', False)
                     },
                     "cause": {
                         "type": "PHYSICAL_INTERACTION"
@@ -400,6 +422,3 @@ class Events:
 
         except Exception:
             self.logger.exception('Error Occurred')
-
-
-

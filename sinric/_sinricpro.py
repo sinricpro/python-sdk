@@ -19,7 +19,7 @@ class SinricPro:
                                       self.enable_track,self.secretKey)
         self.connection = asyncio.get_event_loop().run_until_complete(self.socket.connect())
         self.event_callbacks = event_callbacks
-        self.event_handler = Events(self.connection, self.logger)
+        self.event_handler = Events(self.connection, self.logger,self.secretKey)
 
     def handle(self):
         tasks = [
