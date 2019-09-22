@@ -88,273 +88,116 @@ class Events:
 
 
             elif event_name == JSON_COMMANDS.get('SETCOLORTEMPERATURE'):
-                self.logger.info('setColor event raised')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "setColorTemperature",
-                    "value": {
+
+                self.logger.info('setColorTemperature event raised')
+                queue.put([jsnHandle("setColorTemperature", deviceId, {
                         "colorTemperature": 2400
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'setColorTemperature_event_response'])
+                    }), 'setColorTemperature_event_response'])
 
             ##########################DOOR BELL EVENT####################################
 
             elif event_name == 'doorBellEvent':
                 self.logger.info('Door Bell Event Raised')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "DoorbellPress",
-                    "value": {
+                queue.put([jsnHandle("DoorbellPress", deviceId, {
                         "state": "pressed"
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-
-                    }}, 'doorbell_event_response'])
+                    }), 'doorbell_event_response'])
 
             elif event_name == 'temperatureHumidityEvent':
                 self.logger.info('Raised TH event')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "setTemperature",
-                    "value": {
+                queue.put([jsnHandle("setTemperature", deviceId, {
                         "temperature": data.get('temperature'),
                         "humidity": data.get('humidity')
-                    },
-                    "cause": {
-                        "type": "PERIODIC_POLL"
-                    }
-
-                }, 'temp_hum_event_response'])
+                    }), 'temp_hum_event_response'])
 
             elif event_name == 'setThermostatMode':
-                self.logger.info('Raised Thermostat event')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "setThermostatMode",
-                    "value": {
+                self.logger.info("Raised Thermostat event")
+                queue.put([jsnHandle("setThermostatMode", deviceId, {
                         "thermostatMode": data.get('Mode')
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'setThermostatMode_event_response'])
+                    }), 'setThermostatMode_event_response'])
 
             elif event_name == 'setRangeValue':
                 self.logger.info('Raised Range value event')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "setRangeValue",
-                    "value": {
+
+                queue.put([jsnHandle("setRangeValue", deviceId, {
                         "rangeValue": data.get('rangeValue')
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'setRangeValue_event_response'])
-
-
+                    }), 'setRangeValue_event_response'])
 
             elif event_name == 'motion':
                 self.logger.info('Raised motion event')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "motion",
-                    "value": {
+
+                queue.put([jsnHandle("motion", deviceId, {
                         "state": data.get('state')
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'motion_event_response'])
+                    }), 'motion_event_response'])
 
 
             elif event_name == 'setContactState':
                 self.logger.info('Raised contact event')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "setContactState",
-                    "value": {
-                        "state": data.get('state')
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
 
-                }, 'contact_event_response'])
+                queue.put([jsnHandle("setContactState", deviceId, {
+                        "state": data.get('state')
+                    }), 'contact_event_response'])
+
 
             elif event_name == 'setVolume':
                 self.logger.info('Raised set volume event')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "setVolume",
-                    "value": {
-                        "volume": data.get('volume')
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'set_volume_event_response'])
 
+                queue.put([jsnHandle("setVolume", deviceId, {
+                        "volume": data.get('volume')
+                    }), 'set_volume_event_response'])
 
             elif event_name == 'selectInput':
                 self.logger.info('Raised select input event')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "selectInput",
-                    "value": {
+
+                queue.put([jsnHandle("selectInput", deviceId, {
                         "input": data.get('input')
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'select_input_event_response'])
+                }), 'select_input_event_response'])
 
 
             elif event_name == 'mediaControl':
                 self.logger.info('Media control event')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "mediaControl",
-                    "value": {
+
+                queue.put([jsnHandle("mediaControl", deviceId, {
                         "control": data.get('control')
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'media_control_event_response'])
+                    }), 'media_control_event_response'])
+
 
             elif event_name == 'changeChannel':
                 self.logger.info('Change channel event raised')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "changeChannel",
-                    "value": {
+
+                queue.put([jsnHandle("changeChannel", deviceId, {
                         "channel": {
                             "name": data.get('name')
                         }
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'change_channel_event_response'])
+                    }), 'change_channel_event_response'])
 
             elif event_name == 'setBands':
                 self.logger.info('Set Bands event raised')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "setBands",
-                    "value": {
+                queue.put([jsnHandle("setBands", deviceId, {
                         "bands": [
                             {
                                 "name": data.get('name'),
                                 "level": data.get('level')
                             }
                         ]
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'set_bands_event_response'])
-
+                    }), 'set_bands_event_response'])
 
             elif event_name == 'setMode':
                 self.logger.info('Set Mode event raised')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "setMode",
-                    "value": {
+                queue.put([jsnHandle("setMode", deviceId, {
                         "mode": data.get('mode')
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'set_mode_event_response'])
-
+                    }), 'set_mode_event_response'])
 
             elif event_name == 'setLockState':
                 self.logger.info('setLockState event raised')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "setLockState",
-                    "value": {
-                        "state": data.get('state')
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'set_lock_event_response'])
 
+                queue.put([jsnHandle("setLockState", deviceId, {
+                        "state": data.get('state')
+                    }), 'set_lock_event_response'])
 
             elif event_name == 'resetBands':
                 self.logger.info('resetBands event raised')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "resetBands",
-                    "value": {
+
+                queue.put([jsnHandle("resetBands", deviceId, {
                         "bands": [
                             {
                                 "name": "BASS",
@@ -368,28 +211,14 @@ class Events:
                                 "name": "TREBLE",
                                 "level": 0
                             }]
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'reset_bands_event_response'])
+                    }), 'reset_bands_event_response'])
 
             elif event_name == 'setMute':
                 self.logger.info('setMute event raised')
-                queue.put([{
-                    "payloadVersion": 1,
-                    "createdAt": int(time()),
-                    "messageId": str(uuid.uuid4()),
-                    "deviceId": deviceId,
-                    "type": "event",
-                    "action": "setMute",
-                    "value": {
+
+                queue.put([jsnHandle("setMute", deviceId, {
                         "mute": data.get('mute', False)
-                    },
-                    "cause": {
-                        "type": "PHYSICAL_INTERACTION"
-                    }
-                }, 'reset_bands_event_response'])
+                    }), 'reset_bands_event_response'])
 
         except Exception:
             self.logger.exception('Error Occurred')
