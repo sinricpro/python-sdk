@@ -9,3 +9,6 @@ test_bulb.py
 credentials.py
 test_eve*
 localdata*
+dist/
+build/
+*egg*/

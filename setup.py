@@ -1,6 +1,10 @@
 from setuptools import setup
+import sys
 
-VERSION = "0.0.9"
+if sys.version_info < (3,7):
+    sys.exit('Sorry, Python < 3.7 is not supported')
+
+VERSION = "0.1.0"
 
 with open('README.rst', 'r') as f:
     long_description = f.read()
