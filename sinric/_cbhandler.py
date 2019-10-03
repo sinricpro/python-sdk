@@ -431,8 +431,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "input": value
                 })
 
-
-
                 if resp:
                     if self.trace_response:
                         self.logger.info(f"Response : {dumps(response)}")

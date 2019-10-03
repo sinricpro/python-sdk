@@ -17,7 +17,7 @@ class SpeakerController:
     async def adjustBands(self, jsn, callback):
         value = jsn.get("payload").get('value')
         bands = value.get('bands')[0]
-        self.band += bands.get('levelDelta')
+        self.band += bands.get('levelDelta',0)
         if(self.band < 0):
             self.band=0
         elif self.band > 100:
