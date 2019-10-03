@@ -1,13 +1,13 @@
 import socket
 from sinric._mainqueue import queue
 import json
-from credentials import deviceIdArr
 import struct
 
 
 class SinricProUdp:
-    def __init__(self, callbacks1):
+    def __init__(self, callbacks1, deviceIdArr):
         self.callbacks = callbacks1
+        self.deviceIdArr = deviceIdArr
         self.enablePrint = False
         self.udp_ip = '224.9.9.9'
         self.udp_port = 3333
@@ -28,7 +28,7 @@ class SinricProUdp:
         while True:
             data, addr = self.sockServ.recvfrom(1024)
             jsonData = json.loads(data.decode('ascii'))
-            if jsonData['deviceId'] in deviceIdArr:
+            if jsonData['deviceId'] in self.deviceIdArr:
                 queue.put([jsonData, 'udp_response', addr])
             else:
                 print('Invalid Device id')
