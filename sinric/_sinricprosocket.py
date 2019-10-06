@@ -6,7 +6,7 @@ from sinric._cbhandler import CallBackHandler
 
 class SinricProSocket:
 
-    def __init__(self, appKey, deviceId, callbacks, enable_trace=False, logger=None, enable_track=False,secretKey = ""):
+    def __init__(self, appKey, deviceId, callbacks, enable_trace=False, logger=None, enable_track=False, secretKey=""):
         self.appKey = appKey
         self.secretKey = secretKey
         self.enable_track = enable_track
@@ -14,13 +14,15 @@ class SinricProSocket:
         self.deviceIds = deviceId
         self.connection = None
         self.callbacks = callbacks
-        self.callbackHandler = CallBackHandler(self.callbacks, enable_trace, self.logger, self.enable_track,secretKey=self.secretKey)
+        self.callbackHandler = CallBackHandler(self.callbacks, enable_trace, self.logger, self.enable_track,
+                                               secretKey=self.secretKey)
         self.enableTrace = enable_trace
 
     async def connect(self):  # Producer
         self.connection = await websockets.client.connect('ws://ws.sinric.pro',
                                                           extra_headers={'appkey': self.appKey,
-                                                                         'deviceids': self.deviceIds},
+                                                                         'deviceids': self.deviceIds,
+                                                                         'platform': 'python'},
                                                           ping_interval=30000, ping_timeout=10000)
         if self.connection.open:
             self.logger.info(f"{'Client Connected'}")
