@@ -1,10 +1,17 @@
+"""
+ *  Copyright (c) 2019 Sinric. All rights reserved.
+ *  Licensed under Creative Commons Attribution-Share Alike (CC BY-SA)
+ *
+ *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
+"""
+
 from setuptools import setup
 import sys
 
 if sys.version_info < (3,7):
     sys.exit('Sorry, Python < 3.7 is not supported')
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 
 with open('README.rst', 'r') as f:
     long_description = f.read()

@@ -1,3 +1,10 @@
+"""
+ *  Copyright (c) 2019 Sinric. All rights reserved.
+ *  Licensed under Creative Commons Attribution-Share Alike (CC BY-SA)
+ *
+ *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
+"""
+
 import socket
 from sinric._mainqueue import queue
 import json
@@ -5,10 +12,10 @@ import struct
 
 
 class SinricProUdp:
-    def __init__(self, callbacks1, deviceIdArr):
+    def __init__(self, callbacks1, deviceIdArr,enable_trace=False):
         self.callbacks = callbacks1
         self.deviceIdArr = deviceIdArr
-        self.enablePrint = False
+        self.enablePrint = enable_trace
         self.udp_ip = '224.9.9.9'
         self.udp_port = 3333
         self.address = ('', self.udp_port)
@@ -17,9 +24,6 @@ class SinricProUdp:
         self.sockServ.bind(self.address)
         self.sockServ.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP,
                                  struct.pack("4sl", socket.inet_aton(self.udp_ip), socket.INADDR_ANY))
-
-    def enableUdpPrint(self, dat):
-        self.enablePrint = dat
 
     def sendResponse(self, data, sender):
         self.sockServ.sendto(data, sender)
