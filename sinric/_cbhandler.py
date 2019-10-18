@@ -111,7 +111,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                self.logger.exception(e)
+                self.logger.info(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETPOWERLEVEL']:
             try:
@@ -149,7 +149,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                self.logger.exception(e)
+                self.logger.info(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETBRIGHTNESS']:
             try:
@@ -166,7 +166,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                self.logger.exception(e)
+                self.logger.info(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['ADJUSTBRIGHTNESS']:
             try:
@@ -185,7 +185,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                self.logger.exception(e)
+                self.logger.info(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETCOLOR']:
             try:
@@ -206,7 +206,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                self.logger.exception(e)
+                self.logger.info(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETCOLORTEMPERATURE']:
             try:
@@ -226,7 +226,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                self.logger.exception(e)
+                self.logger.info(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['INCREASECOLORTEMPERATURE']:
             try:
@@ -245,7 +245,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                self.logger.exception(e)
+                self.logger.info(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['DECREASECOLORTEMPERATURE']:
             try:
@@ -264,7 +264,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                self.logger.exception(e)
+                self.logger.info(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETTHERMOSTATMODE']:
             try:
@@ -282,7 +282,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     elif Trace == 'udp_response':
                         udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
             except Exception as e:
-                self.logger.exception(e)
+                self.logger.info(f'Error : {e}')
 
         elif jsn.get(JSON_COMMANDS.get('ACTION')) == JSON_COMMANDS.get('SETRANGEVALUE'):
             try:
