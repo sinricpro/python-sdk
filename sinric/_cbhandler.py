@@ -53,6 +53,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         self.logger = logger
         self.trace_response = trace_bool
 
+
+
     def dumpData(self, key, val):
         f = open('localdata.json', 'w')
         data = load(f)
@@ -64,6 +66,14 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         jsn = dataArr[0]
 
         Trace = dataArr[1]
+
+        async def handleResponse(response, connection, udp_client):
+            if self.trace_response:
+                self.logger.info(f"Response : {dumps(response)}")
+            if Trace == 'socket_response':
+                await connection.send(dumps(response))
+            elif Trace == 'udp_response':
+                udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
 
         def jsnHandle(action, resp, dataDict) -> dict:
             header = {
@@ -104,14 +114,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 resp, state = await self.powerState(jsn, self.callbacks['powerState'])
                 response = jsnHandle("setPowerState", resp, {"state": state})
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response,connection,udp_client)
             except Exception as e:
-                self.logger.info(f'Error : {e}')
+                self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETPOWERLEVEL']:
             try:
@@ -124,14 +129,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if self.enable_track:
                     self.data_tracker.writeData('powerLevel', value)
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response,connection,udp_client)
             except Exception as e:
-                self.logger.exception(str(e))
+                self.logger.error(str(e))
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['ADJUSTPOWERLEVEL']:
             try:
@@ -142,14 +142,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if self.enable_track:
                     self.data_tracker.writeData('powerLevel', value)
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.info(f'Error : {e}')
+                self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETBRIGHTNESS']:
             try:
@@ -159,14 +154,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if self.enable_track:
                     self.data_tracker.writeData('brightness', value)
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.info(f'Error : {e}')
+                self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['ADJUSTBRIGHTNESS']:
             try:
@@ -178,14 +168,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if self.enable_track:
                     self.data_tracker.writeData('brightness', value)
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response,connection,udp_client)
             except Exception as e:
-                self.logger.info(f'Error : {e}')
+                self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETCOLOR']:
             try:
@@ -199,14 +184,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     }
                 })
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response,connection,udp_client)
             except Exception as e:
-                self.logger.info(f'Error : {e}')
+                self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETCOLORTEMPERATURE']:
             try:
@@ -219,14 +199,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('colorTemperature',
                                                 jsn[JSON_COMMANDS['VALUE']][JSON_COMMANDS['COLORTEMPERATURE']])
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response,connection,udp_client)
             except Exception as e:
-                self.logger.info(f'Error : {e}')
+                self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['INCREASECOLORTEMPERATURE']:
             try:
@@ -238,14 +213,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if self.enable_track:
                     self.data_tracker.writeData('colorTemperature', value)
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.info(f'Error : {e}')
+                self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['DECREASECOLORTEMPERATURE']:
             try:
@@ -257,14 +227,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if self.enable_track:
                     self.data_tracker.writeData('colorTemperature', value)
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.info(f'Error : {e}')
+                self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETTHERMOSTATMODE']:
             try:
@@ -275,16 +240,11 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 })
                 # Value can be "HEAT", "COOL" or "AUTO"
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.info(f'Error : {e}')
+                self.logger.error(f'Error : {e}')
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == JSON_COMMANDS.get('SETRANGEVALUE'):
+        elif jsn.get('payload').get('action') == JSON_COMMANDS.get('SETRANGEVALUE'):
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setRangeValue(jsn, self.callbacks.get('setRangeValue'))
@@ -295,18 +255,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if self.enable_track:
                     self.data_tracker.writeData('rangeValue', value)
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
 
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == JSON_COMMANDS.get('ADJUSTRANGEVALUE'):
+        elif jsn.get('payload').get('action') == JSON_COMMANDS.get('ADJUSTRANGEVALUE'):
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setRangeValue(jsn, self.callbacks.get('adjustRangeValue'))
@@ -316,16 +271,11 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if self.enable_track:
                     self.data_tracker.writeData('rangeValue', value)
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == JSON_COMMANDS.get('TARGETTEMPERATURE'):
+        elif jsn.get('payload').get('action') == JSON_COMMANDS.get('TARGETTEMPERATURE'):
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await  self.targetTemperature(jsn, self.callbacks.get('targetTemperature'))
@@ -336,16 +286,11 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if self.enable_track:
                     self.data_tracker.writeData('temperature', value)
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == JSON_COMMANDS.get('ADJUSTTEMPERATURE'):
+        elif jsn.get('payload').get('action') == JSON_COMMANDS.get('ADJUSTTEMPERATURE'):
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.targetTemperature(jsn, self.callbacks.get('adjustTemperature'))
@@ -356,17 +301,12 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if self.enable_track:
                     self.data_tracker.writeData('temperature', value)
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setVolume':
+        elif jsn.get('payload').get('action') == 'setVolume':
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
 
@@ -378,18 +318,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if self.enable_track:
                     self.data_tracker.writeData('volume', value)
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response,connection,udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
 
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'adjustVolume':
+        elif jsn.get('payload').get('action') == 'adjustVolume':
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
 
@@ -402,18 +337,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('volume', value)
 
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
 
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'mediaControl':
+        elif jsn.get('payload').get('action') == 'mediaControl':
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.mediaControl(jsn, self.callbacks.get('mediaControl'))
@@ -422,16 +352,11 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 })
 
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'selectInput':
+        elif jsn.get('payload').get('action') == 'selectInput':
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.selectInput(jsn, self.callbacks.get('selectInput'))
@@ -440,17 +365,12 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 })
 
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response,connection,udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'changeChannel':
+        elif jsn.get('payload').get('action') == 'changeChannel':
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
 
@@ -463,17 +383,12 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
 
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'skipChannels':
+        elif jsn.get('payload').get('action') == 'skipChannels':
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.skipChannels(jsn, self.callbacks.get('skipChannels'))
@@ -484,18 +399,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 })
 
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response,connection,udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
 
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setMute':
+        elif jsn.get('payload').get('action') == 'setMute':
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setMute(jsn, self.callbacks.get('setMute'))
@@ -504,16 +414,11 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 })
 
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setBands':
+        elif jsn.get('payload').get('action') == 'setBands':
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setBands(jsn, self.callbacks.get('setBands'))
@@ -530,16 +435,11 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('band', {"name": value.get('name'),
                                                          "level": value.get('level')})
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'adjustBands':
+        elif jsn.get('payload').get('action') == 'adjustBands':
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.adjustBands(jsn, self.callbacks.get('adjustBands'))
@@ -555,17 +455,12 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('bands', {"name": value.get('name'),
                                                           "level": value.get('level')})
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'resetBands':
+        elif jsn.get('payload').get('action') == 'resetBands':
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp = await self.resetBands(jsn, self.callbacks.get('resetBands'))
@@ -586,19 +481,14 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 })
 
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response,connection,udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
 
 
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setMode':
+        elif jsn.get('payload').get('action') == 'setMode':
             try:
 
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
@@ -608,17 +498,12 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 })
 
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response, connection, udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
 
-        elif jsn.get(JSON_COMMANDS.get('ACTION')) == 'setLockState':
+        elif jsn.get('payload').get('action') == 'setLockState':
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setLockState(jsn, self.callbacks.get('setLockState'))
@@ -627,88 +512,83 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 })
 
                 if resp:
-                    if self.trace_response:
-                        self.logger.info(f"Response : {dumps(response)}")
-                    if Trace == 'socket_response':
-                        await connection.send(dumps(response))
-                    elif Trace == 'udp_response':
-                        udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
+                    await handleResponse(response,connection,udp_client)
             except Exception as e:
-                self.logger.exception('Error Occurred')
+                self.logger.error(str(e))
 
         ############################ EVENTS ###########################################################
         if Trace == 'doorbell_event_response':
-            self.logger.info('Sending Doorbell Event Response')
+            self.logger.error('Sending Doorbell Event Response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'temp_hum_event_response':
-            self.logger.info('Sending temperature humidity response')
+            self.logger.error('Sending temperature humidity response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'setpowerstate_event_response':
-            self.logger.info('Sending setpowerstate_event_response')
+            self.logger.error('Sending setpowerstate_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'setPowerLevel_event_response':
-            self.logger.info('Sending setPowerLevel_event_response')
+            self.logger.error('Sending setPowerLevel_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'setBrightness_event_response':
-            self.logger.info('Sending setBrightness_event_response')
+            self.logger.error('Sending setBrightness_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'setColor_event_response':
-            self.logger.info('Sending setColor_event_response')
+            self.logger.error('Sending setColor_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'setColorTemperature_event_response':
-            self.logger.info('Sending setColorTemperature_event_response')
+            self.logger.error('Sending setColorTemperature_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'setThermostatMode_event_response':
-            self.logger.info('Sending setThermostatMode_event_response')
+            self.logger.error('Sending setThermostatMode_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'setRangeValue_event_response':
-            self.logger.info('Sending setRangeValue_event_response')
+            self.logger.error('Sending setRangeValue_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'motion_event_response':
-            self.logger.info('Sending motion_event_response')
+            self.logger.error('Sending motion_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'contact_event_response':
-            self.logger.info('Sending contact_event_response')
+            self.logger.error('Sending contact_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'set_volume_event_response':
-            self.logger.info('Sending set_volume_event_response')
+            self.logger.error('Sending set_volume_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'select_input_event_response':
-            self.logger.info('Sending select_input_event_response')
+            self.logger.error('Sending select_input_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'media_control_event_response':
-            self.logger.info('Sending media_control_event_response')
+            self.logger.error('Sending media_control_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'change_channel_event_response':
-            self.logger.info('Sending change_channel_event_response')
+            self.logger.error('Sending change_channel_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'set_bands_event_response':
-            self.logger.info('Sending set_bands_event_response')
+            self.logger.error('Sending set_bands_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'set_mode_event_response':
-            self.logger.info('Sending set_mode_event_response')
+            self.logger.error('Sending set_mode_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'set_lock_event_response':
-            self.logger.info('Sending set_lock_event_response')
+            self.logger.error('Sending set_lock_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'reset_bands_event_response':
-            self.logger.info('Sending reset_bands_event_response')
+            self.logger.error('Sending reset_bands_event_response')
             await connection.send(dumps(jsn))

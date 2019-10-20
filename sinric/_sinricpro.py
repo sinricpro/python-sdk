@@ -54,14 +54,20 @@ class SinricPro:
         asyncio.new_event_loop().run_until_complete(handle(udp_client))
 
     def handle_all(self, udp_client):
-        t1 = Thread(target=self.handle_clients, args=(self.socket.handle, udp_client))
-        t2 = Thread(target=udp_client.listen)
-        t1.setDaemon(True)
-        t2.setDaemon(True)
-        t1.start()
-        t2.start()
-        if self.event_callbacks != None:
-            t3 = Thread(target=self.event_callbacks['Events'])
-            t3.setDaemon(True)
-            t3.start()
-        self.handle()
+        try:
+            t1 = Thread(target=self.handle_clients, args=(self.socket.handle, udp_client))
+            t2 = Thread(target=udp_client.listen)
+            t1.setDaemon(True)
+            t2.setDaemon(True)
+            t1.start()
+            t2.start()
+            if self.event_callbacks != None:
+                t3 = Thread(target=self.event_callbacks['Events'])
+                t3.setDaemon(True)
+                t3.start()
+            self.handle()
+        except KeyboardInterrupt:
+            self.logger.error("Keyboard Interrupt")
+            sys.exit(1)
+        except Exception as e:
+            self.logger.error(str(e))
