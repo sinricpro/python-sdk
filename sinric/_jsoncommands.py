@@ -40,7 +40,7 @@ JSON_COMMANDS = {
     'SETTHERMOSTATMODE': 'setThermostatMode',
     'SETRANGEVALUE': 'setRangeValue',
     'TARGETTEMPERATURE': 'targetTemperature',
-    'ADJUSTTEMPERATURE': 'adjustTemperature',
+    'ADJUSTTEMPERATURE': 'adjustTargetTemperature',
     'ADJUSTRANGEVALUE': 'adjustRangeValue',
     'SETVOLUME': 'setVolume',
     'ADJUSTVOLUME': 'adjustVolume',

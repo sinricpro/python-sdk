@@ -115,6 +115,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = jsnHandle("setPowerState", resp, {"state": state})
                 if resp:
                     await handleResponse(response,connection,udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
@@ -130,6 +132,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('powerLevel', value)
                 if resp:
                     await handleResponse(response,connection,udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -143,6 +147,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('powerLevel', value)
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
@@ -155,6 +161,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('brightness', value)
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
@@ -169,6 +177,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('brightness', value)
                 if resp:
                     await handleResponse(response,connection,udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
@@ -185,6 +195,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 })
                 if resp:
                     await handleResponse(response,connection,udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
@@ -200,6 +212,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                                                 jsn[JSON_COMMANDS['VALUE']][JSON_COMMANDS['COLORTEMPERATURE']])
                 if resp:
                     await handleResponse(response,connection,udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
@@ -214,6 +228,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('colorTemperature', value)
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
@@ -228,6 +244,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('colorTemperature', value)
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
@@ -256,6 +274,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('rangeValue', value)
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -272,6 +292,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('rangeValue', value)
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -282,11 +304,12 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = jsnHandle(action="targetTemperature", resp=resp, dataDict={
                             "duration": ""
                         })
-                #@ TODO target temperature
                 if self.enable_track:
                     self.data_tracker.writeData('temperature', value)
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -294,7 +317,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
             try:
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.targetTemperature(jsn, self.callbacks.get('adjustTemperature'))
-                response = jsnHandle(action="adjustTemperature", resp=resp, dataDict={
+                response = jsnHandle(action="adjustTargetTemperature", resp=resp, dataDict={
                      "temperature": value
                 })
 
@@ -302,6 +325,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('temperature', value)
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -319,6 +344,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('volume', value)
                 if resp:
                     await handleResponse(response,connection,udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -338,6 +365,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -353,6 +382,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -366,6 +397,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
                 if resp:
                     await handleResponse(response,connection,udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -380,10 +413,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         "name": value
                     }
                 })
-
-
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -400,10 +433,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
                 if resp:
                     await handleResponse(response,connection,udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
-
-
 
         elif jsn.get('payload').get('action') == 'setMute':
             try:
@@ -415,6 +448,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -436,6 +471,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                                                          "level": value.get('level')})
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -456,6 +493,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                                                           "level": value.get('level')})
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -479,9 +518,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                                 "level": 0
                             }]
                 })
-
                 if resp:
                     await handleResponse(response,connection,udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -490,7 +530,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get('payload').get('action') == 'setMode':
             try:
-
                 assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setMode(jsn, self.callbacks.get('setMode'))
                 response = jsnHandle(action="setMode", resp=resp, dataDict={
@@ -499,6 +538,8 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
                 if resp:
                     await handleResponse(response, connection, udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -513,82 +554,84 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
                 if resp:
                     await handleResponse(response,connection,udp_client)
+            except AssertionError:
+                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
         ############################ EVENTS ###########################################################
         if Trace == 'doorbell_event_response':
-            self.logger.error('Sending Doorbell Event Response')
+            self.logger.info('Sending Doorbell Event Response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'temp_hum_event_response':
-            self.logger.error('Sending temperature humidity response')
+            self.logger.info('Sending temperature humidity response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'setpowerstate_event_response':
-            self.logger.error('Sending setpowerstate_event_response')
+            self.logger.info('Sending setpowerstate_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'setPowerLevel_event_response':
-            self.logger.error('Sending setPowerLevel_event_response')
+            self.logger.info('Sending setPowerLevel_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'setBrightness_event_response':
-            self.logger.error('Sending setBrightness_event_response')
+            self.logger.info('Sending setBrightness_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'setColor_event_response':
-            self.logger.error('Sending setColor_event_response')
+            self.logger.info('Sending setColor_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'setColorTemperature_event_response':
-            self.logger.error('Sending setColorTemperature_event_response')
+            self.logger.info('Sending setColorTemperature_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'setThermostatMode_event_response':
-            self.logger.error('Sending setThermostatMode_event_response')
+            self.logger.info('Sending setThermostatMode_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'setRangeValue_event_response':
-            self.logger.error('Sending setRangeValue_event_response')
+            self.logger.info('Sending setRangeValue_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'motion_event_response':
-            self.logger.error('Sending motion_event_response')
+            self.logger.info('Sending motion_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'contact_event_response':
-            self.logger.error('Sending contact_event_response')
+            self.logger.info('Sending contact_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'set_volume_event_response':
-            self.logger.error('Sending set_volume_event_response')
+            self.logger.info('Sending set_volume_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'select_input_event_response':
-            self.logger.error('Sending select_input_event_response')
+            self.logger.info('Sending select_input_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'media_control_event_response':
-            self.logger.error('Sending media_control_event_response')
+            self.logger.info('Sending media_control_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'change_channel_event_response':
-            self.logger.error('Sending change_channel_event_response')
+            self.logger.info('Sending change_channel_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'set_bands_event_response':
-            self.logger.error('Sending set_bands_event_response')
+            self.logger.info('Sending set_bands_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'set_mode_event_response':
-            self.logger.error('Sending set_mode_event_response')
+            self.logger.info('Sending set_mode_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'set_lock_event_response':
-            self.logger.error('Sending set_lock_event_response')
+            self.logger.info('Sending set_lock_event_response')
             await connection.send(dumps(jsn))
 
         elif Trace == 'reset_bands_event_response':
-            self.logger.error('Sending reset_bands_event_response')
+            self.logger.info('Sending reset_bands_event_response')
             await connection.send(dumps(jsn))
