@@ -5,7 +5,7 @@
  *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
 """
 
-from sinric._jsoncommands import JSON_COMMANDS
+from ._jsoncommands import JSON_COMMANDS
 
 
 class PowerController:

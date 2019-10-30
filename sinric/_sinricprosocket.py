@@ -7,8 +7,8 @@
 
 import websockets
 import json
-from sinric._mainqueue import queue
-from sinric._cbhandler import CallBackHandler
+from ._mainqueue import queue
+from ._cbhandler import CallBackHandler
 
 
 class SinricProSocket:

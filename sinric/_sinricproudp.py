@@ -6,7 +6,7 @@
 """
 
 import socket
-from sinric._mainqueue import queue
+from ._mainqueue import queue
 import json
 import struct
 

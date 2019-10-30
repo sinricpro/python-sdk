@@ -6,17 +6,17 @@
 """
 
 
-from sinric._powerController import PowerController
-from sinric._brightnessController import BrightnessController
-from sinric._jsoncommands import JSON_COMMANDS
-from sinric._powerLevelController import PowerLevel
-from sinric._colorController import ColorController
-from sinric._colorTemperature import ColorTemperatureController
-from sinric._thermostatController import ThermostateMode
-from sinric._rangeValueController import RangeValueController
-from sinric._temperatureController import TemperatureController
-from sinric._tvcontorller import TvController
-from sinric._speakerController import SpeakerController
+from ._powerController import PowerController
+from ._brightnessController import BrightnessController
+from ._jsoncommands import JSON_COMMANDS
+from ._powerLevelController import PowerLevel
+from ._colorController import ColorController
+from ._colorTemperature import ColorTemperatureController
+from ._thermostatController import ThermostateMode
+from ._rangeValueController import RangeValueController
+from ._temperatureController import TemperatureController
+from ._tvcontorller import TvController
+from ._speakerController import SpeakerController
 from json import dumps, load, dump
 from time import time
 from uuid import uuid4
@@ -188,9 +188,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 resp = await self.setColor(jsn, self.callbacks['setColor'])
                 response = jsnHandle(action="setColor", resp=resp, dataDict={
                     "color": {
-                        "r": jsn.get("payload").get("value").get("color").get("r"),
+                        "b": jsn.get("payload").get("value").get("color").get("b"),
                         "g": jsn.get("payload").get("value").get("color").get("g"),
-                        "b": jsn.get("payload").get("value").get("color").get("b")
+                        "r": jsn.get("payload").get("value").get("color").get("r")
                     }
                 })
                 if resp:

@@ -6,9 +6,9 @@
 """
 
 import asyncio
-from sinric._sinricprosocket import SinricProSocket
+from ._sinricprosocket import SinricProSocket
 from threading import Thread
-from sinric._events import Events
+from ._events import Events
 from loguru import logger
 import re
 import sys

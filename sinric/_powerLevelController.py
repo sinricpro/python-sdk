@@ -5,8 +5,8 @@
  *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
 """
 
-from sinric._jsoncommands import JSON_COMMANDS
-from sinric._dataTracker import DataTracker
+from ._jsoncommands import JSON_COMMANDS
+from ._dataTracker import DataTracker
 
 
 class PowerLevel:
