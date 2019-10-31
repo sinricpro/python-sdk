@@ -9,9 +9,10 @@ import websockets
 import json
 from ._mainqueue import queue
 from ._cbhandler import CallBackHandler
+from ._signature import Signature
 
 
-class SinricProSocket:
+class SinricProSocket(Signature):
 
     def __init__(self, appKey, deviceId, callbacks, enable_trace=False, logger=None, enable_track=False, secretKey=""):
         self.appKey = appKey
@@ -24,6 +25,7 @@ class SinricProSocket:
         self.callbackHandler = CallBackHandler(self.callbacks, enable_trace, self.logger, self.enable_track,
                                                secretKey=self.secretKey)
         self.enableTrace = enable_trace
+        Signature.__init__(self, self.secretKey)
 
     async def connect(self):  # Producer
         self.connection = await websockets.client.connect('ws://ws.sinric.pro',

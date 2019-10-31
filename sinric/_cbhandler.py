@@ -5,7 +5,6 @@
  *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
 """
 
-
 from ._powerController import PowerController
 from ._brightnessController import BrightnessController
 from ._jsoncommands import JSON_COMMANDS
@@ -25,6 +24,7 @@ import hmac as sinricHmac
 from hashlib import sha256
 from ._dataTracker import DataTracker
 from ._lockController import LockStateController
+from ._signature import Signature
 
 
 # TODO fix target temperature Duration
@@ -32,7 +32,7 @@ from ._lockController import LockStateController
 # noinspection PyBroadException
 class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController,
                       ThermostateMode, RangeValueController, TemperatureController, TvController, SpeakerController,
-                      LockStateController, DataTracker):
+                      LockStateController, DataTracker, Signature):
     def __init__(self, callbacks, trace_bool, logger, enable_track=False, secretKey=""):
         self.myHmac = None
         self.secretKey = secretKey
@@ -47,13 +47,12 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         TemperatureController.__init__(self, 0)
         TvController.__init__(self, 0)
         LockStateController.__init__(self)
+        Signature.__init__(self, self.secretKey)
         SpeakerController.__init__(self, 0)
         ColorTemperatureController.__init__(self, 0, [2200, 2700, 4000, 5500, 7000])
         self.callbacks = callbacks
         self.logger = logger
         self.trace_response = trace_bool
-
-
 
     def dumpData(self, key, val):
         f = open('localdata.json', 'w')
@@ -92,37 +91,25 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 "value": dataDict
             }
 
-            replyHmac = sinricHmac.new(self.secretKey.encode('utf-8'),
-                                       dumps(payload, separators=(',', ':'), sort_keys=True).encode('utf-8'), sha256)
-
-            encodedHmac = b64encode(replyHmac.digest())
-
-            signature = {
-                "HMAC": encodedHmac.decode('utf-8')
-            }
+            signature = self.getSignature(payload)
 
             return {"header": header, "payload": payload, "signature": signature}
 
-        def verfiySignature(payload, hmac) -> bool:
-            self.myHmac = sinricHmac.new(self.secretKey.encode('utf-8'),
-                                         dumps(payload, separators=(',', ':'), sort_keys=True).encode('utf-8'), sha256)
-            return b64encode(self.myHmac.digest()).decode('utf-8') == hmac
-
         if jsn.get('payload').get('action') == JSON_COMMANDS.get('SETPOWERSTATE'):
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, state = await self.powerState(jsn, self.callbacks['powerState'])
                 response = jsnHandle("setPowerState", resp, {"state": state})
                 if resp:
-                    await handleResponse(response,connection,udp_client)
+                    await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETPOWERLEVEL']:
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setPowerLevel(jsn, self.callbacks['setPowerLevel'])
 
                 response = jsnHandle("setPowerLevel", resp, {
@@ -131,15 +118,15 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if self.enable_track:
                     self.data_tracker.writeData('powerLevel', value)
                 if resp:
-                    await handleResponse(response,connection,udp_client)
+                    await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['ADJUSTPOWERLEVEL']:
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.adjustPowerLevel(jsn,
                                                           self.callbacks['adjustPowerLevel'])
                 response = jsnHandle(action="adjustPowerLevel", resp=resp, dataDict={"powerLevel": value})
@@ -148,13 +135,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETBRIGHTNESS']:
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setBrightness(jsn, self.callbacks['setBrightness'])
                 response = jsnHandle(action="setBrightness", resp=resp, dataDict={"brightness": value})
                 if self.enable_track:
@@ -162,13 +149,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['ADJUSTBRIGHTNESS']:
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.adjustBrightness(jsn, self.callbacks['adjustBrightness'])
                 response = jsnHandle(action="adjustBrightness", resp=resp, dataDict={
                     "brightness": value
@@ -176,15 +163,15 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if self.enable_track:
                     self.data_tracker.writeData('brightness', value)
                 if resp:
-                    await handleResponse(response,connection,udp_client)
+                    await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETCOLOR']:
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp = await self.setColor(jsn, self.callbacks['setColor'])
                 response = jsnHandle(action="setColor", resp=resp, dataDict={
                     "color": {
@@ -194,15 +181,15 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     }
                 })
                 if resp:
-                    await handleResponse(response,connection,udp_client)
+                    await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETCOLORTEMPERATURE']:
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp = await self.setColorTemperature(jsn, self.callbacks['setColorTemperature'])
                 response = jsnHandle(action="setColorTemperature", resp=resp, dataDict={
                     "colorTemperature": jsn.get("payload").get("value").get("colorTemperature")
@@ -211,15 +198,15 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     self.data_tracker.writeData('colorTemperature',
                                                 jsn[JSON_COMMANDS['VALUE']][JSON_COMMANDS['COLORTEMPERATURE']])
                 if resp:
-                    await handleResponse(response,connection,udp_client)
+                    await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['INCREASECOLORTEMPERATURE']:
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.increaseColorTemperature(jsn, self.callbacks['increaseColorTemperature'])
                 response = jsnHandle(action="increaseColorTemperature", resp=resp, dataDict={
                     "colorTemperature": value
@@ -229,13 +216,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['DECREASECOLORTEMPERATURE']:
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.decreaseColorTemperature(jsn, self.callbacks['decreaseColorTemperature'])
                 response = jsnHandle(action="decreaseColorTemperature", resp=resp, dataDict={
                     "colorTemperature": value
@@ -245,13 +232,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(f'Error : {e}')
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS['SETTHERMOSTATMODE']:
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setThermostateMode(jsn, self.callbacks['setThermostatMode'])
                 response = jsnHandle(action="setThermostatMode", resp=resp, dataDict={
                     "thermostatMode": value
@@ -264,7 +251,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS.get('SETRANGEVALUE'):
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setRangeValue(jsn, self.callbacks.get('setRangeValue'))
                 response = jsnHandle(action="setRangeValue", resp=resp, dataDict={
                     "rangeValue": value
@@ -275,7 +262,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -283,7 +270,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS.get('ADJUSTRANGEVALUE'):
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setRangeValue(jsn, self.callbacks.get('adjustRangeValue'))
                 response = jsnHandle(action="adjustRangeValue", resp=resp, dataDict={
                     "rangeValue": value
@@ -293,32 +280,32 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS.get('TARGETTEMPERATURE'):
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await  self.targetTemperature(jsn, self.callbacks.get('targetTemperature'))
                 response = jsnHandle(action="targetTemperature", resp=resp, dataDict={
-                            "duration": ""
-                        })
+                    "duration": ""
+                })
                 if self.enable_track:
                     self.data_tracker.writeData('temperature', value)
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
         elif jsn.get('payload').get('action') == JSON_COMMANDS.get('ADJUSTTEMPERATURE'):
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.targetTemperature(jsn, self.callbacks.get('adjustTemperature'))
                 response = jsnHandle(action="adjustTargetTemperature", resp=resp, dataDict={
-                     "temperature": value
+                    "temperature": value
                 })
 
                 if self.enable_track:
@@ -326,26 +313,26 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
 
         elif jsn.get('payload').get('action') == 'setVolume':
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
 
                 resp, value = await self.setVolume(jsn, self.callbacks.get('setVolume'))
                 response = jsnHandle(action="setVolume", resp=resp, dataDict={
-                     "volume": value
+                    "volume": value
                 })
 
                 if self.enable_track:
                     self.data_tracker.writeData('volume', value)
                 if resp:
-                    await handleResponse(response,connection,udp_client)
+                    await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -353,7 +340,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get('payload').get('action') == 'adjustVolume':
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
 
                 resp, value = await self.adjustVolume(jsn, self.callbacks.get('adjustVolume'))
                 response = jsnHandle(action="setVolume", resp=resp, dataDict={
@@ -366,7 +353,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -374,7 +361,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get('payload').get('action') == 'mediaControl':
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.mediaControl(jsn, self.callbacks.get('mediaControl'))
                 response = jsnHandle(action="mediaControl", resp=resp, dataDict={
                     "control": value
@@ -383,29 +370,29 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
         elif jsn.get('payload').get('action') == 'selectInput':
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.selectInput(jsn, self.callbacks.get('selectInput'))
                 response = jsnHandle(action="selectInput", resp=resp, dataDict={
                     "input": value
                 })
 
                 if resp:
-                    await handleResponse(response,connection,udp_client)
+                    await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
 
         elif jsn.get('payload').get('action') == 'changeChannel':
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
 
                 resp, value = await self.changeChannel(jsn, self.callbacks.get('changeChannel'))
                 response = jsnHandle(action="changeChannel", resp=resp, dataDict={
@@ -416,14 +403,14 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
 
         elif jsn.get('payload').get('action') == 'skipChannels':
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.skipChannels(jsn, self.callbacks.get('skipChannels'))
                 response = jsnHandle(action="skipChannels", resp=resp, dataDict={
                     "channel": {
@@ -432,15 +419,15 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 })
 
                 if resp:
-                    await handleResponse(response,connection,udp_client)
+                    await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
         elif jsn.get('payload').get('action') == 'setMute':
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setMute(jsn, self.callbacks.get('setMute'))
                 response = jsnHandle(action="setMute", resp=resp, dataDict={
                     "mute": value
@@ -449,21 +436,21 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
         elif jsn.get('payload').get('action') == 'setBands':
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setBands(jsn, self.callbacks.get('setBands'))
                 response = jsnHandle(action="setBands", resp=resp, dataDict={
                     "bands": [
-                            {
-                                "name": value.get('name'),
-                                "level": value.get('level')
-                            }
-                        ]
+                        {
+                            "name": value.get('name'),
+                            "level": value.get('level')
+                        }
+                    ]
                 })
 
                 if self.enable_track:
@@ -472,13 +459,13 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
         elif jsn.get('payload').get('action') == 'adjustBands':
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.adjustBands(jsn, self.callbacks.get('adjustBands'))
                 response = jsnHandle(action="adjustBands", resp=resp, dataDict={
                     "bands": [
@@ -494,34 +481,34 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
 
         elif jsn.get('payload').get('action') == 'resetBands':
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp = await self.resetBands(jsn, self.callbacks.get('resetBands'))
                 response = jsnHandle(action="resetBands", resp=resp, dataDict={
                     "bands": [
-                            {
-                                "name": "BASS",
-                                "level": 0
-                            },
-                            {
-                                "name": "MIDRANGE",
-                                "level": 0
-                            },
-                            {
-                                "name": "TREBLE",
-                                "level": 0
-                            }]
+                        {
+                            "name": "BASS",
+                            "level": 0
+                        },
+                        {
+                            "name": "MIDRANGE",
+                            "level": 0
+                        },
+                        {
+                            "name": "TREBLE",
+                            "level": 0
+                        }]
                 })
                 if resp:
-                    await handleResponse(response,connection,udp_client)
+                    await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
@@ -530,32 +517,32 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
 
         elif jsn.get('payload').get('action') == 'setMode':
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setMode(jsn, self.callbacks.get('setMode'))
                 response = jsnHandle(action="setMode", resp=resp, dataDict={
-                     "mode": value
+                    "mode": value
                 })
 
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
 
         elif jsn.get('payload').get('action') == 'setLockState':
             try:
-                assert (verfiySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
+                assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setLockState(jsn, self.callbacks.get('setLockState'))
                 response = jsnHandle(action="setLockState", resp=resp, dataDict={
                     "state": value.upper() + 'ED'
                 })
 
                 if resp:
-                    await handleResponse(response,connection,udp_client)
+                    await handleResponse(response, connection, udp_client)
             except AssertionError:
-                self.logger.error("Signature verification failed for "+jsn.get('payload').get('action'))
+                self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
 
