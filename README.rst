@@ -57,6 +57,5 @@ Pro Switch Demo:
 
     if __name__ == '__main__':
         client = SinricPro(appKey, deviceId, callbacks,event_callbacks=eventsCallbacks, enable_trace=False,secretKey=secretKey)
-        udp_client = SinricProUdp(callbacks)
-        udp_client.enableUdpPrint(False)  # Set it to True to start logging request Offline Request/Response
+        udp_client = SinricProUdp(callbacks,deviceId,enable_trace=False)  # Set it to True to start logging request Offline Request/Response
         client.handle_all(udp_client)

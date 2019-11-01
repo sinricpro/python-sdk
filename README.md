@@ -1,5 +1,9 @@
 #  Python3 SDK for Sinric Pro
-[![](https://img.shields.io/pypi/format/sinricpro.svg)](https://github.com/sinricpro/Python-SDK) [![](https://img.shields.io/pypi/v/sinricpro.svg)](https://github.com/sinricpro/Python-SDK) [![](https://img.shields.io/github/repo-size/sinricpro/Python-SDK.svg)](https://github.com/sinricpro/Python-SDK) [![](https://img.shields.io/badge/author-Dhanush-orange.svg)](https://github.com/imdhanush)
+[![](https://img.shields.io/pypi/format/sinricpro.svg)](https://github.com/sinricpro/Python-SDK) 
+[![](https://img.shields.io/pypi/v/sinricpro.svg)](https://github.com/sinricpro/Python-SDK) 
+[![Downloads](https://pepy.tech/badge/sinricpro)](https://pypi.org/project/sinricpro/)
+[![](https://img.shields.io/github/repo-size/sinricpro/Python-SDK.svg)](https://github.com/sinricpro/Python-SDK) 
+[![](https://img.shields.io/badge/author-Dhanush-orange.svg)](https://github.com/imdhanush)
 
 # Python-2.7 not supported
 
@@ -50,7 +54,6 @@ callbacks = {
 
 if __name__ == '__main__':
     client = SinricPro(appKey, deviceId, callbacks,event_callbacks=eventsCallbacks, enable_trace=False,secretKey=secretKey)
-    udp_client = SinricProUdp(callbacks,deviceId)
-    udp_client.enableUdpPrint(False)  # Set it to True to start logging request Offline Request/Response
+    udp_client = SinricProUdp(callbacks,deviceId,enable_trace=False)  # Set it to True to start logging request Offline Request/Response
     client.handle_all(udp_client)
 ```
