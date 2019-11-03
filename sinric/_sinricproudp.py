@@ -12,8 +12,8 @@ import struct
 
 
 class SinricProUdp:
-    def __init__(self, callbacks1, deviceIdArr,enable_trace=False):
-        self.callbacks = callbacks1
+    def __init__(self, callbacks_udp, deviceIdArr,enable_trace=False):
+        self.callbacks = callbacks_udp
         self.deviceIdArr = deviceIdArr
         self.enablePrint = enable_trace
         self.udp_ip = '224.9.9.9'

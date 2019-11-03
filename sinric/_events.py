@@ -5,7 +5,7 @@
  *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
 """
 
-from time import time
+from time import time, sleep
 from ._mainqueue import queue
 from ._jsoncommands import JSON_COMMANDS
 import uuid
@@ -21,6 +21,7 @@ eventNames = {
 class Events(Signature):
     def __init__(self, connection, logger=None, secretKey=""):
         self.connection = connection
+        self.eventSleepTime = 2
         self.logger = logger
         self.secretKey = secretKey
         Signature.__init__(self, self.secretKey)
@@ -43,7 +44,7 @@ class Events(Signature):
                     },
                     "createdAt": int(time()),
                     "deviceId": deviceId,
-                    "replyToken": str(uuid),
+                    "replyToken": str(uuid.uuid4()),
                     "type": "event",
                     "value": value
                 }
@@ -55,6 +56,8 @@ class Events(Signature):
 
                 queue.put([jsnHandle("setPowerState", deviceId, {"state": data.get("state", "Off")}),
                            'setpowerstate_event_response'])
+                sleep(self.eventSleepTime)
+
 
             elif event_name == JSON_COMMANDS.get('SETPOWERLEVEL'):
                 self.logger.info('setPowerLevel event raised')
@@ -62,6 +65,7 @@ class Events(Signature):
                 queue.put([jsnHandle("setPowerLevel", deviceId, {
                     "powerLevel": data.get('powerLevel')
                 }), 'setPowerLevel_event_response'])
+                sleep(self.eventSleepTime)
 
             elif event_name == JSON_COMMANDS.get('SETBRIGHTNESS'):
                 self.logger.info('setBrightness event raised')
@@ -69,6 +73,7 @@ class Events(Signature):
                 queue.put([jsnHandle("setBrightness", deviceId, {
                     "powerLevel": data.get('brightness')
                 }), 'setBrightness_event_response'])
+                sleep(self.eventSleepTime)
 
             elif event_name == JSON_COMMANDS.get('SETCOLOR'):
                 self.logger.info('setColor event raised')
@@ -80,6 +85,7 @@ class Events(Signature):
                         "b": data.get('b')
                     }
                 }), 'setColor_event_response'])
+                sleep(self.eventSleepTime)
 
 
             elif event_name == JSON_COMMANDS.get('SETCOLORTEMPERATURE'):
@@ -88,6 +94,7 @@ class Events(Signature):
                 queue.put([jsnHandle("setColorTemperature", deviceId, {
                     "colorTemperature": 2400
                 }), 'setColorTemperature_event_response'])
+                sleep(self.eventSleepTime)
 
             ##########################DOOR BELL EVENT####################################
 
@@ -96,6 +103,7 @@ class Events(Signature):
                 queue.put([jsnHandle("DoorbellPress", deviceId, {
                     "state": "pressed"
                 }), 'doorbell_event_response'])
+                sleep(self.eventSleepTime)
 
             elif event_name == 'temperatureHumidityEvent':
                 self.logger.info('Raised TH event')
@@ -103,12 +111,14 @@ class Events(Signature):
                     "temperature": data.get('temperature'),
                     "humidity": data.get('humidity')
                 }), 'temp_hum_event_response'])
+                sleep(self.eventSleepTime)
 
             elif event_name == 'setThermostatMode':
                 self.logger.info("Raised Thermostat event")
                 queue.put([jsnHandle("setThermostatMode", deviceId, {
                     "thermostatMode": data.get('Mode')
                 }), 'setThermostatMode_event_response'])
+                sleep(self.eventSleepTime)
 
             elif event_name == 'setRangeValue':
                 self.logger.info('Raised Range value event')
@@ -116,6 +126,7 @@ class Events(Signature):
                 queue.put([jsnHandle("setRangeValue", deviceId, {
                     "rangeValue": data.get('rangeValue')
                 }), 'setRangeValue_event_response'])
+                sleep(self.eventSleepTime)
 
             elif event_name == 'motion':
                 self.logger.info('Raised motion event')
@@ -123,6 +134,7 @@ class Events(Signature):
                 queue.put([jsnHandle("motion", deviceId, {
                     "state": data.get('state')
                 }), 'motion_event_response'])
+                sleep(self.eventSleepTime)
 
 
             elif event_name == 'setContactState':
@@ -131,6 +143,7 @@ class Events(Signature):
                 queue.put([jsnHandle("setContactState", deviceId, {
                     "state": data.get('state')
                 }), 'contact_event_response'])
+                sleep(self.eventSleepTime)
 
 
             elif event_name == 'setVolume':
@@ -139,6 +152,7 @@ class Events(Signature):
                 queue.put([jsnHandle("setVolume", deviceId, {
                     "volume": data.get('volume')
                 }), 'set_volume_event_response'])
+                sleep(self.eventSleepTime)
 
             elif event_name == 'selectInput':
                 self.logger.info('Raised select input event')
@@ -146,6 +160,7 @@ class Events(Signature):
                 queue.put([jsnHandle("selectInput", deviceId, {
                     "input": data.get('input')
                 }), 'select_input_event_response'])
+                sleep(self.eventSleepTime)
 
 
             elif event_name == 'mediaControl':
@@ -154,6 +169,7 @@ class Events(Signature):
                 queue.put([jsnHandle("mediaControl", deviceId, {
                     "control": data.get('control')
                 }), 'media_control_event_response'])
+                sleep(self.eventSleepTime)
 
 
             elif event_name == 'changeChannel':
@@ -164,6 +180,7 @@ class Events(Signature):
                         "name": data.get('name')
                     }
                 }), 'change_channel_event_response'])
+                sleep(self.eventSleepTime)
 
             elif event_name == 'setBands':
                 self.logger.info('Set Bands event raised')
@@ -175,12 +192,14 @@ class Events(Signature):
                         }
                     ]
                 }), 'set_bands_event_response'])
+                sleep(self.eventSleepTime)
 
             elif event_name == 'setMode':
                 self.logger.info('Set Mode event raised')
                 queue.put([jsnHandle("setMode", deviceId, {
                     "mode": data.get('mode')
                 }), 'set_mode_event_response'])
+                sleep(self.eventSleepTime)
 
             elif event_name == 'setLockState':
                 self.logger.info('setLockState event raised')
@@ -188,6 +207,7 @@ class Events(Signature):
                 queue.put([jsnHandle("setLockState", deviceId, {
                     "state": data.get('state')
                 }), 'set_lock_event_response'])
+                sleep(self.eventSleepTime)
 
             elif event_name == 'resetBands':
                 self.logger.info('resetBands event raised')
@@ -207,6 +227,7 @@ class Events(Signature):
                             "level": 0
                         }]
                 }), 'reset_bands_event_response'])
+                sleep(self.eventSleepTime)
 
             elif event_name == 'setMute':
                 self.logger.info('setMute event raised')
@@ -214,6 +235,7 @@ class Events(Signature):
                 queue.put([jsnHandle("setMute", deviceId, {
                     "mute": data.get('mute', False)
                 }), 'reset_bands_event_response'])
+                sleep(self.eventSleepTime)
 
         except Exception:
             self.logger.exception('Error Occurred')

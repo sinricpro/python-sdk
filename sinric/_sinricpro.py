@@ -35,7 +35,7 @@ class SinricPro:
             sys.exit(0)
 
     def verifyDeviceIdArr(self,deviceIdArr):
-        Arr = deviceIdArr.split(';')
+        Arr = deviceIdArr
         for i in Arr:
             res = re.findall(r'^[a-fA-F0-9]{24}$',i)
             if len(res) == 0:
