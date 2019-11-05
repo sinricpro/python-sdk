@@ -58,7 +58,7 @@ callbacks = {
 }
 
 if __name__ == '__main__':
-    client = SinricPro(appKey, deviceIdArr, callbacks,event_callbacks=eventsCallbacks, enable_trace=False,secretKey=secretKey)
+    client = SinricPro(appKey, deviceIdArr, callbacks,event_callbacks=eventsCallbacks, enable_trace=False,restore_states=True,secretKey=secretKey)
     udp_client = SinricProUdp(callbacks,deviceIdArr,enable_trace=False)  # Set it to True to start logging request Offline Request/Response
     client.handle_all(udp_client)
 
@@ -93,7 +93,7 @@ callbacks = {
 }
 
 if __name__ == '__main__':
-    client = SinricPro(appKey, deviceIdArr, callbacks,event_callbacks=eventsCallbacks, enable_trace=False,secretKey=secretKey)
+    client = SinricPro(appKey, deviceIdArr, callbacks,event_callbacks=eventsCallbacks, restore_states=False,secretKey=secretKey)
     udp_client = SinricProUdp(callbacks,deviceIdArr,enable_trace=False)  # Set it to True to start logging request Offline Request/Response
     client.handle_all(udp_client)
 ```

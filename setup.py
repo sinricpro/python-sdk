@@ -11,7 +11,7 @@ import sys
 if sys.version_info < (3,7):
     sys.exit('Sorry, Python < 3.7 is not supported')
 
-VERSION = "2.1.2"
+VERSION = "2.2.2"
 
 with open('README.rst', 'r') as f:
     long_description = f.read()
