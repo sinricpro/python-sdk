@@ -6,13 +6,11 @@
 """
 
 from ._jsoncommands import JSON_COMMANDS
-from ._dataTracker import DataTracker
 
 
 class TvController:
     def __init__(self, x):
         self.volume = x
-        self.volume = DataTracker.readData('volume')
 
 
     async def setVolume(self, jsn, callback):

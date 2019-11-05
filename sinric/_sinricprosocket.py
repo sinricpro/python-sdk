@@ -10,19 +10,20 @@ import json
 from ._mainqueue import queue
 from ._cbhandler import CallBackHandler
 from ._signature import Signature
-
+from time import time
 
 class SinricProSocket(Signature):
 
-    def __init__(self, appKey, deviceId, callbacks, enable_trace=False, logger=None, enable_track=False, secretKey=""):
+    def __init__(self, appKey, deviceId, callbacks, enable_trace=False, logger=None, restore_states=False,
+                 secretKey=""):
         self.appKey = appKey
         self.secretKey = secretKey
-        self.enable_track = enable_track
+        self.restore_states = restore_states
         self.logger = logger
         self.deviceIds = deviceId
         self.connection = None
         self.callbacks = callbacks
-        self.callbackHandler = CallBackHandler(self.callbacks, enable_trace, self.logger, self.enable_track,
+        self.callbackHandler = CallBackHandler(self.callbacks, enable_trace, self.logger, self.restore_states,
                                                secretKey=self.secretKey)
         self.enableTrace = enable_trace
         Signature.__init__(self, self.secretKey)
@@ -31,10 +32,17 @@ class SinricProSocket(Signature):
         self.connection = await websockets.client.connect('ws://ws.sinric.pro',
                                                           extra_headers={'appkey': self.appKey,
                                                                          'deviceids': ';'.join(self.deviceIds),
-                                                                         'platform': 'python'},
+                                                                         'platform': 'python',
+                                                                         'restoredevicestates': (
+                                                                             'true' if self.restore_states else 'false')},
                                                           ping_interval=30000, ping_timeout=10000)
         if self.connection.open:
             self.logger.info(f"{'Client Connected'}")
+            timestamp  = await self.connection.recv()
+            if(int(time()) - json.loads(timestamp).get('timestamp') > 60000):
+                self.logger.warning(f'Timestamp is not in sync (more than 1 minute)')
+            else:
+                self.logger.success(f'Timestamp is in sync :)')
             return self.connection
 
     async def receiveMessage(self, connection):

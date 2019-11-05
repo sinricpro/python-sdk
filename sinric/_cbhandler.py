@@ -19,7 +19,6 @@ from ._speakerController import SpeakerController
 from json import dumps, load, dump
 from time import time, sleep
 from uuid import uuid4
-from ._dataTracker import DataTracker
 from ._lockController import LockStateController
 from ._signature import Signature
 
@@ -29,11 +28,10 @@ from ._signature import Signature
 # noinspection PyBroadException
 class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController,
                       ThermostateMode, RangeValueController, TemperatureController, TvController, SpeakerController,
-                      LockStateController, DataTracker, Signature):
+                      LockStateController, Signature):
     def __init__(self, callbacks, trace_bool, logger, enable_track=False, secretKey=""):
         self.myHmac = None
         self.secretKey = secretKey
-        self.data_tracker = DataTracker(enable_track)
         PowerLevel.__init__(self, 0)
         self.enable_track = enable_track
         BrightnessController.__init__(self, 0)
@@ -112,8 +110,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = jsnHandle("setPowerLevel", resp, {
                     "powerLevel": value
                 })
-                if self.enable_track:
-                    self.data_tracker.writeData('powerLevel', value)
+
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -127,8 +124,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 resp, value = await self.adjustPowerLevel(jsn,
                                                           self.callbacks['adjustPowerLevel'])
                 response = jsnHandle(action="adjustPowerLevel", resp=resp, dataDict={"powerLevel": value})
-                if self.enable_track:
-                    self.data_tracker.writeData('powerLevel', value)
+
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -141,8 +137,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
                 resp, value = await self.setBrightness(jsn, self.callbacks['setBrightness'])
                 response = jsnHandle(action="setBrightness", resp=resp, dataDict={"brightness": value})
-                if self.enable_track:
-                    self.data_tracker.writeData('brightness', value)
+
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -157,8 +152,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = jsnHandle(action="adjustBrightness", resp=resp, dataDict={
                     "brightness": value
                 })
-                if self.enable_track:
-                    self.data_tracker.writeData('brightness', value)
+
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -191,9 +185,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = jsnHandle(action="setColorTemperature", resp=resp, dataDict={
                     "colorTemperature": jsn.get("payload").get("value").get("colorTemperature")
                 })
-                if self.enable_track:
-                    self.data_tracker.writeData('colorTemperature',
-                                                jsn[JSON_COMMANDS['VALUE']][JSON_COMMANDS['COLORTEMPERATURE']])
+
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -208,8 +200,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = jsnHandle(action="increaseColorTemperature", resp=resp, dataDict={
                     "colorTemperature": value
                 })
-                if self.enable_track:
-                    self.data_tracker.writeData('colorTemperature', value)
+
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -224,8 +215,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = jsnHandle(action="decreaseColorTemperature", resp=resp, dataDict={
                     "colorTemperature": value
                 })
-                if self.enable_track:
-                    self.data_tracker.writeData('colorTemperature', value)
+
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -254,8 +244,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "rangeValue": value
                 })
 
-                if self.enable_track:
-                    self.data_tracker.writeData('rangeValue', value)
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -272,8 +260,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = jsnHandle(action="adjustRangeValue", resp=resp, dataDict={
                     "rangeValue": value
                 })
-                if self.enable_track:
-                    self.data_tracker.writeData('rangeValue', value)
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -291,8 +277,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     },
                     "temperature": value
                 })
-                if self.enable_track:
-                    self.data_tracker.writeData('temperature', value)
+
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -308,8 +293,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "temperature": value
                 })
 
-                if self.enable_track:
-                    self.data_tracker.writeData('temperature', value)
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -327,8 +310,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "volume": value
                 })
 
-                if self.enable_track:
-                    self.data_tracker.writeData('volume', value)
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -347,9 +328,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     "volume": value
                 })
 
-                if self.enable_track:
-                    self.data_tracker.writeData('volume', value)
-
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -366,7 +344,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = jsnHandle(action="mediaControl", resp=resp, dataDict={
                     "control": value
                 })
-
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -381,7 +358,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 response = jsnHandle(action="selectInput", resp=resp, dataDict={
                     "input": value
                 })
-
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -453,9 +429,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                     ]
                 })
 
-                if self.enable_track:
-                    self.data_tracker.writeData('band', {"name": value.get('name'),
-                                                         "level": value.get('level')})
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:
@@ -475,9 +448,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                         }
                     ]
                 })
-                if self.enable_track:
-                    self.data_tracker.writeData('bands', {"name": value.get('name'),
-                                                          "level": value.get('level')})
+
                 if resp:
                     await handleResponse(response, connection, udp_client)
             except AssertionError:

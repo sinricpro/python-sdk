@@ -5,12 +5,11 @@
  *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
 """
 
-from ._dataTracker import DataTracker
 
 
 class LockStateController:
     def __init__(self):
-        self.lockState = DataTracker.readData("lockState")
+        self.lockState = ''
         pass
 
     async def setLockState(self, jsn, callback):

@@ -6,14 +6,11 @@
 """
 
 from ._jsoncommands import JSON_COMMANDS
-from ._dataTracker import DataTracker
 
 class SpeakerController:
 
     def __init__(self, x):
         self.band=0
-        self.bands = DataTracker.readData('bands')
-        self.band = self.bands.get('level')
 
 
     async def setBands(self, jsn, callback):

@@ -6,13 +6,11 @@
 """
 
 from ._jsoncommands import JSON_COMMANDS
-from ._dataTracker import DataTracker
 
 
 class PowerLevel:
     def __init__(self, x):
         self.power_level = x
-        self.power_level = DataTracker.readData('powerLevel')
 
 
 

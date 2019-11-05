@@ -6,12 +6,10 @@
 """
 
 from ._jsoncommands import JSON_COMMANDS
-from ._dataTracker import DataTracker
 
 class TemperatureController:
     def __init__(self, k):
         self.temperature = 0
-        self.temperature = DataTracker.readData('temperature')
         pass
 
     async def targetTemperature(self, jsn, callback):

@@ -6,11 +6,10 @@
 """
 
 from ._jsoncommands import JSON_COMMANDS
-from ._dataTracker import DataTracker
 
 class BrightnessController:
     def __init__(self, x):
-        self.brightness_level = DataTracker.readData('brightness')
+        self.brightness_level = x
 
     async def setBrightness(self, jsn, brightness_callback):
         self.brightness_level = jsn.get("payload").get("value").get("brightness")
