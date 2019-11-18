@@ -49,12 +49,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         self.logger = logger
         self.trace_response = trace_bool
 
-    def dumpData(self, key, val):
-        f = open('localdata.json', 'w')
-        data = load(f)
-        dump(data.update({key: val}), f)
-        f.close()
-
     async def handleCallBacks(self, dataArr, connection, udp_client):
 
         jsn = dataArr[0]
