@@ -21,7 +21,7 @@ from time import sleep
 
 appKey = '' # d89f1***-****-****-****-************
 secretKey = '' # f44d1d31-1c19-****-****-9bc96c34b5bb-d19f42dd-****-****-****-************
-device1 = '' #// 5d7e7d96069e275ea9******
+device1 = '' # 5d7e7d96069e275ea9******
 device2 = '' # 5d80ac5713fa175e99******
 deviceIdArr = [device1,device2]
 
@@ -30,8 +30,7 @@ def Events():
         # Select as per your requirements
         # REMOVE THE COMMENTS TO USE
         # client.event_handler.raiseEvent(device1, 'setPowerState',data={'state': 'On'})
-        sleep(2) #Sleep for 2 seconds 
-
+        pass
 def onPowerState(did, state):
     # Alexa, turn ON/OFF Device
     print(did, state)
@@ -51,6 +50,18 @@ if __name__ == '__main__':
     udp_client = SinricProUdp(callbacks,deviceIdArr,enable_trace=False)  # Set it to True to start logging request Offline Request/Response
     client.handle_all(udp_client)
 
+```
+
+### Credentials file (credential.py)
+
+```python
+appKey = 'd89f1***-****-****-****-************'
+secretKey = 'f44d1d31-1c19-****-****-9bc96c34b5bb-d19f42dd-****-****-****-************'
+deviceId1 = '5d7e7d96069e275ea9******'
+deviceId2 = ' 5j7e7d96069e275ea9******'
+deviceId3 = ' 5d7e7d96069e275ea9******'
+lock = ' 5d7e7d96069e275ea9******'
+deviceIdArr = [deviceId1, deviceId2, deviceId3, lock]
 ```
 
 ### Pro Switch [Demo](https://github.com/sinricpro/Python-Examples/tree/master/pro_switch_example):
