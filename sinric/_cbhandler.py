@@ -295,7 +295,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 self.logger.error(str(e))
 
 
-        elif jsn.get('payload').get('action') == 'setVolume':
+        elif jsn.get('payload').get('action') == JSON_COMMANDS.get('SETVOLUME'):
             try:
                 assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
 
