@@ -10,12 +10,12 @@ class Signature:
 
     def verifySignature(self, payload, signature) -> bool:
         self.myHmac = sinricHmac.new(self.secretKey.encode('utf-8'),
-                                     dumps(payload, separators=(',', ':'), sort_keys=True).encode('utf-8'), sha256)
+                                     dumps(payload, separators=(',', ':')).encode('utf-8'), sha256)
         return b64encode(self.myHmac.digest()).decode('utf-8') == signature
 
     def getSignature(self, payload) -> dict:
         replyHmac = sinricHmac.new(self.secretKey.encode('utf-8'),
-                                   dumps(payload, separators=(',', ':'), sort_keys=True).encode('utf-8'), sha256)
+                                   dumps(payload, separators=(',', ':')).encode('utf-8'), sha256)
 
         encodedHmac = b64encode(replyHmac.digest())
 
