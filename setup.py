@@ -9,9 +9,9 @@ from setuptools import setup
 import sys
 
 if sys.version_info < (3,6):
-    sys.exit('Sorry, Python < 3.7 is not supported')
+    sys.exit('Sorry, Python < 3.6 is not supported')
 
-VERSION = "2.2.3"
+VERSION = "2.2.4"
 
 with open('README.rst', 'r') as f:
     long_description = f.read()

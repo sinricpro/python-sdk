@@ -108,8 +108,8 @@ class Events(Signature):
             elif event_name == 'temperatureHumidityEvent':
                 self.logger.info('Raised TH event')
                 queue.put([jsnHandle("currentTemperature", deviceId, {
-                    "humidity": data.get('humidity'),
-                    "temperature": data.get('temperature')
+                    "temperature": data.get('temperature'),
+                    "humidity": data.get('humidity')
                 }), 'temp_hum_event_response'])
                 sleep(self.eventSleepTime)
 
