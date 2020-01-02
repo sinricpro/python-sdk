@@ -33,7 +33,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
     def __init__(self, callbacks, trace_bool, logger, enable_track=False, secretKey=""):
         self.myHmac = None
         self.secretKey = secretKey
-        self.bucket = LeakyBucket(10, 1000, 10000)
+        self.bucket = LeakyBucket(10, 1000, 60000)
         PowerLevel.__init__(self, 0)
         self.enable_track = enable_track
         BrightnessController.__init__(self, 0)
