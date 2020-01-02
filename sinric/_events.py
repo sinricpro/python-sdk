@@ -31,7 +31,7 @@ class Events(Signature):
         if data is None:
             data = {}
         try:
-            def jsnHandle(action, deviceId, value) -> dict:
+            def jsnHandle(action, deviceId, value, typeI="PHYSICAL_INTERACTION") -> dict:
                 header = {
                     "payloadVersion": 2,
                     "signatureVersion": 1
@@ -40,7 +40,7 @@ class Events(Signature):
                 payload = {
                     "action": action,
                     "cause": {
-                        "type": "PHYSICAL_INTERACTION"
+                        "type": typeI
                     },
                     "createdAt": int(time()),
                     "deviceId": deviceId,
@@ -108,9 +108,9 @@ class Events(Signature):
             elif event_name == 'temperatureHumidityEvent':
                 self.logger.info('Raised TH event')
                 queue.put([jsnHandle("currentTemperature", deviceId, {
-                    "temperature": data.get('temperature'),
-                    "humidity": data.get('humidity')
-                }), 'temp_hum_event_response'])
+                    "temperature": round(data.get('temperature'), 1),
+                    "humidity": round(data.get('humidity'), 1),
+                }, typeI="PERIODIC_POLL"), 'temp_hum_event_response'])
                 sleep(self.eventSleepTime)
 
             elif event_name == 'setThermostatMode':
