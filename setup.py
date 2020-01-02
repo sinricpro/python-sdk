@@ -8,10 +8,10 @@
 from setuptools import setup
 import sys
 
-if sys.version_info < (3,7):
+if sys.version_info < (3,6):
     sys.exit('Sorry, Python < 3.7 is not supported')
 
-VERSION = "2.2.2"
+VERSION = "2.2.3"
 
 with open('README.rst', 'r') as f:
     long_description = f.read()
