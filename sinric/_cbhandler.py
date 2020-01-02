@@ -21,6 +21,7 @@ from time import time, sleep
 from uuid import uuid4
 from ._lockController import LockStateController
 from ._signature import Signature
+from ._leafyBucket import LeakyBucket
 
 
 # TODO fix target temperature Duration
@@ -32,6 +33,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
     def __init__(self, callbacks, trace_bool, logger, enable_track=False, secretKey=""):
         self.myHmac = None
         self.secretKey = secretKey
+        self.bucket = LeakyBucket(10, 1000, 10000)
         PowerLevel.__init__(self, 0)
         self.enable_track = enable_track
         BrightnessController.__init__(self, 0)
@@ -512,97 +514,98 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 self.logger.error(str(e))
 
         ############################ EVENTS ###########################################################
-        if Trace == 'doorbell_event_response':
-            self.logger.info('Sending Doorbell Event Response')
-            await connection.send(dumps(jsn))
+        if self.bucket.addDrop():
+            if Trace == 'doorbell_event_response':
+                self.logger.info('Sending Doorbell Event Response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'temp_hum_event_response':
-            self.logger.info('Sending temperature humidity response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'temp_hum_event_response':
+                self.logger.info('Sending temperature humidity response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'setpowerstate_event_response':
-            self.logger.info('Sending setpowerstate_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'setpowerstate_event_response':
+                self.logger.info('Sending setpowerstate_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'setPowerLevel_event_response':
-            self.logger.info('Sending setPowerLevel_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'setPowerLevel_event_response':
+                self.logger.info('Sending setPowerLevel_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'setBrightness_event_response':
-            self.logger.info('Sending setBrightness_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'setBrightness_event_response':
+                self.logger.info('Sending setBrightness_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'setColor_event_response':
-            self.logger.info('Sending setColor_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'setColor_event_response':
+                self.logger.info('Sending setColor_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'setColorTemperature_event_response':
-            self.logger.info('Sending setColorTemperature_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'setColorTemperature_event_response':
+                self.logger.info('Sending setColorTemperature_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'setThermostatMode_event_response':
-            self.logger.info('Sending setThermostatMode_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'setThermostatMode_event_response':
+                self.logger.info('Sending setThermostatMode_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'setRangeValue_event_response':
-            self.logger.info('Sending setRangeValue_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'setRangeValue_event_response':
+                self.logger.info('Sending setRangeValue_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'motion_event_response':
-            self.logger.info('Sending motion_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'motion_event_response':
+                self.logger.info('Sending motion_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'contact_event_response':
-            self.logger.info('Sending contact_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'contact_event_response':
+                self.logger.info('Sending contact_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'set_volume_event_response':
-            self.logger.info('Sending set_volume_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'set_volume_event_response':
+                self.logger.info('Sending set_volume_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'select_input_event_response':
-            self.logger.info('Sending select_input_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'select_input_event_response':
+                self.logger.info('Sending select_input_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'media_control_event_response':
-            self.logger.info('Sending media_control_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'media_control_event_response':
+                self.logger.info('Sending media_control_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'change_channel_event_response':
-            self.logger.info('Sending change_channel_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'change_channel_event_response':
+                self.logger.info('Sending change_channel_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'set_bands_event_response':
-            self.logger.info('Sending set_bands_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'set_bands_event_response':
+                self.logger.info('Sending set_bands_event_response')
+                await connection.send(dumps(jsn))
 
 
 
-        elif Trace == 'set_mode_event_response':
-            self.logger.info('Sending set_mode_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'set_mode_event_response':
+                self.logger.info('Sending set_mode_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'set_lock_event_response':
-            self.logger.info('Sending set_lock_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'set_lock_event_response':
+                self.logger.info('Sending set_lock_event_response')
+                await connection.send(dumps(jsn))
 
 
-        elif Trace == 'reset_bands_event_response':
-            self.logger.info('Sending reset_bands_event_response')
-            await connection.send(dumps(jsn))
+            elif Trace == 'reset_bands_event_response':
+                self.logger.info('Sending reset_bands_event_response')
+                await connection.send(dumps(jsn))
