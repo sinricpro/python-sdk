@@ -65,8 +65,8 @@ deviceId3 = ' 5d7e7d96069e275ea9******'
 lock = ' 5d7e7d96069e275ea9******'
 deviceIdArr = [deviceId1, deviceId2, deviceId3, lock]
 ```
-~~~~
 ### Pro Switch [Demo](https://github.com/sinricpro/Python-Examples/tree/master/pro_switch_example):
+
 ```python
 from sinric import SinricPro
 from sinric import SinricProUdp
