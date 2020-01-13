@@ -2,11 +2,12 @@
 events/
 devices/
 cred*
+envsinric/
 test.py
 sinricpro_logfile*
 tests/
 test_bulb.py
-credentials.py
+credential.py
 test_eve*
 localdata*
 dist/
