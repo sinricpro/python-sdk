@@ -62,7 +62,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 self.logger.info(f"Response : {dumps(response)}")
             if Trace == 'socket_response':
                 await connection.send(dumps(response))
-            elif Trace == 'udp_response':
+            elif Trace == 'udp_response' and udp_client != None :
                 udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
 
         def jsnHandle(action, resp, dataDict) -> dict:
