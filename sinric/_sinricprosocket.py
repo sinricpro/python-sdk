@@ -11,6 +11,7 @@ from ._mainqueue import queue
 from ._cbhandler import CallBackHandler
 from ._signature import Signature
 from time import time
+from time import sleep
 
 class SinricProSocket(Signature):
 
@@ -61,5 +62,6 @@ class SinricProSocket(Signature):
 
     async def handle(self, udp_client):
         while True:
+            sleep(1)                    
             while queue.qsize() > 0:
                 await self.callbackHandler.handleCallBacks(queue.get(), self.connection, udp_client)
