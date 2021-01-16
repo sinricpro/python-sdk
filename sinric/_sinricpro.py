@@ -51,12 +51,12 @@ class SinricPro:
 
         asyncio.get_event_loop().run_until_complete(asyncio.wait(tasks))
 
-    def handle_clients(self, handle, udp_client):
-        asyncio.new_event_loop().run_until_complete(handle(udp_client))
+    def handle_clients(self, handle, udp_client, sleep=0):
+        asyncio.new_event_loop().run_until_complete(handle(udp_client,sleep))
 
-    def handle_all(self, udp_client=None):
+    def handle_all(self, udp_client=None, sleep=0):
         try:
-            t1 = Thread(target=self.handle_clients, args=(self.socket.handle, udp_client))
+            t1 = Thread(target=self.handle_clients, args=(self.socket.handle, udp_client, sleep))
             t1.setDaemon(True)
             t1.start()
             if udp_client != None:

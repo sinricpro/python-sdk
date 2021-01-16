@@ -11,7 +11,7 @@ from ._mainqueue import queue
 from ._cbhandler import CallBackHandler
 from ._signature import Signature
 from time import time
-
+import asyncio
 class SinricProSocket(Signature):
 
     def __init__(self, appKey, deviceId, callbacks, enable_trace=False, logger=None, restore_states=False,
@@ -59,7 +59,8 @@ class SinricProSocket(Signature):
                 self.logger.exception(e)
                 break
 
-    async def handle(self, udp_client):
+    async def handle(self, udp_client, sleep = 0):
         while True:
+            await asyncio.sleep(sleep)
             while queue.qsize() > 0:
                 await self.callbackHandler.handleCallBacks(queue.get(), self.connection, udp_client)
