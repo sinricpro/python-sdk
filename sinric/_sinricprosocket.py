@@ -30,7 +30,7 @@ class SinricProSocket(Signature):
         Signature.__init__(self, self.secretKey)
 
     async def connect(self):  # Producer
-        self.connection = await websockets.client.connect('ws://ws.sinric.pro',
+        self.connection = await websockets.connect('ws://ws.sinric.pro',
                                                           extra_headers={'appkey': self.appKey,
                                                                          'deviceids': ';'.join(self.deviceIds),
                                                                          'platform': 'python',
