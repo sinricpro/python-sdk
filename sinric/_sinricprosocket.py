@@ -5,7 +5,7 @@
  *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
 """
 
-import websockets
+from websockets import client
 import json
 from ._mainqueue import queue
 from ._cbhandler import CallBackHandler
@@ -15,7 +15,7 @@ import asyncio
 class SinricProSocket(Signature):
 
     def __init__(self, appKey, deviceId, callbacks, enable_trace=False, logger=None, restore_states=False,
-                 secretKey=""):
+                 secretKey="", loopDelay=0.5):
         self.appKey = appKey
         self.secretKey = secretKey
         self.restore_states = restore_states
@@ -23,6 +23,7 @@ class SinricProSocket(Signature):
         self.deviceIds = deviceId
         self.connection = None
         self.callbacks = callbacks
+        self.loopDelay = loopDelay
 
         self.callbackHandler = CallBackHandler(self.callbacks, enable_trace, self.logger, self.restore_states,
                                                secretKey=self.secretKey)
@@ -30,7 +31,7 @@ class SinricProSocket(Signature):
         Signature.__init__(self, self.secretKey)
 
     async def connect(self):  # Producer
-        self.connection = await websockets.client.connect('ws://ws.sinric.pro',
+        self.connection = await client.connect('ws://ws.sinric.pro',
                                                           extra_headers={'appkey': self.appKey,
                                                                          'deviceids': ';'.join(self.deviceIds),
                                                                          'platform': 'python',
@@ -54,13 +55,14 @@ class SinricProSocket(Signature):
                     self.logger.info(f"Request : {message}")
                 requestJson = json.loads(message)
                 queue.put([requestJson, 'socket_response'])
+                await asyncio.sleep(self.loopDelay)
             except websockets.exceptions.ConnectionClosed as e:
                 self.logger.info('Connection with server closed')
                 self.logger.exception(e)
                 break
 
-    async def handle(self, udp_client, sleep = 0):
+    async def handleQueue(self, udp_client):
         while True:
-            await asyncio.sleep(sleep)
+            await asyncio.sleep(self.loopDelay)
             while queue.qsize() > 0:
                 await self.callbackHandler.handleCallBacks(queue.get(), self.connection, udp_client)

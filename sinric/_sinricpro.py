@@ -29,7 +29,7 @@ class SinricPro:
             self.request_callbacks = request_callbacks
             self.socket = SinricProSocket(self.apiKey, self.deviceid, self.request_callbacks, enable_log, self.logger,
                                           self.restore_states, self.secretKey)
-            self.connection = asyncio.get_event_loop().run_until_complete(self.socket.connect())
+            self.connection = None
             self.event_callbacks = event_callbacks
             self.event_handler = Events(self.connection, self.logger, self.secretKey)
         except AssertionError as e:
@@ -54,23 +54,33 @@ class SinricPro:
     def handle_clients(self, handle, udp_client, sleep=0):
         asyncio.new_event_loop().run_until_complete(handle(udp_client,sleep))
 
-    def handle_all(self, udp_client=None, sleep=0):
+    async def connect(self, udp_client=None, sleep=0):
+        
         try:
-            t1 = Thread(target=self.handle_clients, args=(self.socket.handle, udp_client, sleep))
-            t1.setDaemon(True)
-            t1.start()
-            if udp_client != None:
-                print('Yes udp')
-                t2 = Thread(target=udp_client.listen)
-                t2.setDaemon(True)
-                t2.start()
-            if self.event_callbacks != None:
-                t3 = Thread(target=self.event_callbacks['Events'])
-                t3.setDaemon(True)
-                t3.start()
-            self.handle()
-        except KeyboardInterrupt:
-            self.logger.error("Keyboard Interrupt")
-            sys.exit(1)
-        except Exception as e:
-            self.logger.error(str(e))
+            self.connection = await self.socket.connect()
+            receiveMessageTask = asyncio.create_task(self.socket.receiveMessage(connection=self.connection))
+            handleQueueTask = asyncio.create_task(self.socket.handleQueue(udp_client=udp_client))
+            await receiveMessageTask
+            await handleQueueTask
+
+        except:
+            print('error')
+        # try:
+        #     t1 = Thread(target=self.handle_clients, args=(self.socket.handle, udp_client, sleep))
+        #     t1.setDaemon(True)
+        #     t1.start()
+        #     if udp_client != None:
+        #         print('Yes udp')
+        #         t2 = Thread(target=udp_client.listen)
+        #         t2.setDaemon(True)
+        #         t2.start()
+        #     if self.event_callbacks != None:
+        #         t3 = Thread(target=self.event_callbacks['Events'])
+        #         t3.setDaemon(True)
+        #         t3.start()
+        #     self.handle()
+        # except KeyboardInterrupt:
+        #     self.logger.error("Keyboard Interrupt")
+        #     sys.exit(1)
+        # except Exception as e:
+        #     self.logger.error(str(e))
