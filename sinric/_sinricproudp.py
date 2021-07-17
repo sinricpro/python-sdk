@@ -8,14 +8,16 @@
 import socket
 from ._mainqueue import queue
 import json
+from asyncio import sleep
 import struct
 
 
 class SinricProUdp:
-    def __init__(self, callbacks_udp, deviceIdArr,enable_trace=False):
+    def __init__(self, callbacks_udp, deviceIdArr,enable_trace=False, loopDelay=0.5):
         self.callbacks = callbacks_udp
         self.deviceIdArr = deviceIdArr
         self.enablePrint = enable_trace
+        self.loopDelay = loopDelay
         self.udp_ip = '224.9.9.9'
         self.udp_port = 3333
         self.address = ('', self.udp_port)
@@ -28,8 +30,9 @@ class SinricProUdp:
     def sendResponse(self, data, sender):
         self.sockServ.sendto(data, sender)
 
-    def listen(self):
+    async def listen(self):
         while True:
+            await sleep()
             data, addr = self.sockServ.recvfrom(1024)
             jsonData = json.loads(data.decode('ascii'))
             if jsonData.get('payload', None).get('deviceId', None) in self.deviceIdArr:

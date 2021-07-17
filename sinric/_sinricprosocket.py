@@ -6,6 +6,7 @@
 """
 
 from websockets import client
+from websockets.exceptions import ConnectionClosed
 import json
 from ._mainqueue import queue
 from ._cbhandler import CallBackHandler
@@ -56,7 +57,7 @@ class SinricProSocket(Signature):
                 requestJson = json.loads(message)
                 queue.put([requestJson, 'socket_response'])
                 await asyncio.sleep(self.loopDelay)
-            except websockets.exceptions.ConnectionClosed as e:
+            except ConnectionClosed as e:
                 self.logger.info('Connection with server closed')
                 self.logger.exception(e)
                 break

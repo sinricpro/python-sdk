@@ -44,15 +44,9 @@ class SinricPro:
                 return False
         return True
 
-    def handle(self):
-        tasks = [
-            asyncio.ensure_future(self.socket.receiveMessage(self.connection)),
-        ]
-
-        asyncio.get_event_loop().run_until_complete(asyncio.wait(tasks))
-
-    def handle_clients(self, handle, udp_client, sleep=0):
-        asyncio.new_event_loop().run_until_complete(handle(udp_client,sleep))
+    async def startUdpClient(udp_client):
+        if(udp_client):
+          await udp_client.listen()
 
     async def connect(self, udp_client=None, sleep=0):
         
@@ -60,27 +54,12 @@ class SinricPro:
             self.connection = await self.socket.connect()
             receiveMessageTask = asyncio.create_task(self.socket.receiveMessage(connection=self.connection))
             handleQueueTask = asyncio.create_task(self.socket.handleQueue(udp_client=udp_client))
+            handleUdpQueueTask = asyncio.create_task(self.startUdpClient())
             await receiveMessageTask
             await handleQueueTask
-
-        except:
-            print('error')
-        # try:
-        #     t1 = Thread(target=self.handle_clients, args=(self.socket.handle, udp_client, sleep))
-        #     t1.setDaemon(True)
-        #     t1.start()
-        #     if udp_client != None:
-        #         print('Yes udp')
-        #         t2 = Thread(target=udp_client.listen)
-        #         t2.setDaemon(True)
-        #         t2.start()
-        #     if self.event_callbacks != None:
-        #         t3 = Thread(target=self.event_callbacks['Events'])
-        #         t3.setDaemon(True)
-        #         t3.start()
-        #     self.handle()
-        # except KeyboardInterrupt:
-        #     self.logger.error("Keyboard Interrupt")
-        #     sys.exit(1)
-        # except Exception as e:
-        #     self.logger.error(str(e))
+            await handleUdpQueueTask
+        except KeyboardInterrupt:
+            self.logger.error('Keyboard interrupt')
+        except Exception as e:
+            self.logger.error(e)
+        
