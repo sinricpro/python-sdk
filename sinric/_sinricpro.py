@@ -18,17 +18,18 @@ logger.add("{}.log".format("sinricpro_logfile"), rotation="10 MB")
 
 class SinricPro:
     def __init__(self, api, deviceid, request_callbacks, event_callbacks=None, enable_log=False, restore_states=False,
-                 secretKey=""):
+                 secretKey="", loopDelay=0.5):
         try:
             assert (self.verifyDeviceIdArr(deviceid))
             self.restore_states = restore_states
             self.apiKey = api
+            self.loopDelay = loopDelay
             self.secretKey = secretKey
             self.deviceid = deviceid
             self.logger = logger
             self.request_callbacks = request_callbacks
             self.socket = SinricProSocket(self.apiKey, self.deviceid, self.request_callbacks, enable_log, self.logger,
-                                          self.restore_states, self.secretKey)
+                                          self.restore_states, self.secretKey, loopDelay=loopDelay)
             self.connection = None
             self.event_callbacks = event_callbacks
             self.event_handler = Events(self.connection, self.logger, self.secretKey)
