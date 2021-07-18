@@ -3,7 +3,7 @@ events/
 devices/
 cred*
 envsinric/
-test.py
+test*.py
 sinricpro_logfile*
 tests/
 test_bulb.py
