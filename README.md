@@ -53,10 +53,13 @@ callbacks = {
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
+
     client = SinricPro(appKey, deviceIdArr, callbacks,event_callbacks=eventsCallbacks,
     enable_log=False,restore_states=True,secretKey=secretKey, loopDelay=0.5)
+
     udp_client = SinricProUdp(callbacks,deviceIdArr,
     enable_trace=False,loopDelay=0.5, loopInstance=loop)  # Set enable_trace to True to start logging request Offline Request/Response
+
     loop.run_until_complete(client.connect(udp_client=udp_client))
 
 ```
@@ -102,7 +105,13 @@ callbacks = {
 }
 
 if __name__ == '__main__':
-    client = SinricPro(appKey, deviceIdArr, callbacks,event_callbacks=eventsCallbacks, restore_states=False,secretKey=secretKey)
-    udp_client = SinricProUdp(callbacks,deviceIdArr,enable_trace=False)  # Set it to True to start logging request Offline Request/Response
-    client.handle_all(udp_client, sleep=1)
+   loop = asyncio.get_event_loop()
+
+    client = SinricPro(appKey, deviceIdArr, callbacks,event_callbacks=eventsCallbacks,
+    enable_log=False,restore_states=True,secretKey=secretKey, loopDelay=0.5)
+
+    udp_client = SinricProUdp(callbacks,deviceIdArr,
+    enable_trace=False,loopDelay=0.5, loopInstance=loop)  # Set enable_trace to True to start logging request Offline Request/Response
+
+    loop.run_until_complete(client.connect(udp_client=udp_client))
 ```
