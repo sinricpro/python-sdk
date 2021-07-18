@@ -39,7 +39,7 @@ class SinricProUdp:
         self.deviceIdArr = deviceIdArr
         self.enablePrint = enable_trace
         self.loopInstance = loopInstance
-        self.loopDelay = loopDelay
+        self.loopDelay = loopDelay if loopDelay > 0 else 0.5
         self.udp_ip = '224.9.9.9'
         self.udp_port = 3333
         self.address = ('', self.udp_port)
