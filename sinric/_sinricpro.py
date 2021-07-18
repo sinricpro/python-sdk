@@ -45,17 +45,16 @@ class SinricPro:
                 return False
         return True
 
-    async def startUdpClient(udp_client):
-        if(udp_client):
+    async def startUdpClient(self,udp_client):
+        if udp_client:
           await udp_client.listen()
 
-    async def connect(self, udp_client=None, sleep=0):
-        
+    async def connect(self, udp_client=None, sleep=0):        
         try:
             self.connection = await self.socket.connect()
             receiveMessageTask = asyncio.create_task(self.socket.receiveMessage(connection=self.connection))
+            handleUdpQueueTask = asyncio.create_task(self.startUdpClient(udp_client))
             handleQueueTask = asyncio.create_task(self.socket.handleQueue(udp_client=udp_client))
-            handleUdpQueueTask = asyncio.create_task(self.startUdpClient())
             await receiveMessageTask
             await handleQueueTask
             await handleUdpQueueTask
