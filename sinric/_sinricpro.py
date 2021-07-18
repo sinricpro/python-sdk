@@ -23,7 +23,7 @@ class SinricPro:
             assert (self.verifyDeviceIdArr(deviceid))
             self.restore_states = restore_states
             self.apiKey = api
-            self.loopDelay = loopDelay
+            self.loopDelay = loopDelay if loopDelay > 0 else 0.5
             self.secretKey = secretKey
             self.deviceid = deviceid
             self.logger = logger
