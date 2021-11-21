@@ -34,7 +34,4 @@ class SpeakerController:
         band1 = value.get('bands')[0]
         band2 = value.get('bands')[1]
         band3 = value.get('bands')[2]
-        return callback(jsn.get("payload").get(JSON_COMMANDS.get('DEVICEID')), band1, band2, band3)
-
-    async def setMode(self, jsn, callback):
-        return callback(jsn.get("payload").get(JSON_COMMANDS.get('DEVICEID')), jsn.get("payload").get('value').get('mode'))
+        return callback(jsn.get("payload").get(JSON_COMMANDS.get('DEVICEID')), band1, band2, band3) 

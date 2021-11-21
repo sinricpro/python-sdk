@@ -46,5 +46,5 @@ JSON_COMMANDS = {
     'ADJUSTVOLUME': 'adjustVolume',
     'SETMUTE': 'setMute',
     'MEDIACONTROL': 'mediaControl',
-
+    'INSTANCE_ID' : 'instanceId'
 }
