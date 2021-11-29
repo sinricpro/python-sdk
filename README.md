@@ -6,6 +6,10 @@
 [![](https://img.shields.io/github/repo-size/sinricpro/Python-SDK.svg)](https://github.com/sinricpro/Python-SDK)
 [![](https://img.shields.io/badge/author-Dhanush-orange.svg)](https://github.com/imdhanush)
 
+### Dependencies
+Python 3.9.7
+websockets 8.1
+
 ### Check the examples [here](https://github.com/sinricpro/Python-Examples)
 
 ### How to set it up? click [here](https://dev.to/imdhanush/automation-with-alexa-jo)
