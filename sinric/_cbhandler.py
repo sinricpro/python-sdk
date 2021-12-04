@@ -5,6 +5,7 @@
  *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
 """
 
+from re import X
 from ._powerController import PowerController
 from ._brightnessController import BrightnessController
 from ._jsoncommands import JSON_COMMANDS
@@ -16,12 +17,13 @@ from ._rangeValueController import RangeValueController
 from ._temperatureController import TemperatureController
 from ._tvcontorller import TvController
 from ._speakerController import SpeakerController
+from ._modeController import ModeController
 from json import dumps, load, dump
 from time import time, sleep
 from uuid import uuid4
 from ._lockController import LockStateController
 from ._signature import Signature
-from ._leafyBucket import LeakyBucket
+from ._leakyBucket import LeakyBucket
 
 
 # TODO fix target temperature Duration
@@ -29,7 +31,7 @@ from ._leafyBucket import LeakyBucket
 # noinspection PyBroadException
 class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorController, ColorTemperatureController,
                       ThermostateMode, RangeValueController, TemperatureController, TvController, SpeakerController,
-                      LockStateController, Signature):
+                      LockStateController, ModeController, Signature):
     def __init__(self, callbacks, trace_bool, logger, enable_track=False, secretKey=""):
         self.myHmac = None
         self.secretKey = secretKey
@@ -46,6 +48,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         LockStateController.__init__(self)
         Signature.__init__(self, self.secretKey)
         SpeakerController.__init__(self, 0)
+        ModeController.__init__(self, 0)
         ColorTemperatureController.__init__(self, 0, [2200, 2700, 4000, 5500, 7000])
         self.callbacks = callbacks
         self.logger = logger
@@ -65,7 +68,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
             elif Trace == 'udp_response' and udp_client != None :
                 udp_client.sendResponse(dumps(response).encode('ascii'), dataArr[2])
 
-        def jsnHandle(action, resp, dataDict) -> dict:
+        def jsnHandle(action, resp, dataDict, instanceId='') -> dict:
             header = {
                 "payloadVersion": 2,
                 "signatureVersion": 1
@@ -81,6 +84,9 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 "type": "response",
                 "value": dataDict
             }
+ 
+            if instanceId:
+                payload['instanceId'] = instanceId
 
             signature = self.getSignature(payload)
 
@@ -235,10 +241,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         elif jsn.get('payload').get('action') == JSON_COMMANDS.get('SETRANGEVALUE'):
             try:
                 assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
-                resp, value = await self.setRangeValue(jsn, self.callbacks.get('setRangeValue'))
+                resp, value, instanceId = await self.setRangeValue(jsn, self.callbacks.get('setRangeValue'))
                 response = jsnHandle(action="setRangeValue", resp=resp, dataDict={
-                    "rangeValue": value
-                })
+                    "rangeValue": value                    
+                }, instanceId=instanceId)
 
                 if resp:
                     await handleResponse(response, connection, udp_client)
@@ -485,10 +491,10 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         elif jsn.get('payload').get('action') == 'setMode':
             try:
                 assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
-                resp, value = await self.setMode(jsn, self.callbacks.get('setMode'))
+                resp, value, instanceId = await self.setMode(jsn, self.callbacks.get('setMode'))
                 response = jsnHandle(action="setMode", resp=resp, dataDict={
                     "mode": value
-                })
+                }, instanceId=instanceId)
 
                 if resp:
                     await handleResponse(response, connection, udp_client)
