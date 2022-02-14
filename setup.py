@@ -26,7 +26,7 @@ setup(
     long_description=long_description,
     url="https://github.com/sinricpro/python-sdk",
     packages=['sinric'],
-    install_requires=["websockets==8.1","loguru"],
+    install_requires=["websockets==9.1","loguru"],
     keywords=['alexa', 'alexa-skill', 'sinric', 'sinric-alexa-skill', 'alexa-home-automation', 'sinric-pro',
               'sinric-pro-alexa-skill'],
     classifiers=[
