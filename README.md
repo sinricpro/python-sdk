@@ -8,7 +8,7 @@
 
 ## Dependencies
 * Python 3.9.7 or newer
-* websockets 8.1
+* websockets 10.1
 ### Install
 
        pip install sinricpro --user
