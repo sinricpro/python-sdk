@@ -64,7 +64,7 @@ class Events(Signature):
 
             elif event_name == JSON_COMMANDS.get('SETBRIGHTNESS'):
                 queue.put([jsnHandle("setBrightness", deviceId, {
-                    "powerLevel": data.get('brightness')
+                    "brightness": data.get('brightness')
                 }), 'setBrightness_event_response'])
 
 
