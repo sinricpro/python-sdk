@@ -17,4 +17,4 @@
 
        pip install sinricpro --upgrade --user
 
-### Check the examples [here](https://github.com/sinricpro/Python-Examples) 
+### Check the examples [here](https://github.com/sinricpro/python-sdk/examples) 

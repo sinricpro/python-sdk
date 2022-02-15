@@ -13,6 +13,7 @@ from ._cbhandler import CallBackHandler
 from ._signature import Signature
 from time import time
 import asyncio
+import pkg_resources
 class SinricProSocket(Signature):
 
     def __init__(self, appKey, deviceId, callbacks, enable_trace=False, logger=None, restore_states=False,
@@ -32,10 +33,12 @@ class SinricProSocket(Signature):
         Signature.__init__(self, self.secretKey)
 
     async def connect(self):  # Producer
+        sdk_version = pkg_resources.require("sinricpro")[0].version
         self.connection = await client.connect('ws://ws.sinric.pro',
                                                           extra_headers={'appkey': self.appKey,
                                                                          'deviceids': ';'.join(self.deviceIds),
                                                                          'platform': 'python',
+                                                                         'sdkversion' : sdk_version,
                                                                          'restoredevicestates': (
                                                                              'true' if self.restore_states else 'false')},
                                                           ping_interval=30000, ping_timeout=10000)
@@ -44,8 +47,6 @@ class SinricProSocket(Signature):
             timestamp  = await self.connection.recv()
             if(int(time()) - json.loads(timestamp).get('timestamp') > 60000):
                 self.logger.warning(f'Timestamp is not in sync check your system time. 🙄🙄🙄🙄🙄:(')
-            else:
-                self.logger.success(f'Timestamp is in sync :)')
             return self.connection
 
     async def receiveMessage(self, connection):
