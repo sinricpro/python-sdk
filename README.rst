@@ -16,4 +16,4 @@ Python3
 Examples :
 --------------
 
-https://github.com/sinricpro/python-examples
+https://github.com/sinricpro/python-sdk/examples
