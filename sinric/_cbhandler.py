@@ -55,9 +55,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         self.trace_response = trace_bool
 
     async def handleCallBacks(self, dataArr, connection, udp_client):
-
         jsn = dataArr[0]
-
         Trace = dataArr[1]
 
         async def handleResponse(response, connection, udp_client):
@@ -634,3 +632,11 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
             if self.bucket.addDrop():
                 self.logger.info('Sending reset_bands_event_response')
                 await connection.send(dumps(jsn))
+
+        elif Trace == 'pushNotification_event_response':
+            if self.bucket.addDrop():
+                self.logger.info('Sending pushNotification_event')
+                await connection.send(dumps(jsn))
+
+        else:
+            self.logger.info(Trace + ' not found!')
