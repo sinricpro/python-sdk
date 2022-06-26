@@ -10,7 +10,7 @@ import sys
 if sys.version_info < (3,6):
     sys.exit('Sorry, Python < 3.6 is not supported')
 
-VERSION = "2.6.1"
+VERSION = "2.6.2"
 
 with open('README.rst', 'r') as f:
     long_description = f.read()
@@ -26,8 +26,7 @@ setup(
     url="https://github.com/sinricpro/python-sdk",
     packages=['sinric'],
     install_requires=["websockets==10.1","loguru"],
-    keywords=['alexa', 'alexa-skill', 'sinric', 'sinric-alexa-skill', 'alexa-home-automation', 'sinric-pro',
-              'sinric-pro-alexa-skill'],
+    keywords=['sinric', 'sinric-pro'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
