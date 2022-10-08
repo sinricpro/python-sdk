@@ -25,5 +25,5 @@ callbacks = {
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    client = SinricPro(APP_KEY, [DEVICE_ID], callbacks, enable_log=True, restore_states=False, secretKey=APP_SECRET)
+    client = SinricPro(APP_KEY, [DEVICE_ID], callbacks, enable_log=False, restore_states=False, secretKey=APP_SECRET)
     loop.run_until_complete(client.connect())

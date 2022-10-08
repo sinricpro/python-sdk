@@ -60,8 +60,7 @@ class SinricProSocket(Signature):
                 await asyncio.sleep(self.loopDelay)
             except ConnectionClosed as e:
                 self.logger.info('Connection with server closed')
-                self.logger.exception(e)
-                break
+                raise e
 
     async def handleQueue(self):
         while True:
