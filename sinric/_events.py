@@ -13,7 +13,8 @@ from ._signature import Signature
 
 eventNames = {
     'door_bell_event': 'doorBellEvent',
-    'th_event': 'temperatureHumidityEvent'
+    'th_event': 'temperatureHumidityEvent',
+    'pushNotification_event' : 'pushNotificationEvent'
 }
 
 
@@ -47,14 +48,13 @@ class Events(Signature):
                     "type": "event",
                     "value": value
                 }
+                
                 signature = self.getSignature(payload)
                 return {"header": header, "payload": payload, "signature": signature}
 
             if event_name == JSON_COMMANDS.get('SETPOWERSTATE'):
                 queue.put([jsnHandle("setPowerState", deviceId, {"state": data.get("state", "Off")}),
                            'setpowerstate_event_response'])
-
-
 
             elif event_name == JSON_COMMANDS.get('SETPOWERLEVEL'):
                 queue.put([jsnHandle("setPowerLevel", deviceId, {
@@ -77,15 +77,10 @@ class Events(Signature):
                     }
                 }), 'setColor_event_response'])
 
-
-
             elif event_name == JSON_COMMANDS.get('SETCOLORTEMPERATURE'):
                 queue.put([jsnHandle("setColorTemperature", deviceId, {
                     "colorTemperature": 2400
                 }), 'setColorTemperature_event_response'])
-
-
-            ##########################DOOR BELL EVENT####################################
 
             elif event_name == 'doorBellEvent':
                 queue.put([jsnHandle("DoorbellPress", deviceId, {
@@ -99,6 +94,10 @@ class Events(Signature):
                     "humidity": round(data.get('humidity'), 1),
                 }, typeI="PERIODIC_POLL"), 'temp_hum_event_response'])
 
+            elif event_name == 'pushNotification':
+                queue.put([jsnHandle("pushNotification", deviceId, {
+                    "alert": data.get('alert'),
+                }), 'pushNotification_event_response'])
 
             elif event_name == 'setThermostatMode':
                 queue.put([jsnHandle("setThermostatMode", deviceId, {
@@ -200,6 +199,8 @@ class Events(Signature):
                     "mute": data.get('mute', False)
                 }), 'reset_bands_event_response'])
 
+            else:
+                self.logger.exception('Event :' + event_name + ' not found!')
 
         except Exception:
             self.logger.exception('Error Occurred')

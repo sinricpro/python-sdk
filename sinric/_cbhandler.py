@@ -55,9 +55,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
         self.trace_response = trace_bool
 
     async def handleCallBacks(self, dataArr, connection, udp_client):
-
         jsn = dataArr[0]
-
         Trace = dataArr[1]
 
         async def handleResponse(response, connection, udp_client):
@@ -253,8 +251,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
             except Exception as e:
                 self.logger.error(str(e))
 
-
-
         elif jsn.get('payload').get('action') == JSON_COMMANDS.get('ADJUSTRANGEVALUE'):
             try:
                 assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
@@ -302,7 +298,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
             except Exception as e:
                 self.logger.error(str(e))
 
-
         elif jsn.get('payload').get('action') == JSON_COMMANDS.get('SETVOLUME'):
             try:
                 assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
@@ -319,8 +314,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
             except Exception as e:
                 self.logger.error(str(e))
 
-
-
         elif jsn.get('payload').get('action') == 'adjustVolume':
             try:
                 assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
@@ -336,8 +329,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
-
-
 
         elif jsn.get('payload').get('action') == 'mediaControl':
             try:
@@ -367,7 +358,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
             except Exception as e:
                 self.logger.error(str(e))
 
-
         elif jsn.get('payload').get('action') == 'changeChannel':
             try:
                 assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
@@ -384,7 +374,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
-
 
         elif jsn.get('payload').get('action') == 'skipChannels':
             try:
@@ -458,7 +447,6 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
             except Exception as e:
                 self.logger.error(str(e))
 
-
         elif jsn.get('payload').get('action') == 'resetBands':
             try:
                 assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
@@ -484,10 +472,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
-
-
-
-
+ 
         elif jsn.get('payload').get('action') == 'setMode':
             try:
                 assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
@@ -502,8 +487,7 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
                 self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
             except Exception as e:
                 self.logger.error(str(e))
-
-
+ 
         elif jsn.get('payload').get('action') == 'setLockState':
             try:
                 assert (self.verifySignature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
@@ -519,118 +503,107 @@ class CallBackHandler(PowerLevel, PowerController, BrightnessController, ColorCo
             except Exception as e:
                 self.logger.error(str(e))
 
-            ############################ EVENTS ###########################################################
+        ############################ EVENTS ###########################################################
 
         if Trace == 'doorbell_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending Doorbell Event Response')
                 await connection.send(dumps(jsn))
 
-
         elif Trace == 'temp_hum_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending temperature humidity response')
                 await connection.send(dumps(jsn))
-
 
         elif Trace == 'setpowerstate_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending setpowerstate_event_response')
                 await connection.send(dumps(jsn))
 
-
         elif Trace == 'setPowerLevel_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending setPowerLevel_event_response')
                 await connection.send(dumps(jsn))
-
 
         elif Trace == 'setBrightness_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending setBrightness_event_response')
                 await connection.send(dumps(jsn))
 
-
         elif Trace == 'setColor_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending setColor_event_response')
                 await connection.send(dumps(jsn))
-
 
         elif Trace == 'setColorTemperature_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending setColorTemperature_event_response')
                 await connection.send(dumps(jsn))
 
-
         elif Trace == 'setThermostatMode_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending setThermostatMode_event_response')
                 await connection.send(dumps(jsn))
-
 
         elif Trace == 'setRangeValue_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending setRangeValue_event_response')
                 await connection.send(dumps(jsn))
 
-
         elif Trace == 'motion_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending motion_event_response')
                 await connection.send(dumps(jsn))
-
 
         elif Trace == 'contact_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending contact_event_response')
                 await connection.send(dumps(jsn))
 
-
         elif Trace == 'set_volume_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending set_volume_event_response')
                 await connection.send(dumps(jsn))
-
 
         elif Trace == 'select_input_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending select_input_event_response')
                 await connection.send(dumps(jsn))
 
-
         elif Trace == 'media_control_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending media_control_event_response')
                 await connection.send(dumps(jsn))
-
 
         elif Trace == 'change_channel_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending change_channel_event_response')
                 await connection.send(dumps(jsn))
 
-
         elif Trace == 'set_bands_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending set_bands_event_response')
                 await connection.send(dumps(jsn))
-
-
 
         elif Trace == 'set_mode_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending set_mode_event_response')
                 await connection.send(dumps(jsn))
 
-
         elif Trace == 'set_lock_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending set_lock_event_response')
                 await connection.send(dumps(jsn))
 
-
         elif Trace == 'reset_bands_event_response':
             if self.bucket.addDrop():
                 self.logger.info('Sending reset_bands_event_response')
                 await connection.send(dumps(jsn))
+
+        elif Trace == 'pushNotification_event_response':
+            if self.bucket.addDrop():
+                self.logger.info('Sending pushNotification_event')
+                await connection.send(dumps(jsn))
+
+        #else:
+        #    self.logger.info(Trace + ' not found!')

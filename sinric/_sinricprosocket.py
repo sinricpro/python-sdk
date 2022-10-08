@@ -62,8 +62,9 @@ class SinricProSocket(Signature):
                 self.logger.info('Connection with server closed')
                 raise e
 
-    async def handleQueue(self, udp_client):
+    async def handleQueue(self):
         while True:
             await asyncio.sleep(self.loopDelay)
+            
             while queue.qsize() > 0:
-                await self.callbackHandler.handleCallBacks(queue.get(), self.connection, udp_client)
+                await self.callbackHandler.handleCallBacks(queue.get(), self.connection, None)

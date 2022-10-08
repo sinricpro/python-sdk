@@ -20,7 +20,7 @@ class SinricPro:
     def __init__(self, api, deviceid, request_callbacks, event_callbacks=None, enable_log=False, restore_states=False,
                  secretKey="", loopDelay=0.5):
         try:
-            assert (self.verifyDeviceIdArr(deviceid))
+            assert (self.verify_deviceId_arr(deviceid))
             self.restore_states = restore_states
             self.apiKey = api
             self.loopDelay = loopDelay if loopDelay > 0 else 0.5
@@ -33,31 +33,34 @@ class SinricPro:
             self.connection = None
             self.event_callbacks = event_callbacks
             self.event_handler = Events(self.connection, self.logger, self.secretKey)
+
+            
         except AssertionError as e:
             logger.error("Device Id verification failed")
             sys.exit(0)
 
-    def verifyDeviceIdArr(self, deviceIdArr):
-        Arr = deviceIdArr
-        for i in Arr:
+    def verify_deviceId_arr(self, deviceid_arr):
+        arr = deviceid_arr
+        for i in arr:
             res = re.findall(r'^[a-fA-F0-9]{24}$', i)
             if len(res) == 0:
                 return False
         return True
-
-    async def startUdpClient(self,udp_client):
-        if udp_client:
-          await udp_client.listen()
+ 
 
     async def connect(self, udp_client=None, sleep=0):        
         try:
             self.connection = await self.socket.connect()
-            receiveMessageTask = asyncio.create_task(self.socket.receiveMessage(connection=self.connection))
-            handleUdpQueueTask = asyncio.create_task(self.startUdpClient(udp_client))
-            handleQueueTask = asyncio.create_task(self.socket.handleQueue(udp_client=udp_client))
-            await receiveMessageTask
-            await handleQueueTask
-            await handleUdpQueueTask
+            receive_message_task = asyncio.create_task(self.socket.receiveMessage(connection=self.connection))
+            handle_queue_task = asyncio.create_task(self.socket.handleQueue())
+            
+            await receive_message_task
+            await handle_queue_task
+
+            if self.event_callbacks is not None:
+                handle_event_queue_task = asyncio.create_task(self.event_callbacks())
+                await handle_event_queue_task             
+
         except KeyboardInterrupt:
             self.logger.error('Keyboard interrupt')
         except Exception as e:
