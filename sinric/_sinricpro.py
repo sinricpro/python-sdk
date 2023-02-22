@@ -53,14 +53,14 @@ class SinricPro:
             self.connection = await self.socket.connect()
             receive_message_task = asyncio.create_task(self.socket.receiveMessage(connection=self.connection))
             handle_queue_task = asyncio.create_task(self.socket.handleQueue())
-            
-            await receive_message_task
-            await handle_queue_task
-
+             
             if self.event_callbacks is not None:
                 handle_event_queue_task = asyncio.create_task(self.event_callbacks())
                 await handle_event_queue_task             
-
+            
+            await handle_queue_task
+            await receive_message_task
+            
         except KeyboardInterrupt:
             self.logger.error('Keyboard interrupt')
         except Exception as e:
