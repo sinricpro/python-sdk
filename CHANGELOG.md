@@ -1,3 +1,9 @@
+## [2.7.1]
+
+### Features
+* **WebRTC for RaspCam**
+* **Code refacorting**
+
 ## [2.6.3]
 
 ### Bugfix

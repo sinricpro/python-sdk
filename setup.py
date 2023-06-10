@@ -1,5 +1,5 @@
 """
- *  Copyright (c) 2019 Sinric. All rights reserved.
+ *  Copyright (c) 2019-2023 Sinric. All rights reserved.
  *  Licensed under Creative Commons Attribution-Share Alike (CC BY-SA)
  *
  *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
@@ -10,15 +10,15 @@ import sys
 if sys.version_info < (3,6):
     sys.exit('Sorry, Python < 3.6 is not supported')
 
-VERSION = "2.6.4"
+VERSION = "2.7.1"
 
 with open('README.rst', 'r') as f:
     long_description = f.read()
 setup(
     name="sinricpro",
     version=VERSION,
-    author="Dhanush",
-    author_email="dhanushdazz@gmail.com",
+    author="sinric",
+    author_email="support@sinric.com",
     maintainer = 'sinric',
     maintainer_email = 'support@sinric.com',
     description="A python package for Sinric Pro",
