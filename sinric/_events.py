@@ -1,37 +1,30 @@
 """
- *  Copyright (c) 2019 Sinric. All rights reserved.
+ *  Copyright (c) 2019-2023 Sinric. All rights reserved.
  *  Licensed under Creative Commons Attribution-Share Alike (CC BY-SA)
  *
  *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
 """
 
 from time import time, sleep
-from ._mainqueue import queue
-from ._jsoncommands import JSON_COMMANDS
+from ._queues import queue
 import uuid
 from ._signature import Signature
-
-eventNames = {
-    'door_bell_event': 'doorBellEvent',
-    'th_event': 'temperatureHumidityEvent',
-    'pushNotification_event' : 'pushNotificationEvent'
-}
-
+from ._sinricpro_constants import SinricProConstants
 
 # noinspection PyBroadException
 class Events(Signature):
-    def __init__(self, connection, logger=None, secretKey=""):
+    def __init__(self, connection, logger=None, secret_key=""):
         self.connection = connection
         self.logger = logger
-        self.secretKey = secretKey
-        Signature.__init__(self, self.secretKey)
+        self.secret_key = secret_key
+        Signature.__init__(self, self.secret_key)
 
     # noinspection PyBroadException
-    def raiseEvent(self, deviceId, event_name, data=None):
+    def raise_event(self, device_id, event_name, data=None):
         if data is None:
             data = {}
         try:
-            def jsnHandle(action, deviceId, value, typeI="PHYSICAL_INTERACTION") -> dict:
+            def json_response(action, device_id, value, type_of_interaction="PHYSICAL_INTERACTION") -> dict:
                 header = {
                     "payloadVersion": 2,
                     "signatureVersion": 1
@@ -40,144 +33,130 @@ class Events(Signature):
                 payload = {
                     "action": action,
                     "cause": {
-                        "type": typeI
+                        "type": type_of_interaction
                     },
                     "createdAt": int(time()),
-                    "deviceId": deviceId,
+                    "deviceId": device_id,
                     "replyToken": str(uuid.uuid4()),
                     "type": "event",
                     "value": value
                 }
-                
-                signature = self.getSignature(payload)
+
+                signature = self.get_signature(payload)
                 return {"header": header, "payload": payload, "signature": signature}
 
-            if event_name == JSON_COMMANDS.get('SETPOWERSTATE'):
-                queue.put([jsnHandle("setPowerState", deviceId, {"state": data.get("state", "Off")}),
-                           'setpowerstate_event_response'])
+            if event_name == SinricProConstants.SET_POWER_STATE:
+                response = json_response(event_name, device_id, {SinricProConstants.STATE: data.get("state", "Off")})
+                queue.put([response, event_name, 'event'])
 
-            elif event_name == JSON_COMMANDS.get('SETPOWERLEVEL'):
-                queue.put([jsnHandle("setPowerLevel", deviceId, {
-                    "powerLevel": data.get('powerLevel')
-                }), 'setPowerLevel_event_response'])
+            elif event_name == SinricProConstants.SET_POWER_LEVEL:
+                response = json_response(event_name, device_id, { SinricProConstants.POWER_LEVEL: data.get(SinricProConstants.POWER_LEVEL)})
+                queue.put([response, event_name, 'event'])
 
+            elif event_name == SinricProConstants.SET_BRIGHTNESS:
+                response = json_response(event_name, device_id, { SinricProConstants.BRIGHTNESS : data.get(SinricProConstants.BRIGHTNESS) })
+                queue.put([response, event_name, 'event'])
 
-            elif event_name == JSON_COMMANDS.get('SETBRIGHTNESS'):
-                queue.put([jsnHandle("setBrightness", deviceId, {
-                    "brightness": data.get('brightness')
-                }), 'setBrightness_event_response'])
-
-
-            elif event_name == JSON_COMMANDS.get('SETCOLOR'):
-                queue.put([jsnHandle("setColor", deviceId, {
+            elif event_name == SinricProConstants.SET_COLOR:
+                response = json_response(event_name, device_id, {
                     "color": {
                         "r": data.get('r'),
                         "g": data.get('g'),
                         "b": data.get('b')
                     }
-                }), 'setColor_event_response'])
+                })
+                queue.put([response, event_name, 'event'])
 
-            elif event_name == JSON_COMMANDS.get('SETCOLORTEMPERATURE'):
-                queue.put([jsnHandle("setColorTemperature", deviceId, {
-                    "colorTemperature": 2400
-                }), 'setColorTemperature_event_response'])
+            elif event_name == SinricProConstants.SET_COLOR_TEMPERATURE:
+                response = json_response(event_name, device_id, { SinricProConstants.COLOR_TEMPERATURE: 2400 })
+                queue.put([response, event_name, 'event'])
 
-            elif event_name == 'doorBellEvent':
-                queue.put([jsnHandle("DoorbellPress", deviceId, {
-                    "state": "pressed"
-                }), 'doorbell_event_response'])
+            elif event_name == SinricProConstants.DOORBELLPRESS:
+                response = json_response(event_name, device_id, { "state": "pressed" })
+                queue.put([response, event_name, 'event'])
 
+            elif event_name == SinricProConstants.CURRENT_TEMPERATURE:
+                response = json_response(event_name, device_id, {
+                    SinricProConstants.TEMPERATURE : round(data.get(SinricProConstants.TEMPERATURE), 1),
+                    SinricProConstants.HUMIDITY : round(data.get(SinricProConstants.HUMIDITY), 1),
+                }, type_of_interaction = "PERIODIC_POLL")
+                queue.put([response, event_name, 'event'])
 
-            elif event_name == 'temperatureHumidityEvent':
-                queue.put([jsnHandle("currentTemperature", deviceId, {
-                    "temperature": round(data.get('temperature'), 1),
-                    "humidity": round(data.get('humidity'), 1),
-                }, typeI="PERIODIC_POLL"), 'temp_hum_event_response'])
-
-            elif event_name == 'pushNotification':
-                queue.put([jsnHandle("pushNotification", deviceId, {
+            elif event_name == SinricProConstants.PUSH_NOTIFICATION:
+                response = json_response(event_name, device_id, {
                     "alert": data.get('alert'),
-                }), 'pushNotification_event_response'])
+                })
+                queue.put([response, event_name, 'event'])
 
-            elif event_name == 'setThermostatMode':
-                queue.put([jsnHandle("setThermostatMode", deviceId, {
-                    "thermostatMode": data.get('Mode')
-                }), 'setThermostatMode_event_response'])
+            elif event_name == SinricProConstants.SET_THERMOSTAT_MODE:
+                response = json_response(event_name, device_id, {
+                    SinricProConstants.THERMOSTATMODE: data.get(SinricProConstants.MODE)
+                })
+                queue.put([response, event_name, 'event'])
 
+            elif event_name == SinricProConstants.SET_RANGE_VALUE:
+                response = json_response(event_name, device_id, {
+                    SinricProConstants.RANGE_VALUE: data.get(SinricProConstants.RANGE_VALUE)
+                })
+                queue.put([response, event_name, 'event'])
 
-            elif event_name == 'setRangeValue':
-                queue.put([jsnHandle("setRangeValue", deviceId, {
-                    "rangeValue": data.get('rangeValue')
-                }), 'setRangeValue_event_response'])
+            elif event_name == SinricProConstants.MOTION:
+                response = json_response(SinricProConstants.MOTION, device_id, {
+                    SinricProConstants.STATE: data.get(SinricProConstants.STATE)
+                })
+                queue.put([response, event_name, 'event'])
 
+            elif event_name == SinricProConstants.SET_CONTACT_STATE or event_name == SinricProConstants.SET_LOCK_STATE:
+                response = json_response(event_name, device_id, {
+                    SinricProConstants.STATE: data.get(SinricProConstants.STATE)
+                })
+                queue.put([response, event_name, 'event'])
 
-            elif event_name == 'motion':
-                queue.put([jsnHandle("motion", deviceId, {
-                    "state": data.get('state')
-                }), 'motion_event_response'])
+            elif event_name == SinricProConstants.SET_VOLUME:
+                response = json_response(event_name, device_id, {
+                    SinricProConstants.VOLUME : data.get(SinricProConstants.VOLUME)
+                })
+                queue.put([response, event_name, 'event'])
 
+            elif event_name == SinricProConstants.SELECT_INPUT:
+                response = json_response(event_name, device_id, {
+                    SinricProConstants.INPUT: data.get(SinricProConstants.INPUT)
+                })
+                queue.put([response, event_name, 'event'])
 
+            elif event_name == SinricProConstants.MEDIA_CONTROL:
+                response = json_response(event_name, device_id, {
+                    SinricProConstants.CONTROL: data.get(SinricProConstants.CONTROL)
+                })
+                queue.put([response, event_name, 'event'])
 
-            elif event_name == 'setContactState':
-                queue.put([jsnHandle("setContactState", deviceId, {
-                    "state": data.get('state')
-                }), 'contact_event_response'])
-
-
-
-            elif event_name == 'setVolume':
-                queue.put([jsnHandle("setVolume", deviceId, {
-                    "volume": data.get('volume')
-                }), 'set_volume_event_response'])
-
-
-            elif event_name == 'selectInput':
-                queue.put([jsnHandle("selectInput", deviceId, {
-                    "input": data.get('input')
-                }), 'select_input_event_response'])
-
-
-
-            elif event_name == 'mediaControl':
-                queue.put([jsnHandle("mediaControl", deviceId, {
-                    "control": data.get('control')
-                }), 'media_control_event_response'])
-
-
-
-            elif event_name == 'changeChannel':
-                queue.put([jsnHandle("changeChannel", deviceId, {
+            elif event_name == SinricProConstants.CHANGE_CHANNEL:
+                response = json_response(event_name, device_id, {
                     "channel": {
                         "name": data.get('name')
                     }
-                }), 'change_channel_event_response'])
+                })
+                queue.put([response, event_name, 'event'])
 
-
-            elif event_name == 'setBands':
-                queue.put([jsnHandle("setBands", deviceId, {
+            elif event_name == SinricProConstants.SET_BANDS:
+                response = json_response(event_name, device_id, {
                     "bands": [
                         {
                             "name": data.get('name'),
                             "level": data.get('level')
                         }
                     ]
-                }), 'set_bands_event_response'])
+                })
+                queue.put([response, event_name, 'event'])
 
+            elif event_name == SinricProConstants.SET_MODE:
+                response = json_response(event_name, device_id, {
+                    SinricProConstants.MODE: data.get(SinricProConstants.MODE)
+                })
+                queue.put([response, event_name, 'event'])
 
-            elif event_name == 'setMode':
-                queue.put([jsnHandle("setMode", deviceId, {
-                    "mode": data.get('mode')
-                }), 'set_mode_event_response'])
-
-
-            elif event_name == 'setLockState':
-                queue.put([jsnHandle("setLockState", deviceId, {
-                    "state": data.get('state')
-                }), 'set_lock_event_response'])
-
-
-            elif event_name == 'resetBands':
-                queue.put([jsnHandle("resetBands", deviceId, {
+            elif event_name == SinricProConstants.RESET_BANDS:
+                response = json_response(event_name, device_id, {
                     "bands": [
                         {
                             "name": "BASS",
@@ -191,13 +170,14 @@ class Events(Signature):
                             "name": "TREBLE",
                             "level": 0
                         }]
-                }), 'reset_bands_event_response'])
+                })
+                queue.put([response, event_name, 'event'])
 
-
-            elif event_name == 'setMute':
-                queue.put([jsnHandle("setMute", deviceId, {
-                    "mute": data.get('mute', False)
-                }), 'reset_bands_event_response'])
+            elif event_name == SinricProConstants.SET_MUTE:
+                response = json_response(event_name, device_id, {
+                    SinricProConstants.MUTE: data.get(SinricProConstants.MUTE, False)
+                })
+                queue.put([response, event_name, 'event'])
 
             else:
                 self.logger.exception('Event :' + event_name + ' not found!')

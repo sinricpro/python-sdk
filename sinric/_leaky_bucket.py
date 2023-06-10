@@ -11,7 +11,7 @@ class LeakyBucket:
     def millis(self):
         return int(round(time.time() * 1000))
 
-    def leakDrops(self):
+    def leak_drops(self):
         actual_millis = self.millis()
         drops_to_leak = round((actual_millis - self.last_drop) / self.drop_out_time)
         if drops_to_leak > 0:
@@ -20,8 +20,8 @@ class LeakyBucket:
             else:
                 self.drop_in_bucket = self.drop_in_bucket - drops_to_leak
 
-    def addDrop(self):
-        self.leakDrops()
+    def add_drop(self):
+        self.leak_drops()
         actual_millis = self.millis()
         if (self.drop_in_bucket < self.bucket_size) and (
                 (actual_millis - self.last_drop) > (self.drop_in_bucket + self.drop_in_time)):
