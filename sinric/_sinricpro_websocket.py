@@ -36,7 +36,7 @@ class SinricProSocket(Signature):
 
     async def connect(self):  # Producer
         sdk_version = pkg_resources.require("sinricpro")[0].version
-        self.connection = await client.connect('wss://testws.sinric.pro',
+        self.connection = await client.connect('wss://ws.sinric.pro',
                                                extra_headers={'appkey': self.app_key,
                                                               'deviceids': ';'.join(self.device_ids),
                                                               'platform': 'python',
