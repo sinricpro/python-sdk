@@ -17,4 +17,9 @@
 
        pip install sinricpro --upgrade --user
 
+### Run with env
+```sh
+python app.py <dev|prod>
+```
+
 ### Check the examples [here](https://github.com/sinricpro/python-sdk/tree/master/examples) 

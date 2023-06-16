@@ -16,6 +16,7 @@ from ._signature import Signature
 from time import time
 import asyncio
 import pkg_resources
+import sys
 
 
 class SinricProSocket(Signature):
@@ -37,8 +38,13 @@ class SinricProSocket(Signature):
         Signature.__init__(self, self.secret_key)
 
     async def connect(self):  # Producer
+        socketUrl = ''
+        if len(sys.argv) < 2:
+            socketUrl = 'wss://ws.sinric.pro'
+        else:
+            socketUrl = 'wss://testws.sinric.pro' if sys.argv[1] == 'dev' else 'wss://ws.sinric.pro'
         sdk_version = pkg_resources.require("sinricpro")[0].version
-        self.connection = await client.connect('wss://testws.sinric.pro',
+        self.connection = await client.connect(socketUrl,
                                                extra_headers={'appkey': self.app_key,
                                                               'deviceids': ';'.join(self.device_ids),
                                                               'platform': 'python',
