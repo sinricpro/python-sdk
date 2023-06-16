@@ -3,12 +3,12 @@ events/
 devices/
 cred*
 envsinric/
-test*.py
+tes*.py
 sinricpro_logfile*
 tests/
 test_bulb.py
 credential.py
-test_eve*
+venv/
 localdata*
 dist/
 build/

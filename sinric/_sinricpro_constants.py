@@ -57,7 +57,7 @@ class SinricProConstants(object):
     NAME = 'name'
     BANDS = 'bands' 
     THERMOSTATMODE = 'thermostatMode'
-    MODE: 'mode',
+    MODE = 'mode',
     
 
     # values
