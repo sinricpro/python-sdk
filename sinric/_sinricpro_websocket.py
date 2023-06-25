@@ -8,6 +8,8 @@
 from websockets import client
 from websockets.exceptions import ConnectionClosed
 import json
+
+from .helpers.wait import waitAsync
 from ._queues import queue
 from ._callback_handler import CallBackHandler
 from ._signature import Signature
@@ -54,7 +56,9 @@ class SinricProSocket(Signature):
     async def receive_message(self, connection):
         while True:
             try:
-                message = await connection.recv()
+                message = await waitAsync(connection.recv())
+                if message is None:
+                    continue
                 if self.enableTrace:
                     self.logger.info(f"Request : {message}")
                 request = json.loads(message)
