@@ -29,7 +29,8 @@ class SinricProConstants(object):
     RESET_BANDS = 'resetBands'
     SET_MODE = 'setMode'
     SET_LOCK_STATE = 'setLockState'
-    WEBRTC_OFFER = 'webrtcOffer'
+    GET_WEBRTC_ANSWER = 'getWebRTCAnswer'
+    GET_CAMERA_STREAM_URL = 'getCameraStreamUrl'
     PUSH_NOTIFICATION = 'pushNotification'
     MOTION = 'motion'
     SET_CONTACT_STATE = 'setContactState'
@@ -57,7 +58,7 @@ class SinricProConstants(object):
     NAME = 'name'
     BANDS = 'bands' 
     THERMOSTATMODE = 'thermostatMode'
-    MODE: 'mode',
+    MODE = 'mode'
     
 
     # values

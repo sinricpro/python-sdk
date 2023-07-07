@@ -21,7 +21,7 @@ from ._temperature_controller import TemperatureController
 from ._tv_contorller import TvController
 from ._speaker_controller import SpeakerController
 from ._mode_controller import ModeController
-from ._webrtc_controller import WebRTCController
+from ._camera_stream_controller import CameraStreamController
 from ._lock_controller import LockStateController
 from ._signature import Signature
 from ._leaky_bucket import LeakyBucket
@@ -30,7 +30,7 @@ from ._sinricpro_constants import SinricProConstants
 # noinspection PyBroadException
 class CallBackHandler(PowerLevelController, PowerController, BrightnessController, ColorController, ColorTemperatureController,
                       ThermostateMode, RangeValueController, TemperatureController, TvController, SpeakerController,
-                      LockStateController, ModeController, WebRTCController, Signature):
+                      LockStateController, ModeController, CameraStreamController, Signature):
     def __init__(self, callbacks, trace_bool, logger, enable_track=False, secret_key=""):
         self.myHmac = None
         self.secret_key = secret_key
@@ -50,7 +50,7 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
         SpeakerController.__init__(self)
         ModeController.__init__(self)
         ColorTemperatureController.__init__(self, 0, [2200, 2700, 4000, 5500, 7000])
-        WebRTCController.__init__(self)
+        CameraStreamController.__init__(self)
 
         self.callbacks = callbacks
         self.logger = logger
@@ -175,8 +175,11 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
             elif action == SinricProConstants.SET_LOCK_STATE:
                 await self._handle_set_lock_state(connection, udp_client, jsn, handle_response, json_response, action)
             
-            elif action == SinricProConstants.WEBRTC_OFFER:
-                await self._handle_webrtc_offer(connection, udp_client, jsn, handle_response, json_response, action)
+            elif action == SinricProConstants.GET_WEBRTC_ANSWER:
+                await self._handle_get_webrtc_answer(connection, udp_client, jsn, handle_response, json_response, action)
+
+            elif action == SinricProConstants.GET_CAMERA_STREAM_URL:
+                await self._handle_get_camera_stream_url(connection, udp_client, jsn, handle_response, json_response, action)
 
         # Handle events 
 
@@ -281,9 +284,21 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
                     self.logger.info('Sending push notification event')
                     await connection.send(dumps(jsn))
 
-    async def _handle_webrtc_offer(self, connection, udp_client, jsn, handle_response, json_response, action):
+    async def _handle_get_camera_stream_url(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
-            resp, value = await self.webrtc_offer(jsn, self.callbacks.get(action))
+            resp, url = await self.get_camera_stream_url(jsn, self.callbacks.get(action))
+            response = json_response(action, resp, { "url": url })
+
+            if resp:
+                await handle_response(response, connection, udp_client)
+        except AssertionError:
+            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+        except Exception as e:
+            self.logger.error(str(e))
+
+    async def _handle_get_webrtc_answer(self, connection, udp_client, jsn, handle_response, json_response, action):
+        try:
+            resp, value = await self.get_webrtc_answer(jsn, self.callbacks.get(action))
             response = json_response(action, resp, { "answer": value })
 
             if resp:
