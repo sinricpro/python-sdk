@@ -47,10 +47,10 @@ class SinricProSocket(Signature):
                                                                   'true' if self.restore_states else 'false')},
                                                ping_interval=30000, ping_timeout=10000)
         if self.connection.open:
-            self.logger.success(f"{'Connected :)'}")
+            self.logger.success("Connected :)")
             timestamp = await self.connection.recv()
             if (int(time()) - json.loads(timestamp).get('timestamp') > 60000):
-                self.logger.warning(f'Timestamp is not in sync. Please check your system time.')
+                self.logger.warning('Timestamp is not in sync. Please check your system time.')
             return self.connection
 
     async def receive_message(self, connection):
