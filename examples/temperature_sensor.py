@@ -7,11 +7,6 @@ APP_SECRET = ''
 TEMPERATURE_SENSOR_ID = ''
 
 
-def power_state(device_id, state):
-    print('device_id: {} state: {}'.format(device_id, state))
-    return True, state
-
-
 async def events():
     while True:
         # client.event_handler.raise_event(TEMPERATURE_SENSOR_ID,
@@ -22,9 +17,7 @@ async def events():
         # Server will trottle / block IPs sending events too often.
         await sleep(60)
 
-callbacks = {
-    'powerState': power_state
-}
+callbacks = {}
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
@@ -32,5 +25,5 @@ if __name__ == '__main__':
                        enable_log=True, restore_states=False, secret_key=APP_SECRET)
     loop.run_until_complete(client.connect())
 
-# To update the temperature on server.
+# To update the temperature on the server.
 # client.event_handler.raise_event(temperatureSensorDeviceId, SinricProConstants.CURRENT_TEMPERATURE, data={'humidity': 75.3, 'temperature': 24})
