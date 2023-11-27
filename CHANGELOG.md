@@ -1,4 +1,4 @@
-## [2.7.1]
+## [2.7.3]
 
 ### Features
 * **WebRTC for RaspCam**
