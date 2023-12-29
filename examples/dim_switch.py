@@ -1,12 +1,12 @@
 from collections.abc import Callable
 from numbers import Real
-from typing import Union
+from typing import Final, Union
 from sinric import SinricPro, SinricProConstants
 import asyncio
 
-APP_KEY = ''
-APP_SECRET = ''
-DIM_SWITCH_ID = ''
+APP_KEY: Final[str] = ''
+APP_SECRET: Final[str] = ''
+DIM_SWITCH_ID: Final[str] = ''
 
 CallbackFunctions = Union[
     Callable[[str, str], tuple[bool, str]],  # Power state
