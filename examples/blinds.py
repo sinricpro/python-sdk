@@ -7,8 +7,8 @@ from typing import Final, Union
 from sinric import SinricPro, SinricProConstants
 
 BlindsCallbackFunctions = Union[
-    Callable[[str, str], tuple[bool, str]],
-    Callable[[str, Real, str], tuple[bool, Real, str]]
+    Callable[[str, str], tuple[bool, str]],  # Power state
+    Callable[[str, Real, str], tuple[bool, Real, str]]  # Range Value
 ]
 
 APP_KEY: Final[str] = ''
