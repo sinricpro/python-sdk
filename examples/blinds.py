@@ -6,7 +6,7 @@ from typing import Final, Union
 
 from sinric import SinricPro, SinricProConstants
 
-BlindsCallbackFunctions = Union[
+CallbackFunctions = Union[
     Callable[[str, str], tuple[bool, str]],  # Power state
     Callable[[str, Real, str], tuple[bool, Real, str]]  # Range Value
 ]
@@ -28,7 +28,7 @@ def set_range_value(device_id: str, value: Real, instance_id: str) -> tuple[bool
     return True, value, instance_id
 
 
-callbacks: dict[str, BlindsCallbackFunctions] = {
+callbacks: dict[str, CallbackFunctions] = {
     SinricProConstants.SET_POWER_STATE: set_power_state,
     SinricProConstants.SET_RANGE_VALUE: set_range_value
 }

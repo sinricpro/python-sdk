@@ -11,7 +11,7 @@ CAMERA_ID: Final[str] = ''
 
 OfferType = Union[str, ByteString]
 
-CameraCallbackFunctions = Union[
+CallbackFunctions = Union[
     Callable[[str, str], tuple[bool, str]],  # Power state / Camera Stream Url
     Callable[[str, OfferType], tuple[bool, Optional[bytes]]],  # WEBRTC Answer
 
@@ -53,7 +53,7 @@ def get_camera_stream_url(device_id: str, protocol: str) -> tuple[bool, str]:
         return True, 'https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8'  # HLS
 
 
-callbacks: dict[str, CameraCallbackFunctions] = {
+callbacks: dict[str, CallbackFunctions] = {
     SinricProConstants.GET_WEBRTC_ANSWER: get_webrtc_answer,
     SinricProConstants.GET_CAMERA_STREAM_URL: get_camera_stream_url,
     SinricProConstants.SET_POWER_STATE: power_state
