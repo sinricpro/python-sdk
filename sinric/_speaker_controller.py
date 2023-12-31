@@ -5,6 +5,7 @@
  *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
 """
 
+from sinric.helpers.set_limits import set_limits
 from ._sinricpro_constants import SinricProConstants
 
 
@@ -22,10 +23,7 @@ class SpeakerController:
         value = jsn.get("payload").get(SinricProConstants.VALUE)
         bands = value.get(SinricProConstants.BANDS)[0]
         self.band += bands.get(SinricProConstants.LEVEL_DELTA, 0)
-        if (self.band < 0):
-            self.band = 0
-        elif self.band > 100:
-            self.band = 100
+        self.band = set_limits(self.band)
         return callback(jsn.get("payload").get(SinricProConstants.DEVICEID), bands.get(SinricProConstants.NAME), self.band,
                         bands.get(SinricProConstants.LEVELDIRECTION))
 
