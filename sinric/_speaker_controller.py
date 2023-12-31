@@ -5,15 +5,20 @@
  *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
 """
 
+from collections.abc import Callable
+from numbers import Real
+from typing import Union
 from ._sinricpro_constants import SinricProConstants
+from ._types import SinricProTypes
 
 
 class SpeakerController:
 
     def __init__(self):
-        self.band = 0
+        self.band: Real = 0
 
-    async def set_bands(self, jsn, callback):
+    async def set_bands(self, jsn, callback: Callable[[str, str, Real], tuple[bool, SinricProTypes.BandDictType]]) \
+            -> tuple[bool, SinricProTypes.BandDictType]:
         value = jsn.get("payload").get(SinricProConstants.VALUE)
         bands = value.get(SinricProConstants.BANDS)[0]
         return callback(jsn.get("payload").get(SinricProConstants.DEVICEID), bands.get(SinricProConstants.NAME), bands.get(SinricProConstants.LEVEL))

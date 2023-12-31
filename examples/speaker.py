@@ -1,17 +1,26 @@
-from sinric import SinricPro, SinricProConstants
+from collections.abc import Callable
+from numbers import Real
+from typing import Final, Union
+from sinric import SinricPro, SinricProConstants, SinricProTypes
 import asyncio
 
-APP_KEY = ''
-APP_SECRET = ''
-SPEAKER_ID = ''
+APP_KEY: Final[str] = ''
+APP_SECRET: Final[str] = ''
+SPEAKER_ID: Final[str] = ''
+
+CallbackFunctions = Union[
+    Callable[[str, str], tuple[bool, str]],  # Power state
+    Callable[[str, str, Real], tuple[bool,
+                                     SinricProTypes.BandDictType]],  # Set Bands
+]
 
 
-def power_state(device_id, state):
+def power_state(device_id: str, state: str) -> tuple[bool, str]:
     print('device_id: {} lock state: {}'.format(device_id, state))
     return True, state
 
 
-def set_bands(device_id, name, level):
+def set_bands(device_id: str, name: str, level: Real) -> tuple[bool, SinricProTypes.BandDictType]:
     print('device_id: {}, name: {}, name: {}'.format(device_id, name, level))
     return True, {'name': name, 'level': level}
 
