@@ -225,7 +225,7 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
                     await connection.send(dumps(jsn))
 
             elif response_cmd == SinricProConstants.SET_THERMOSTAT_MODE:
-                if self.bucket.add_dropp():
+                if self.bucket.add_drop()():
                     self.logger.info('Sending thermostat mode event')
                     await connection.send(dumps(jsn))
 
