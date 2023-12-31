@@ -25,9 +25,11 @@ from ._camera_stream_controller import CameraStreamController
 from ._lock_controller import LockStateController
 from ._signature import Signature
 from ._leaky_bucket import LeakyBucket
-from ._sinricpro_constants import SinricProConstants 
+from ._sinricpro_constants import SinricProConstants
 
 # noinspection PyBroadException
+
+
 class CallBackHandler(PowerLevelController, PowerController, BrightnessController, ColorController, ColorTemperatureController,
                       ThermostateMode, RangeValueController, TemperatureController, TvController, SpeakerController,
                       LockStateController, ModeController, CameraStreamController, Signature):
@@ -49,7 +51,8 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
         Signature.__init__(self, self.secret_key)
         SpeakerController.__init__(self)
         ModeController.__init__(self)
-        ColorTemperatureController.__init__(self, 0, [2200, 2700, 4000, 5500, 7000])
+        ColorTemperatureController.__init__(
+            self, 0, [2200, 2700, 4000, 5500, 7000])
         CameraStreamController.__init__(self)
 
         self.callbacks = callbacks
@@ -66,8 +69,9 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
                 self.logger.info(f"Response : {dumps(response)}")
             if response_cmd == 'socket_response':
                 await connection.send(dumps(response))
-            elif response_cmd == 'udp_response' and udp_client != None :
-                udp_client.sendResponse(dumps(response).encode('ascii'), data_array[2])
+            elif response_cmd == 'udp_response' and udp_client != None:
+                udp_client.sendResponse(
+                    dumps(response).encode('ascii'), data_array[2])
 
         def json_response(action, resp, data_dict, instance_id='') -> dict:
             header = {
@@ -85,7 +89,7 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
                 "type": "response",
                 "value": data_dict
             }
- 
+
             if instance_id:
                 payload['instanceId'] = instance_id
 
@@ -93,10 +97,11 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
 
             return {"header": header, "payload": payload, "signature": signature}
 
-        if message_type == 'request_response' :
-            assert (self.verify_signature(jsn.get('payload'), jsn.get("signature").get("HMAC")))
-            action  = jsn.get('payload').get('action')
-            
+        if message_type == 'request_response':
+            assert (self.verify_signature(jsn.get('payload'),
+                    jsn.get("signature").get("HMAC")))
+            action = jsn.get('payload').get('action')
+
             if action == SinricProConstants.SET_POWER_STATE:
                 await self._handle_set_power_state(connection, udp_client, jsn, handle_response, json_response, action)
 
@@ -168,22 +173,22 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
 
             elif action == SinricProConstants.RESET_BANDS:
                 await self._handle_reset_bands(connection, udp_client, jsn, handle_response, json_response, action)
-    
+
             elif action == SinricProConstants.SET_MODE:
                 await self._handle_set_mode(connection, udp_client, jsn, handle_response, json_response, action)
-    
+
             elif action == SinricProConstants.SET_LOCK_STATE:
                 await self._handle_set_lock_state(connection, udp_client, jsn, handle_response, json_response, action)
-            
+
             elif action == SinricProConstants.GET_WEBRTC_ANSWER:
                 await self._handle_get_webrtc_answer(connection, udp_client, jsn, handle_response, json_response, action)
 
             elif action == SinricProConstants.GET_CAMERA_STREAM_URL:
                 await self._handle_get_camera_stream_url(connection, udp_client, jsn, handle_response, json_response, action)
 
-        # Handle events 
+        # Handle events
 
-        if message_type == 'event' :
+        if message_type == 'event':
             if response_cmd == SinricProConstants.DOORBELLPRESS:
                 if self.bucket.add_drop():
                     self.logger.info('Sending Doorbell event')
@@ -205,7 +210,7 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
                     await connection.send(dumps(jsn))
 
             elif response_cmd == SinricProConstants.SET_BRIGHTNESS:
-                if self.bucket.add_dropp():
+                if self.bucket.add_drop():
                     self.logger.info('Sending brightness event')
                     await connection.send(dumps(jsn))
 
@@ -287,36 +292,41 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
     async def _handle_get_camera_stream_url(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, url = await self.get_camera_stream_url(jsn, self.callbacks.get(action))
-            response = json_response(action, resp, { "url": url })
+            response = json_response(action, resp, {"url": url})
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
     async def _handle_get_webrtc_answer(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.get_webrtc_answer(jsn, self.callbacks.get(action))
-            response = json_response(action, resp, { "answer": value })
+            response = json_response(action, resp, {"answer": value})
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
     async def _handle_set_lock_state(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.set_lock_state(jsn, self.callbacks.get(action))
-            response = json_response(action, resp, { "state": value.upper() + 'ED' }) #TODO: Fix this later
+            # TODO: Fix this later
+            response = json_response(
+                action, resp, {"state": value.upper() + 'ED'})
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
@@ -324,13 +334,14 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
         try:
             resp, value, instance_id = await self.set_mode(jsn, self.callbacks.get(action))
             response = json_response(action, resp, {
-                        "mode": value
-                    }, instance_id)
+                "mode": value
+            }, instance_id)
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
@@ -338,24 +349,25 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
         try:
             resp = await self.reset_bands(jsn, self.callbacks.get(action))
             response = json_response(action, resp, {
-                        "bands": [
-                            {
-                                "name": "BASS",
+                "bands": [
+                    {
+                        "name": "BASS",
                                 "level": 0
-                            },
-                            {
-                                "name": "MIDRANGE",
+                    },
+                    {
+                        "name": "MIDRANGE",
                                 "level": 0
-                            },
-                            {
-                                "name": "TREBLE",
+                    },
+                    {
+                        "name": "TREBLE",
                                 "level": 0
-                            }]
-                    })
+                    }]
+            })
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
@@ -363,18 +375,19 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
         try:
             resp, value = await self.adjust_bands(jsn, self.callbacks.get(action))
             response = json_response(action, resp, {
-                        "bands": [
-                            {
-                                "name": value.get('name'),
-                                "level": value.get('level')
-                            }
-                        ]
-                    })
+                "bands": [
+                    {
+                        "name": value.get('name'),
+                        "level": value.get('level')
+                    }
+                ]
+            })
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
@@ -382,152 +395,167 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
         try:
             resp, value = await self.set_bands(jsn, self.callbacks.get(action))
             response = json_response(action, resp, {
-                        "bands": [
-                            {
-                                "name": value.get('name'),
-                                "level": value.get('level')
-                            }
-                        ]
-                    })
+                "bands": [
+                    {
+                        "name": value.get('name'),
+                        "level": value.get('level')
+                    }
+                ]
+            })
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
     async def _handle_set_mute(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.set_mute(jsn, self.callbacks.get(action))
-            response = json_response(action, resp, { "mute": value })
+            response = json_response(action, resp, {"mute": value})
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
     async def handle_skip_channel(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.skip_channels(jsn, self.callbacks.get(action))
-            response = json_response(action, resp, { "channel": { "name": value } })
+            response = json_response(
+                action, resp, {"channel": {"name": value}})
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
     async def _handle_change_channel(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.change_channel(jsn, self.callbacks.get(action))
-            response = json_response(action, resp, { "channel": { "name": value }})
+            response = json_response(
+                action, resp, {"channel": {"name": value}})
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
     async def _handle_select_input(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.select_input(jsn, self.callbacks.get(action))
-            response = json_response(action, resp, { "input": value })
+            response = json_response(action, resp, {"input": value})
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
     async def _handle_media_control(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.media_control(jsn, self.callbacks.get(action))
-            response = json_response(action, resp, { "control": value })
+            response = json_response(action, resp, {"control": value})
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
     async def _handle_adjust_volume(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.adjust_volume(jsn, self.callbacks.get(action))
-            response = json_response(action, resp, { "volume": value })
+            response = json_response(action, resp, {"volume": value})
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
     async def _handle_set_volume(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.set_volume(jsn, self.callbacks.get(action))
-            response = json_response(action, resp, { "volume": value })
+            response = json_response(action, resp, {"volume": value})
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
     async def _handle_adjust_target_tempreature(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.adjust_temperature(jsn, self.callbacks.get(action))
-            response = json_response(action, resp, { "temperature": value })
+            response = json_response(action, resp, {"temperature": value})
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
     async def _handle_target_tempreature(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.target_temperature(jsn, self.callbacks.get(action))
-            response = json_response(action, resp, { "temperature": value })
+            response = json_response(action, resp, {"temperature": value})
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
     async def _handle_adjust_range_value(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.adjust_range_value(jsn, self.callbacks.get('adjustRangeValue'))
-            response = json_response(action, resp, { "rangeValue": value })
+            response = json_response(action, resp, {"rangeValue": value})
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
     async def _handle_set_range_value(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value, instance_id = await self.set_range_value(jsn, self.callbacks.get(action))
-            response = json_response(action, resp, { "rangeValue": value }, instance_id)
+            response = json_response(
+                action, resp, {"rangeValue": value}, instance_id)
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
     async def _handle_set_thermostat_mode(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.set_thermostate_mode(jsn, self.callbacks[action])
-            response = json_response(action, resp, { "thermostatMode": value })
-                    
+            response = json_response(action, resp, {"thermostatMode": value})
+
             if resp:
                 await handle_response(response, connection, udp_client)
         except Exception as e:
@@ -536,36 +564,40 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
     async def _handle_decrease_color_tempreature(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.decrease_color_temperature(jsn, self.callbacks[action])
-            response = json_response(action, resp, { "colorTemperature": value})
+            response = json_response(action, resp, {"colorTemperature": value})
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(f'Error : {e}')
 
     async def _handle_increase_color_tempreature(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.increase_color_temperature(jsn, self.callbacks[action])
-            response = json_response(action, resp, { "colorTemperature": value })
+            response = json_response(action, resp, {"colorTemperature": value})
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(f'Error : {e}')
 
     async def _handle_set_color_tempreature(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp = await self.set_color_temperature(jsn, self.callbacks[action])
-            response = json_response(action, resp, { "colorTemperature": jsn.get("payload").get("value").get("colorTemperature") })
+            response = json_response(action, resp, {"colorTemperature": jsn.get(
+                "payload").get("value").get("colorTemperature")})
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(f'Error : {e}')
 
@@ -573,29 +605,31 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
         try:
             resp = await self.set_color(jsn, self.callbacks[action])
             response = json_response(action=action, resp=resp, data_dict={
-                        "color": {
-                            "b": jsn.get("payload").get("value").get("color").get("b"),
-                            "g": jsn.get("payload").get("value").get("color").get("g"),
-                            "r": jsn.get("payload").get("value").get("color").get("r")
-                        }
-                    })
+                "color": {
+                    "b": jsn.get("payload").get("value").get("color").get("b"),
+                    "g": jsn.get("payload").get("value").get("color").get("g"),
+                    "r": jsn.get("payload").get("value").get("color").get("r")
+                }
+            })
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(f'Error : {e}')
 
     async def _handle_adjust_brightness(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.adjust_brightness(jsn, self.callbacks[action])
-            response = json_response(action, resp, { "brightness": value })
+            response = json_response(action, resp, {"brightness": value})
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(f'Error : {e}')
 
@@ -607,7 +641,8 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(f'Error : {e}')
 
@@ -619,19 +654,21 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(f'Error : {e}')
 
     async def _handle_set_power_level(self, connection, udp_client, jsn, handle_response, json_response, action):
         try:
             resp, value = await self.set_power_level(jsn, self.callbacks[action])
-            response = json_response(action, resp, { "powerLevel": value})
+            response = json_response(action, resp, {"powerLevel": value})
 
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(str(e))
 
@@ -642,9 +679,10 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
             if resp:
                 await handle_response(response, connection, udp_client)
         except AssertionError:
-            self.logger.error("Signature verification failed for " + jsn.get('payload').get('action'))
+            self.logger.error(
+                "Signature verification failed for " + jsn.get('payload').get('action'))
         except Exception as e:
             self.logger.error(f'Error : {e}')
 
-        #else:
+        # else:
         #    self.logger.info(response_cmd + ' not found!')
