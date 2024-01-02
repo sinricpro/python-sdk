@@ -9,7 +9,7 @@ import asyncio
 import re
 import sys
 
-from loguru import logger
+from loguru import Logger, logger
 from ._sinricpro_websocket import SinricProSocket
 from ._events import Events
 from ._types import SinricProTypes
@@ -20,6 +20,7 @@ from typing import (
     Final,
     Iterable as TypingIterable,
     List,
+    NoReturn,
     Optional,
     Set,
     Type,
@@ -41,10 +42,10 @@ class SinricPro:
             self.loop_delay: Final[float] = loop_delay if loop_delay > 0 else 0.5
             self.secret_key: Final[str] = secret_key
             self.device_id: Final[list[str]] = device_id
-            self.logger = logger
+            self.logger: Final[Logger] = logger
             self.request_callbacks: Final[SinricProTypes.RequestCallbacks] = request_callbacks
-            self.socket: SinricProSocket = SinricProSocket(self.app_key, self.device_id, self.request_callbacks, enable_log, self.logger,
-                                                           self.restore_states, self.secret_key, loop_delay=loop_delay)
+            self.socket: Final[SinricProSocket] = SinricProSocket(self.app_key, self.device_id, self.request_callbacks, enable_log, self.logger,
+                                                                  self.restore_states, self.secret_key, loop_delay=loop_delay)
             self.connection = None
             self.event_callbacks: Optional[SinricProTypes.EventCallbacks] = event_callbacks
             self.event_handler: Events = Events(
@@ -62,7 +63,7 @@ class SinricPro:
                 return False
         return True
 
-    async def connect(self, udp_client=None, sleep: int = 0) -> None:
+    async def connect(self, udp_client=None, sleep: int = 0) -> NoReturn:
         try:
             self.connection = await self.socket.connect()
             receive_message_task = asyncio.create_task(
