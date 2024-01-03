@@ -5,6 +5,7 @@
  *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
 """
 
+from sinric.helpers.set_limits import set_limits
 from ._sinricpro_constants import SinricProConstants
 
 
@@ -23,8 +24,5 @@ class RangeValueController:
     async def adjust_range_value(self, jsn, callback):
         self.range_value += jsn.get("payload").get(
             SinricProConstants.VALUE).get(SinricProConstants.RANGE_VALUE)
-        if self.range_value > 100:
-            self.range_value = 100
-        elif self.range_value < 0:
-            self.range_value = 0
+        self.range_value = set_limits(self.range_value)
         return callback(jsn.get("payload").get(SinricProConstants.DEVICEID), self.range_value)

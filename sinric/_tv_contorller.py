@@ -5,6 +5,7 @@
  *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
 """
 
+from sinric.helpers.set_limits import set_limits
 from ._sinricpro_constants import SinricProConstants
 
 
@@ -20,10 +21,7 @@ class TvController:
     async def adjust_volume(self, jsn, callback):
         self.volume += jsn.get("payload").get(
             SinricProConstants.VALUE).get('volume')
-        if self.volume > 100:
-            self.volume = 100
-        elif self.volume < 0:
-            self.volume = 0
+        self.volume = set_limits(self.volume)
         return callback(jsn.get("payload").get(SinricProConstants.DEVICEID), self.volume)
 
     async def set_mute(self, jsn, callback):

@@ -5,6 +5,7 @@
  *  This file is part of the Sinric Pro (https://github.com/sinricpro/)
 """
 
+from sinric.helpers.set_limits import set_limits
 from ._sinricpro_constants import SinricProConstants
 
 
@@ -20,9 +21,6 @@ class PowerLevelController:
 
     async def adjust_power_level(self, jsn, adjust_power_level_cb):
         self.power_level += jsn[SinricProConstants.VALUE][SinricProConstants.POWER_LEVEL_DELTA]
-        if self.power_level > 100:
-            self.power_level = 100
-        elif self.power_level < 0:
-            self.power_level = 0
+        self.power_level = set_limits(self.power_level)
         return adjust_power_level_cb(jsn[SinricProConstants.DEVICEID],
                                      self.power_level)
