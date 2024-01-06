@@ -7,6 +7,7 @@
 
 from numbers import Real
 from typing import Any, Callable
+from sinric.helpers.set_limits import set_limits
 from ._sinricpro_constants import SinricProConstants
 
 SetRangeCallbackType = Callable[[str, Real, str], tuple[bool, Real, str]]
@@ -30,8 +31,5 @@ class RangeValueController:
     async def adjust_range_value(self, jsn: Any, callback: AdjustRangeCallbackType) -> Any:
         self.range_value += jsn.get("payload").get(
             SinricProConstants.VALUE).get(SinricProConstants.RANGE_VALUE)
-        if self.range_value > 100:
-            self.range_value = 100
-        elif self.range_value < 0:
-            self.range_value = 0
+        self.range_value = set_limits(self.range_value)
         return callback(jsn.get("payload").get(SinricProConstants.DEVICEID), self.range_value)

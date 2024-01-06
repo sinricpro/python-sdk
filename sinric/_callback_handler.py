@@ -211,7 +211,7 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
                     await connection.send(dumps(jsn))
 
             elif response_cmd == SinricProConstants.SET_BRIGHTNESS:
-                if self.bucket.add_dropp():
+                if self.bucket.add_drop():
                     self.logger.info('Sending brightness event')
                     await connection.send(dumps(jsn))
 
@@ -226,7 +226,7 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
                     await connection.send(dumps(jsn))
 
             elif response_cmd == SinricProConstants.SET_THERMOSTAT_MODE:
-                if self.bucket.add_dropp():
+                if self.bucket.add_drop():
                     self.logger.info('Sending thermostat mode event')
                     await connection.send(dumps(jsn))
 
@@ -281,7 +281,7 @@ class CallBackHandler(PowerLevelController, PowerController, BrightnessControlle
                     await connection.send(dumps(jsn))
 
             elif response_cmd == SinricProConstants.RESET_BANDS:
-                if self.bucket.add_dropp():
+                if self.bucket.add_drop():
                     self.logger.info('Sending reset bands event')
                     await connection.send(dumps(jsn))
 

@@ -9,6 +9,8 @@ from collections.abc import Callable
 from numbers import Real
 from typing import Any
 
+from sinric.helpers.set_limits import set_limits
+
 from ._sinricpro_constants import SinricProConstants
 
 
@@ -24,9 +26,6 @@ class BrightnessController:
     async def adjust_brightness(self, jsn, brightness_callback: Callable[[str, Real], tuple[bool, str]]) -> tuple[bool, str]:
         self.brightness_level += jsn.get("payload").get(
             SinricProConstants.VALUE).get(SinricProConstants.BRIGHTNESS_DELTA)
-        if self.brightness_level > 100:
-            self.brightness_level = 100
-        elif self.brightness_level < 0:
-            self.brightness_level = 0
+        self.brightness_level = set_limits(self.brightness_level)
 
         return brightness_callback(jsn.get("payload").get(SinricProConstants.DEVICEID), self.brightness_level)
