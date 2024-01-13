@@ -8,7 +8,7 @@
 import asyncio
 import json
 from time import time
-from typing import Final, NoReturn
+from typing import Final, NoReturn, Optional
 from loguru import Logger
 
 import pkg_resources
@@ -32,7 +32,7 @@ class SinricProSocket(Signature):
         self.restore_states: Final[bool] = restore_states
         self.logger: Final[Logger] = logger
         self.device_ids: Final[list[str]] = device_id
-        self.connection = None
+        self.connection: Optional[client.Connect] = None
         self.callbacks: SinricProTypes.RequestCallbacks = callbacks
         self.loop_delay: Final[float] = loop_delay
 
@@ -41,16 +41,16 @@ class SinricProSocket(Signature):
         self.enableTrace: Final[bool] = enable_trace
         Signature.__init__(self, self.secret_key)
 
-    async def connect(self):  # Producer
+    async def connect(self) -> client.Connect:  # Producer
         sdk_version = pkg_resources.require("sinricpro")[0].version
-        self.connection = await client.connect('wss://ws.sinric.pro',
-                                               extra_headers={'appkey': self.app_key,
-                                                              'deviceids': ';'.join(self.device_ids),
-                                                              'platform': 'python',
-                                                              'sdkversion': sdk_version,
-                                                              'restoredevicestates': (
-                                                                  'true' if self.restore_states else 'false')},
-                                               ping_interval=30000, ping_timeout=10000)
+        self.connection: client.Connect = await client.connect('wss://ws.sinric.pro',
+                                                               extra_headers={'appkey': self.app_key,
+                                                                              'deviceids': ';'.join(self.device_ids),
+                                                                              'platform': 'python',
+                                                                              'sdkversion': sdk_version,
+                                                                              'restoredevicestates': (
+                                                                                  'true' if self.restore_states else 'false')},
+                                                               ping_interval=30000, ping_timeout=10000)
         if self.connection.open:
             self.logger.success("Connected :)")
             timestamp = await self.connection.recv()
@@ -59,7 +59,7 @@ class SinricProSocket(Signature):
                     'Timestamp is not in sync. Please check your system time.')
             return self.connection
 
-    async def receive_message(self, connection) -> NoReturn:
+    async def receive_message(self, connection: client.Connect) -> NoReturn:
         while True:
             try:
                 message = await waitAsync(connection.recv())
