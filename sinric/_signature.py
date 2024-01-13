@@ -7,7 +7,7 @@ from typing import Final, Optional
 
 class Signature:
     def __init__(self, secret_key: str):
-        self.secret_key: Final[str] = secret_key
+        self.secret_key: str = secret_key
         self.hmac: Optional[sinricHmac.HMAC] = None
 
     def verify_signature(self, payload, signature: str) -> bool:
