@@ -14,18 +14,9 @@ from ._sinricpro_websocket import SinricProSocket
 from ._events import Events
 from ._types import SinricProTypes
 from typing import (
-    Any,
-    Awaitable,
-    Callable,
     Final,
-    Iterable as TypingIterable,
-    List,
     NoReturn,
     Optional,
-    Set,
-    Type,
-    Union,
-    cast,
 )
 
 # logger.add("{}.log".format("sinricpro_logfile"), rotation="10 MB")
