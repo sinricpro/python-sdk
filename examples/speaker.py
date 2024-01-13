@@ -1,17 +1,23 @@
+import asyncio
 from collections.abc import Callable
 from numbers import Real
 from typing import Final, Union
+
 from sinric import SinricPro, SinricProConstants, SinricProTypes
-import asyncio
 
 APP_KEY: Final[str] = ''
 APP_SECRET: Final[str] = ''
 SPEAKER_ID: Final[str] = ''
 
 CallbackFunctions = Union[
-    Callable[[str, str], tuple[bool, str]],  # Power state
+    Callable[[str, str], tuple[bool, str]],  # Power state / Set Mute
+    Callable[[str, Real], tuple[bool, Real]],  # Set Volume
     Callable[[str, str, Real], tuple[bool,
                                      SinricProTypes.BandDictType]],  # Set Bands
+    Callable[[str, str, Real, str], tuple[bool,
+                                          SinricProTypes.BandDictType]],  # Adjust Bands
+    Callable[[str, SinricProTypes.BandDictType,
+              SinricProTypes.BandDictType, SinricProTypes.BandDictType], bool]  # Reset Bands
 ]
 
 
@@ -25,34 +31,38 @@ def set_bands(device_id: str, name: str, level: Real) -> tuple[bool, SinricProTy
     return True, {'name': name, 'level': level}
 
 
-def adjust_bands(device_id, name, level, direction):
+def adjust_bands(device_id: str, name: str, level: Real, direction: str) -> tuple[bool, SinricProTypes.BandDictType]:
+    # TODO direction should be an enum
     print('device_id: {}, name: {}, name: {}, direction: {}'.format(
         device_id, name, level, direction))
     return True, {'name': name, 'level': level}
 
 
-def reset_bands(device_id, band1, band2, band3):
+def reset_bands(device_id: str, band1: SinricProTypes.BandDictType,
+                band2: SinricProTypes.BandDictType, band3: SinricProTypes.BandDictType) \
+        -> bool:
     print('device_id: {}, band1: {}, band2: {}, band3: {}'.format(
         device_id, band1, band2, band3))
     return True
 
 
-def set_mode(device_id, mode):
+def set_mode(device_id: str, mode: str) -> tuple[bool, str]:
     print('device_id: {} mode: {}'.format(device_id, mode))
     return True, mode
 
 
-def set_mute(device_id, mute):
+def set_mute(device_id: str, mute: str) -> tuple[bool, str]:
+    # TODO: mute should be str? or a bool? or an enum?
     print('device_id: {} mute: {}'.format(device_id, mute))
     return True, mute
 
 
-def set_volume(device_id, volume):
+def set_volume(device_id: str, volume: Real) -> tuple[bool, Real]:
     print('device_id: {} volume: {}'.format(device_id, volume))
     return True, volume
 
 
-callbacks = {
+callbacks: dict[str, CallbackFunctions] = {
     SinricProConstants.SET_POWER_STATE: power_state,
     SinricProConstants.SET_BANDS: set_bands,
     SinricProConstants.SET_MODE: set_mode,
