@@ -7,7 +7,7 @@
 [![](https://img.shields.io/badge/author-Dhanush-orange.svg)](https://github.com/imdhanush)
 
 ## Dependencies
-* Python 3.9.7 or newer
+* Python 3.9.7
 * websockets 10.1
 ### Install
 
