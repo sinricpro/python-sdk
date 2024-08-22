@@ -7,10 +7,10 @@
 from setuptools import setup
 import sys
 
-if sys.version_info < (3,6):
-    sys.exit('Sorry, Python < 3.6 is not supported')
+if sys.version_info < (3, 6):
+    sys.exit('Sorry, Python < 3.6 or older is not supported')
 
-VERSION = "2.7.5"
+VERSION = "2.7.6"
 
 with open('README.rst', 'r') as f:
     long_description = f.read()
@@ -19,14 +19,16 @@ setup(
     version=VERSION,
     author="sinric",
     author_email="support@sinric.com",
-    maintainer = 'sinric',
-    maintainer_email = 'support@sinric.com',
+    maintainer='sinric',
+    maintainer_email='support@sinric.com',
     description="A python package for Sinric Pro",
     long_description=long_description,
     url="https://github.com/sinricpro/python-sdk",
     packages=['sinric', "sinric.helpers"],
-    install_requires=["websockets==10.1","loguru"],
-    keywords=['sinric', 'sinric-pro'],
+    install_requires=["websockets==10.1",
+                      "loguru",
+                      "importlib_metadata; python_version < '3.8'"],
+    keywords=['sinric', 'sinric-pro', 'alexa', 'google home', 'smartthings'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
