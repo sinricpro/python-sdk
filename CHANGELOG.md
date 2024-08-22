@@ -1,3 +1,6 @@
+## [2.7.5]
+* fix sinric.helpers not found
+
 ## [2.7.4]
 
 ### Features
