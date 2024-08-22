@@ -9,8 +9,10 @@
 ## Dependencies
 * Python 3.9.7
 * websockets 10.1
-### Install
 
+Make sure to run `pip install setuptools` before installtion
+
+### Install
        pip install sinricpro --user
 
 ### Upgarde
