@@ -59,14 +59,17 @@ class SinricProConstants(object):
     BANDS = 'bands' 
     THERMOSTATMODE = 'thermostatMode'
     MODE = 'mode'
-    
-
     # values
     LOCK_STATE_LOCKED = 'LOCKED'
     LOCK_STATE_UNLOCKED = 'UNLOCKED'
 
     POWER_STATE_ON = 'On'
     POWER_STATE_OFF = 'Off'
+
+    THERMOSTAT_MODE_COOL = 'COOL'
+    THERMOSTAT_MODE_HEAT = 'HEAT'
+    THERMOSTAT_MODE_AUTO = 'AUTO'
+    THERMOSTAT_MODE_OFF  = 'OFF'
 
     CLOSE = "Close"
     OPEN = "Open"
