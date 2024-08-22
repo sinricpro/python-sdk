@@ -10,7 +10,7 @@ import sys
 if sys.version_info < (3,6):
     sys.exit('Sorry, Python < 3.6 is not supported')
 
-VERSION = "2.7.4"
+VERSION = "2.7.5"
 
 with open('README.rst', 'r') as f:
     long_description = f.read()
@@ -24,7 +24,7 @@ setup(
     description="A python package for Sinric Pro",
     long_description=long_description,
     url="https://github.com/sinricpro/python-sdk",
-    packages=['sinric'],
+    packages=['sinric', "sinric.helpers"],
     install_requires=["websockets==10.1","loguru"],
     keywords=['sinric', 'sinric-pro'],
     classifiers=[
