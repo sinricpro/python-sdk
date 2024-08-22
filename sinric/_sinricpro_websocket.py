@@ -15,7 +15,11 @@ from ._callback_handler import CallBackHandler
 from ._signature import Signature
 from time import time
 import asyncio
-import pkg_resources
+
+try:
+    from importlib.metadata import version
+except ImportError:
+    from importlib_metadata import version
 
 
 class SinricProSocket(Signature):
@@ -37,7 +41,7 @@ class SinricProSocket(Signature):
         Signature.__init__(self, self.secret_key)
 
     async def connect(self):  # Producer
-        sdk_version = pkg_resources.require("sinricpro")[0].version
+        sdk_version = version("sinricpro")
         self.connection = await client.connect('wss://ws.sinric.pro',
                                                extra_headers={'appkey': self.app_key,
                                                               'deviceids': ';'.join(self.device_ids),
