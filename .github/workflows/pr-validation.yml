@@ -1,0 +1,100 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+      - 3.5-dev
+    paths:
+      - '**.py'
+      - 'examples/**'
+      - 'sinricpro/**'
+      - 'pyproject.toml'
+      - 'setup.py'
+      - 'requirements.txt'
+
+jobs:
+  validate-examples:
+    name: Validate Examples
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Validate example files
+        run: |
+          python .github/scripts/validate_examples.py
+
+  lint-check:
+    name: Lint Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy
+
+      - name: Run Ruff
+        run: |
+          ruff check sinricpro/ --select E,F,W --ignore E501
+        continue-on-error: true
+
+      - name: Run MyPy (type checking)
+        run: |
+          mypy sinricpro/ --ignore-missing-imports --no-strict-optional
+        continue-on-error: true
+
+  package-build:
+    name: Test Package Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build package
+        run: |
+          python -m build
+
+      - name: Check package with twine
+        run: |
+          twine check dist/*
+
+      - name: List package contents
+        run: |
+          ls -lh dist/

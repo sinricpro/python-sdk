@@ -1,3 +1,9 @@
+## [3.0.0]
+
+### Features
+
+* Replaced with new SDK
+
 ## [2.7.5]
 * fix sinric.helpers not found
 
