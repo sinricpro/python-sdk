@@ -12,9 +12,9 @@ This directory contains GitHub Actions workflows for the SinricPro Python SDK.
 
 **Jobs:**
 - **validate-examples**: Tests all example files across Python 3.10, 3.11, and 3.12
-  - Validates Python syntax using `compileall`
-  - Checks AST parsing for all examples
-  - Tests that all imports work correctly
+  - Uses `.github/scripts/validate_examples.py` to validate syntax and imports
+  - Validates Python syntax using AST parsing
+  - Tests that all sinricpro imports work correctly
 
 - **lint-check**: Runs code quality checks
   - Ruff for code linting
@@ -199,6 +199,45 @@ These are automatically granted in the workflow files.
 4. **Test examples after each change**
 5. **Keep dependencies up to date**
 6. **Tag releases consistently (vX.Y.Z format)**
+
+## Scripts
+
+The `.github/scripts/` directory contains helper scripts used by the workflows:
+
+### validate_examples.py
+
+Validates all Python example files in the `examples/` directory:
+- Checks Python syntax using AST parsing
+- Verifies that all `sinricpro` imports are valid
+- Provides detailed output for debugging
+- Returns exit code 0 on success, 1 on failure
+
+**Usage:**
+```bash
+python .github/scripts/validate_examples.py
+```
+
+**Output:**
+```
+Found 16 Python example files
+
+============================================================
+Validating Python syntax...
+============================================================
+  ✓ Syntax valid: examples/switch/switch_example.py
+  ✓ Syntax valid: examples/light/light_example.py
+  ...
+
+============================================================
+Validating sinricpro imports...
+============================================================
+Checking: examples/switch/switch_example.py
+  ✓ Import OK: sinricpro
+  ...
+
+============================================================
+✅ All examples validated successfully!
+```
 
 ## Support
 

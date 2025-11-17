@@ -37,71 +37,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .
 
-      - name: Find all example files
-        id: find-examples
+      - name: Validate example files
         run: |
-          echo "Found example files:"
-          find examples -name "*.py" -type f | sort
-
-      - name: Validate example syntax
-        run: |
-          echo "Validating Python syntax for all examples..."
-          python -m compileall -q examples/
-
-      - name: Check imports in examples
-        run: |
-          echo "Checking imports in all example files..."
-          for example in $(find examples -name "*.py" -type f); do
-            echo "Checking: $example"
-            python -c "
-import ast
-import sys
-
-with open('$example', 'r') as f:
-    try:
-        ast.parse(f.read())
-        print('  ✓ Syntax valid')
-    except SyntaxError as e:
-        print(f'  ✗ Syntax error: {e}')
-        sys.exit(1)
-"
-          done
-
-      - name: Test example imports (dry-run)
-        run: |
-          echo "Testing that examples can import SinricPro modules..."
-          for example in $(find examples -name "*.py" -type f); do
-            echo "Testing imports: $example"
-            # Extract imports and verify they exist
-            python -c "
-import ast
-import importlib
-import sys
-
-with open('$example', 'r') as f:
-    tree = ast.parse(f.read())
-
-for node in ast.walk(tree):
-    if isinstance(node, ast.ImportFrom):
-        if node.module and node.module.startswith('sinricpro'):
-            module_name = node.module
-            try:
-                importlib.import_module(module_name)
-                print(f'  ✓ {module_name}')
-            except ImportError as e:
-                print(f'  ✗ Failed to import {module_name}: {e}')
-                sys.exit(1)
-    elif isinstance(node, ast.Import):
-        for alias in node.names:
-            if alias.name.startswith('sinricpro'):
-                try:
-                    importlib.import_module(alias.name)
-                    print(f'  ✓ {alias.name}')
-                except ImportError as e:
-                    print(f'  ✗ Failed to import {alias.name}: {e}')
-                    sys.exit(1)
-"
-          done
+          python .github/scripts/validate_examples.py
 
   lint-check:
     name: Lint Check
