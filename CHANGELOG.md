@@ -1,3 +1,15 @@
+## [3.0.0]
+
+### Features
+**Replaced with new SDK**
+
+  - Modern Python packaging with:
+  - Python 3.10+ requirement
+  - Single dependency: websockets>=12.0
+  - Dev dependencies: pytest, black, mypy, flake8, isort
+  - Black/isort configuration (100 char lines)
+  - pytest with asyncio_mode="auto"
+
 ## [2.7.4]
 
 ### Features

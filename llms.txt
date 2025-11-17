@@ -1,0 +1,402 @@
+# SinricPro Python SDK - LLM Context (Summarized)
+
+> Official Python SDK for SinricPro - Control IoT devices with Alexa and Google Home
+> Version: 3.0.0 | License: CC BY-SA 4.0 | Python: 3.10+
+
+## Quick Start
+
+```python
+import asyncio
+from sinricpro import SinricPro, SinricProSwitch, SinricProConfig
+
+async def on_power_state(state: bool) -> bool:
+    print(f"Device {'ON' if state else 'OFF'}")
+    return True
+
+async def main():
+    sinric = SinricPro.get_instance()
+    switch = SinricProSwitch("DEVICE_ID")
+    switch.on_power_state(on_power_state)
+    sinric.add(switch)
+
+    config = SinricProConfig(
+        app_key="YOUR_APP_KEY",
+        app_secret="YOUR_APP_SECRET"
+    )
+
+    await sinric.begin(config)
+    while True:
+        await asyncio.sleep(1)
+
+asyncio.run(main())
+```
+
+## Core Architecture
+
+### Key Components
+- **SinricPro**: Main singleton instance managing WebSocket connection
+- **SinricProDevice**: Base class for all devices
+- **SinricProConfig**: Configuration (app_key, app_secret, debug)
+- **Capabilities**: Mixin classes for device functionality (PowerStateController, BrightnessController, etc.)
+- **EventLimiter**: Rate limiting for events
+
+### Design Patterns
+- Async/await throughout (no sync wrapper)
+- Singleton for SinricPro instance
+- Mixin pattern for capabilities
+- Callback-based event handling
+- Type hints everywhere
+
+## Device Types (16 total)
+
+### Lighting & Switches
+```python
+# Switch - On/Off control
+from sinricpro import SinricProSwitch
+switch = SinricProSwitch("device_id")
+switch.on_power_state(callback)
+await switch.send_power_state_event(True)
+
+# Light - RGB, brightness, color temperature
+from sinricpro import SinricProLight
+light = SinricProLight("device_id")
+light.on_brightness(callback)
+light.on_color(callback)
+light.on_color_temperature(callback)
+await light.send_brightness_event(75)
+
+# DimSwitch - Power level control (0-100)
+from sinricpro import SinricProDimSwitch
+dimswitch = SinricProDimSwitch("device_id")
+dimswitch.on_power_level(callback)  # NOT on_brightness!
+dimswitch.on_adjust_power_level(callback)
+await dimswitch.send_power_level_event(50)
+```
+
+### Sensors
+```python
+# Motion Sensor
+from sinricpro import SinricProMotionSensor
+sensor = SinricProMotionSensor("device_id")
+await sensor.send_motion_event(True)  # Motion detected
+
+# Contact Sensor - Door/window open/closed
+from sinricpro import SinricProContactSensor
+contact = SinricProContactSensor("device_id")
+await contact.send_contact_event(True)  # True=open, False=closed
+
+# Temperature Sensor
+from sinricpro import SinricProTemperatureSensor
+temp = SinricProTemperatureSensor("device_id")
+await temp.send_temperature_event(22.5, 65.0)  # temp, humidity
+
+# Air Quality Sensor - PM1.0, PM2.5, PM10
+from sinricpro import SinricProAirQualitySensor
+air = SinricProAirQualitySensor("device_id")
+await air.send_air_quality_event(pm1_0=10, pm2_5=25, pm10=50)
+await air.send_temperature_event(25.0, 60.0)
+
+# Power Sensor - Voltage, current, power, wattHours
+from sinricpro import SinricProPowerSensor
+power = SinricProPowerSensor("device_id")
+await power.send_power_sensor_event(
+    voltage=120.0,
+    current=2.5,
+    power=300.0,  # Optional, auto-calculated if not provided
+    apparent_power=310.0,
+    reactive_power=50.0,
+    factor=0.97
+)
+# Note: startTime and wattHours are auto-calculated by SDK
+```
+
+### Control Devices
+```python
+# Blinds - Open/close position (0=closed, 100=open)
+from sinricpro import SinricProBlinds
+blinds = SinricProBlinds("device_id")
+blinds.on_power_state(callback)
+blinds.on_open_close(callback)  # Uses OpenCloseController
+await blinds.send_open_close_event(75)
+
+# Garage Door
+from sinricpro import SinricProGarageDoor
+garage = SinricProGarageDoor("device_id")
+garage.on_door_state(callback)  # "OPEN", "CLOSED"
+await garage.send_door_state_event("OPEN")
+
+# Lock
+from sinricpro import SinricProLock
+lock = SinricProLock("device_id")
+lock.on_lock_state(callback)
+await lock.send_lock_state_event(True)  # True=locked
+```
+
+### Climate Control
+```python
+# Thermostat
+from sinricpro import SinricProThermostat
+thermo = SinricProThermostat("device_id")
+thermo.on_thermostat_mode(callback)  # AUTO, COOL, HEAT, ECO
+thermo.on_target_temperature(callback)
+await thermo.send_temperature_event(22.5, 65.0)
+
+# Window AC
+from sinricpro import SinricProWindowAC
+ac = SinricProWindowAC("device_id")
+ac.on_power_state(callback)
+ac.on_thermostat_mode(callback)
+ac.on_target_temperature(callback)
+ac.on_range_value(callback)  # Fan speed
+await ac.send_temperature_event(25.0, 60.0)
+```
+
+### Other Devices
+```python
+# Fan - Power and speed control
+from sinricpro import SinricProFan
+fan = SinricProFan("device_id")
+fan.on_power_state(callback)
+fan.on_range_value(callback)  # Speed 0-100
+fan.on_adjust_range_value(callback)
+await fan.send_range_value_event(75)
+
+# Doorbell
+from sinricpro import SinricProDoorbell
+doorbell = SinricProDoorbell("device_id")
+await doorbell.send_doorbell_event()
+await doorbell.send_push_notification("Someone at the door!")
+```
+
+## Capabilities (Mixins)
+
+### PowerStateController
+```python
+device.on_power_state(callback: Callable[[bool], Awaitable[bool]])
+await device.send_power_state_event(state: bool, cause: str = "PHYSICAL_INTERACTION")
+```
+
+### BrightnessController (for Light only)
+```python
+device.on_brightness(callback: Callable[[int], Awaitable[bool]])
+device.on_adjust_brightness(callback: Callable[[int], Awaitable[bool]])
+await device.send_brightness_event(brightness: int)
+```
+
+### PowerLevelController (for DimSwitch)
+```python
+device.on_power_level(callback: Callable[[int], Awaitable[bool]])
+device.on_adjust_power_level(callback: Callable[[int], Awaitable[tuple[bool, int]]])
+await device.send_power_level_event(level: int)
+```
+
+### ColorController
+```python
+device.on_color(callback: Callable[[int, int, int], Awaitable[bool]])  # r, g, b
+await device.send_color_event(r: int, g: int, b: int)
+```
+
+### ColorTemperatureController
+```python
+device.on_color_temperature(callback: Callable[[int], Awaitable[bool]])
+await device.send_color_temperature_event(temp: int)  # 2200-7000K
+```
+
+### ThermostatController
+```python
+device.on_thermostat_mode(callback: Callable[[str], Awaitable[bool]])
+device.on_target_temperature(callback: Callable[[float], Awaitable[bool]])
+```
+
+### RangeController (generic 0-100 range)
+```python
+device.on_range_value(callback: Callable[[int], Awaitable[bool]])
+device.on_adjust_range_value(callback: Callable[[int], Awaitable[bool]])
+await device.send_range_value_event(value: int)
+```
+
+### OpenCloseController (for Blinds)
+```python
+device.on_open_close(callback: Callable[[int], Awaitable[bool]])  # 0-100
+await device.send_open_close_event(position: int)
+```
+
+### SettingController (all devices have this)
+```python
+device.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+```
+
+### PushNotification (all devices have this)
+```python
+await device.send_push_notification(message: str)
+```
+
+## Important Patterns
+
+### Callback Signatures
+```python
+# PowerState
+async def on_power_state(state: bool) -> bool:
+    return True  # Success
+
+# Brightness
+async def on_brightness(brightness: int) -> bool:
+    return True
+
+# AdjustBrightness
+async def on_adjust_brightness(delta: int) -> bool:
+    return True
+
+# PowerLevel (DimSwitch)
+async def on_power_level(level: int) -> bool:
+    return True
+
+# AdjustPowerLevel (DimSwitch) - Returns tuple!
+async def on_adjust_power_level(delta: int) -> tuple[bool, int]:
+    new_level = current + delta
+    return True, new_level
+
+# Color
+async def on_color(r: int, g: int, b: int) -> bool:
+    return True
+
+# Setting
+async def on_setting(setting: str, value: Any) -> bool:
+    return True
+```
+
+### Event Rate Limiting
+- All events are rate-limited by EventLimiter
+- State events: 1 per second
+- Sensor events: 1 per 60 seconds
+- If rate limited, send_*_event() returns False
+
+### Action Constants
+```python
+from sinricpro.core.actions import (
+    ACTION_SET_POWER_STATE,      # "setPowerState"
+    ACTION_SET_BRIGHTNESS,        # "setBrightness"
+    ACTION_ADJUST_BRIGHTNESS,     # "adjustBrightness"
+    ACTION_SET_POWER_LEVEL,       # "setPowerLevel"
+    ACTION_ADJUST_POWER_LEVEL,    # "adjustPowerLevel"
+    ACTION_SET_COLOR,             # "setColor"
+    ACTION_SET_RANGE_VALUE,       # "setRangeValue"
+    ACTION_POWER_USAGE,           # "powerUsage"
+    ACTION_MOTION,                # "motion"
+    # ... etc
+)
+```
+
+## Common Mistakes to Avoid
+
+1. **DimSwitch uses PowerLevelController, NOT BrightnessController**
+   - Use `on_power_level()` not `on_brightness()`
+   - Use `send_power_level_event()` not `send_brightness_event()`
+
+2. **AdjustPowerLevel callback returns tuple**
+   - `async def on_adjust_power_level(delta: int) -> tuple[bool, int]:`
+   - Must return `(success, new_level)`
+
+3. **PowerSensor uses "powerUsage" action, not "currentPowerConsumption"**
+   - Action constant: `ACTION_POWER_USAGE`
+   - Auto-calculates `startTime` and `wattHours`
+
+4. **Blinds use OpenCloseController, not PercentageController**
+   - Uses `ACTION_SET_RANGE_VALUE` internally
+   - Provides semantic `on_open_close()` callback
+
+5. **Event rate limiting**
+   - Don't spam events - check return value
+   - State events: max 1/sec
+   - Sensor events: max 1/60sec
+
+## Environment Variables
+
+```python
+import os
+
+APP_KEY = os.getenv("SINRICPRO_APP_KEY", "default_key")
+APP_SECRET = os.getenv("SINRICPRO_APP_SECRET", "default_secret")
+```
+
+## Error Handling
+
+```python
+from sinricpro import (
+    SinricProError,
+    SinricProConnectionError,
+    SinricProConfigurationError,
+    SinricProDeviceError,
+    SinricProSignatureError,
+    SinricProTimeoutError,
+)
+
+try:
+    await sinric.begin(config)
+except SinricProConfigurationError as e:
+    print(f"Config error: {e}")
+except SinricProConnectionError as e:
+    print(f"Connection error: {e}")
+```
+
+## Logging
+
+```python
+from sinricpro import SinricProLogger, LogLevel
+
+# Set log level
+SinricProLogger.set_level(LogLevel.DEBUG)
+
+# Or use config
+config = SinricProConfig(..., debug=True)
+```
+
+## File Structure
+
+```
+sinricpro/
+├── __init__.py          # Main exports
+├── core/
+│   ├── sinric_pro.py           # Main SinricPro class
+│   ├── sinric_pro_device.py    # Base device class
+│   ├── websocket_client.py     # WebSocket handler
+│   ├── signature.py            # HMAC-SHA256 signatures
+│   ├── event_limiter.py        # Rate limiting
+│   ├── message_queue.py        # Message queue
+│   ├── types.py                # Type definitions
+│   ├── actions.py              # Action constants
+│   └── exceptions.py           # Custom exceptions
+├── devices/
+│   ├── sinric_pro_switch.py
+│   ├── sinric_pro_light.py
+│   ├── sinric_pro_dimswitch.py
+│   └── ... (16 device types)
+├── capabilities/
+│   ├── power_state_controller.py
+│   ├── brightness_controller.py
+│   ├── power_level_controller.py
+│   ├── color_controller.py
+│   └── ... (18 capabilities)
+└── utils/
+    └── logger.py
+
+examples/
+├── switch/
+├── light/
+├── dimswitch/
+└── ... (16 example types)
+```
+
+## Key Dependencies
+
+- Python 3.10+
+- websockets >= 12.0
+
+## License
+
+Copyright (c) 2019-2025 Sinric. All rights reserved.
+Licensed under Creative Commons Attribution-Share Alike 4.0 (CC BY-SA)
+
+---
+
+For complete API reference and advanced usage, see llms-full.txt

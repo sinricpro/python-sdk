@@ -1,0 +1,229 @@
+name: Publish Release to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 3.0.0)'
+        required: true
+        type: string
+      branch:
+        description: 'Branch or tag to publish from'
+        required: true
+        default: 'main'
+        type: string
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  validate-version:
+    name: Validate Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check-version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Check version format
+        id: check-version
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
+            echo "Error: Invalid version format. Expected: X.Y.Z or X.Y.Z-suffix"
+            exit 1
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "✓ Version format valid: $VERSION"
+
+      - name: Check if tag already exists
+        run: |
+          git fetch --tags
+          if git rev-parse "v${{ inputs.version }}" >/dev/null 2>&1; then
+            echo "Error: Tag v${{ inputs.version }} already exists!"
+            exit 1
+          fi
+          echo "✓ Tag v${{ inputs.version }} does not exist yet"
+
+  build-and-test:
+    name: Build and Test Package
+    runs-on: ubuntu-latest
+    needs: validate-version
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Update version in __init__.py
+        run: |
+          sed -i 's/__version__ = ".*"/__version__ = "${{ inputs.version }}"/' sinricpro/__init__.py
+          echo "Updated version to ${{ inputs.version }}"
+          grep "__version__" sinricpro/__init__.py
+
+      - name: Build package
+        run: |
+          python -m build
+          echo "✓ Package built successfully"
+
+      - name: Check package with twine
+        run: |
+          twine check dist/*
+          echo "✓ Package passes twine checks"
+
+      - name: List package contents
+        run: |
+          echo "Package files:"
+          ls -lh dist/
+
+      - name: Install package locally
+        run: |
+          pip install dist/*.whl
+          echo "✓ Package installed successfully"
+
+      - name: Test package import
+        run: |
+          python -c "import sinricpro; print(f'✓ SinricPro version: {sinricpro.__version__}')"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-packages
+          path: dist/
+          retention-days: 5
+
+  publish-to-pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    environment:
+      name: pypi
+      url: https://pypi.org/project/sinricpro/
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-packages
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          verbose: true
+
+      - name: Wait for PyPI propagation
+        run: |
+          echo "Waiting 30 seconds for PyPI to propagate..."
+          sleep 30
+
+      - name: Verify package on PyPI
+        run: |
+          pip install sinricpro==${{ inputs.version }}
+          python -c "import sinricpro; print(f'✓ Verified PyPI package version: {sinricpro.__version__}')"
+
+  create-github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: publish-to-pypi
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+
+      - name: Update version in source
+        run: |
+          sed -i 's/__version__ = ".*"/__version__ = "${{ inputs.version }}"/' sinricpro/__init__.py
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sinricpro/__init__.py
+          git commit -m "chore: bump version to ${{ inputs.version }}" || echo "No changes to commit"
+
+      - name: Create and push tag
+        run: |
+          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}"
+          git push origin "v${{ inputs.version }}"
+          echo "✓ Tag v${{ inputs.version }} created and pushed"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -z "$PREV_TAG" ]; then
+            echo "## Changes" > CHANGELOG.md
+            echo "Initial release" >> CHANGELOG.md
+          else
+            echo "## Changes from $PREV_TAG to v${{ inputs.version }}" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" >> CHANGELOG.md
+          fi
+
+          cat CHANGELOG.md
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-packages
+          path: dist/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ inputs.version }}
+          name: Release v${{ inputs.version }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: ${{ inputs.prerelease }}
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release Summary
+        run: |
+          echo "## 🎉 Release Published Successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** v${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ inputs.branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "**PyPI:** https://pypi.org/project/sinricpro/${{ inputs.version }}/" >> $GITHUB_STEP_SUMMARY
+          echo "**GitHub Release:** https://github.com/${{ github.repository }}/releases/tag/v${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Installation" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "pip install sinricpro==${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

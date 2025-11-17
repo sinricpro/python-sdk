@@ -1,0 +1,2086 @@
+# SinricPro Python SDK - Complete LLM Context
+
+> Official Python SDK for SinricPro - Control IoT devices with Alexa and Google Home
+> Version: 3.0.0 | License: CC BY-SA 4.0 | Python: 3.10+
+> Repository: https://github.com/sinricpro/python-sdk
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Architecture](#architecture)
+3. [Installation & Setup](#installation--setup)
+4. [Complete Device Reference](#complete-device-reference)
+5. [Complete Capabilities Reference](#complete-capabilities-reference)
+6. [Action Constants](#action-constants)
+7. [Advanced Patterns](#advanced-patterns)
+8. [Complete Examples](#complete-examples)
+9. [Error Handling](#error-handling)
+10. [Migration from C++/Node.js](#migration-from-cnode-js)
+11. [Troubleshooting](#troubleshooting)
+
+---
+
+## 1. Overview
+
+### What is SinricPro?
+
+SinricPro is a cloud platform that enables IoT devices to be controlled via voice assistants (Alexa, Google Home) and mobile apps. This Python SDK allows you to:
+
+- Control devices remotely via WebSocket connection
+- Receive commands from Alexa/Google Home
+- Send device state updates to the cloud
+- Handle bidirectional communication with HMAC-SHA256 signatures
+
+### Key Features
+
+- ✅ **Async/Await Only** - Pure async implementation, no sync wrapper
+- ✅ **Type Safe** - Full type hints with Python 3.10+ syntax
+- ✅ **Auto-Reconnection** - Handles connection drops automatically
+- ✅ **Rate Limiting** - Built-in event rate limiting
+- ✅ **Signature Verification** - HMAC-SHA256 message signing
+- ✅ **16 Device Types** - Comprehensive device support
+- ✅ **18 Capabilities** - Modular capability system
+- ✅ **Cross-Platform** - Linux, Windows, macOS, Raspberry Pi
+
+### Philosophy
+
+1. **Async-first**: Everything is async/await - no blocking operations
+2. **Type hints everywhere**: Full type safety for IDE support
+3. **Pythonic**: snake_case, clear naming, idiomatic Python
+4. **Capability mixins**: Modular design using multiple inheritance
+5. **Event-driven**: Callback-based event handling
+6. **Immutable where possible**: Configuration objects are immutable
+
+---
+
+## 2. Architecture
+
+### Core Components
+
+#### SinricPro (Main Class)
+```python
+class SinricPro:
+    """Singleton managing WebSocket connection and device registry"""
+
+    @classmethod
+    def get_instance() -> SinricPro:
+        """Get singleton instance"""
+
+    def add(self, device: SinricProDevice) -> None:
+        """Register a device"""
+
+    async def begin(self, config: SinricProConfig) -> None:
+        """Start WebSocket connection"""
+
+    async def stop(self) -> None:
+        """Stop connection and cleanup"""
+
+    def get_device(self, device_id: str) -> SinricProDevice | None:
+        """Get device by ID"""
+```
+
+#### SinricProConfig
+```python
+@dataclass
+class SinricProConfig:
+    app_key: str              # UUID format
+    app_secret: str           # Min 32 chars
+    restore_states: bool = True
+    debug: bool = False
+
+    def __post_init__(self):
+        # Validates app_key and app_secret format
+```
+
+#### SinricProDevice (Base Class)
+```python
+class SinricProDevice:
+    """Base class for all devices"""
+
+    def __init__(self, device_id: str, product_type: str):
+        self._device_id = device_id  # 24 hex chars
+        self._product_type = product_type
+
+    def get_device_id(self) -> str:
+        """Get device ID"""
+
+    def get_product_type(self) -> str:
+        """Get product type"""
+
+    async def handle_request(self, request: SinricProRequest) -> bool:
+        """Override to handle incoming requests"""
+
+    async def send_event(
+        self,
+        action: str,
+        value: dict[str, Any],
+        cause: str = "PHYSICAL_INTERACTION"
+    ) -> bool:
+        """Send event to cloud"""
+```
+
+### WebSocket Communication Flow
+
+```
+User says "Alexa, turn on the light"
+          ↓
+    Alexa Cloud
+          ↓
+   SinricPro Cloud
+          ↓
+   WebSocket Message (signed with HMAC-SHA256)
+          ↓
+   Python SDK receives message
+          ↓
+   Verify signature
+          ↓
+   Route to device by deviceId
+          ↓
+   Call device.handle_request()
+          ↓
+   Device routes to capability handler
+          ↓
+   Capability calls registered callback
+          ↓
+   Callback controls hardware, returns True/False
+          ↓
+   SDK sends response back
+          ↓
+   SinricPro Cloud
+          ↓
+   Alexa says "OK"
+```
+
+### Message Format
+
+**Request from Cloud:**
+```json
+{
+  "header": {
+    "payloadVersion": 2,
+    "signatureVersion": 1
+  },
+  "payload": {
+    "action": "setPowerState",
+    "createdAt": 1234567890,
+    "deviceId": "507f1f77bcf86cd799439011",
+    "replyToken": "uuid-here",
+    "type": "request",
+    "value": {
+      "state": "On"
+    }
+  },
+  "signature": {
+    "HMAC": "base64-signature-here"
+  }
+}
+```
+
+**Response to Cloud:**
+```json
+{
+  "header": {
+    "payloadVersion": 2,
+    "signatureVersion": 1
+  },
+  "payload": {
+    "action": "setPowerState",
+    "createdAt": 1234567890,
+    "deviceId": "507f1f77bcf86cd799439011",
+    "message": "OK",
+    "replyToken": "uuid-here",
+    "success": true,
+    "type": "response",
+    "value": {
+      "state": "On"
+    }
+  },
+  "signature": {
+    "HMAC": "base64-signature-here"
+  }
+}
+```
+
+**Event to Cloud:**
+```json
+{
+  "header": {
+    "payloadVersion": 2,
+    "signatureVersion": 1
+  },
+  "payload": {
+    "action": "setPowerState",
+    "cause": {
+      "type": "PHYSICAL_INTERACTION"
+    },
+    "createdAt": 1234567890,
+    "deviceId": "507f1f77bcf86cd799439011",
+    "type": "event",
+    "value": {
+      "state": "On"
+    }
+  },
+  "signature": {
+    "HMAC": "base64-signature-here"
+  }
+}
+```
+
+### Capability Mixin Pattern
+
+Devices inherit from SinricProDevice + capability mixins:
+
+```python
+class SinricProLight(
+    SinricProDevice,
+    PowerStateController,
+    BrightnessController,
+    ColorController,
+    ColorTemperatureController,
+    SettingController,
+    PushNotification
+):
+    def __init__(self, device_id: str):
+        super().__init__(device_id=device_id, product_type="LIGHT")
+
+    async def handle_request(self, request: SinricProRequest) -> bool:
+        # Route actions to capability handlers
+        if request.action == ACTION_SET_POWER_STATE:
+            state = request.request_value.get("state") == "On"
+            success, response_value = await self.handle_power_state_request(state, self)
+            request.response_value = response_value
+            return success
+        # ... etc
+```
+
+Each capability provides:
+- Callback registration methods (`on_*`)
+- Request handlers (`handle_*_request`)
+- Event senders (`send_*_event`)
+
+---
+
+## 3. Installation & Setup
+
+### Installation
+
+```bash
+# From PyPI (when published)
+pip install sinricpro
+
+# From source
+git clone https://github.com/sinricpro/python-sdk
+cd python-sdk
+pip install -e .
+```
+
+### Basic Setup
+
+```python
+import asyncio
+from sinricpro import SinricPro, SinricProSwitch, SinricProConfig
+
+async def on_power_state(state: bool) -> bool:
+    """Called when Alexa says "turn on/off" """
+    print(f"Switch {'ON' if state else 'OFF'}")
+    # TODO: Control GPIO/relay here
+    return True  # Return True on success
+
+async def main():
+    # Get singleton instance
+    sinric = SinricPro.get_instance()
+
+    # Create device
+    switch = SinricProSwitch("YOUR_DEVICE_ID_HERE")
+
+    # Register callback
+    switch.on_power_state(on_power_state)
+
+    # Add to SinricPro
+    sinric.add(switch)
+
+    # Configure
+    config = SinricProConfig(
+        app_key="YOUR_APP_KEY",      # From portal
+        app_secret="YOUR_APP_SECRET", # From portal
+        debug=True                     # Enable debug logs
+    )
+
+    # Connect and run
+    await sinric.begin(config)
+
+    # Keep running
+    while True:
+        await asyncio.sleep(1)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### Getting Credentials
+
+1. Go to https://sinric.pro
+2. Create account
+3. Go to Credentials section
+4. Copy App Key (UUID format)
+5. Copy App Secret (long string)
+6. Create a device, copy Device ID (24 hex chars)
+
+---
+
+## 4. Complete Device Reference
+
+### 4.1 SinricProSwitch
+
+**Product Type:** `"SWITCH"`
+
+**Capabilities:**
+- PowerStateController
+- SettingController
+- PushNotification
+
+**Methods:**
+```python
+# Callbacks
+switch.on_power_state(callback: Callable[[bool], Awaitable[bool]])
+switch.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await switch.send_power_state_event(state: bool, cause: str = "PHYSICAL_INTERACTION")
+await switch.send_push_notification(message: str)
+```
+
+**Example:**
+```python
+switch = SinricProSwitch("device_id")
+
+async def on_power(state: bool) -> bool:
+    GPIO.output(RELAY_PIN, GPIO.HIGH if state else GPIO.LOW)
+    return True
+
+async def on_setting(setting: str, value: Any) -> bool:
+    if setting == "auto_off_timer":
+        # Set timer
+        return True
+    return False
+
+switch.on_power_state(on_power)
+switch.on_setting(on_setting)
+
+# Report physical button press
+await switch.send_power_state_event(True)
+```
+
+---
+
+### 4.2 SinricProLight
+
+**Product Type:** `"LIGHT"`
+
+**Capabilities:**
+- PowerStateController
+- BrightnessController
+- ColorController
+- ColorTemperatureController
+- SettingController
+- PushNotification
+
+**Methods:**
+```python
+# Callbacks
+light.on_power_state(callback: Callable[[bool], Awaitable[bool]])
+light.on_brightness(callback: Callable[[int], Awaitable[bool]])
+light.on_adjust_brightness(callback: Callable[[int], Awaitable[bool]])
+light.on_color(callback: Callable[[int, int, int], Awaitable[bool]])  # r, g, b
+light.on_color_temperature(callback: Callable[[int], Awaitable[bool]])
+light.on_increase_color_temperature(callback: Callable[[None], Awaitable[bool]])
+light.on_decrease_color_temperature(callback: Callable[[None], Awaitable[bool]])
+light.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await light.send_power_state_event(state: bool)
+await light.send_brightness_event(brightness: int)  # 0-100
+await light.send_color_event(r: int, g: int, b: int)  # 0-255 each
+await light.send_color_temperature_event(temperature: int)  # 2200-7000K
+await light.send_push_notification(message: str)
+```
+
+**Example:**
+```python
+light = SinricProLight("device_id")
+
+async def on_brightness(brightness: int) -> bool:
+    # brightness: 0-100
+    pwm.ChangeDutyCycle(brightness)
+    return True
+
+async def on_color(r: int, g: int, b: int) -> bool:
+    # r, g, b: 0-255
+    set_rgb_strip(r, g, b)
+    return True
+
+async def on_color_temp(temp: int) -> bool:
+    # temp: 2200-7000 Kelvin
+    set_white_temperature(temp)
+    return True
+
+light.on_brightness(on_brightness)
+light.on_color(on_color)
+light.on_color_temperature(on_color_temp)
+```
+
+---
+
+### 4.3 SinricProDimSwitch
+
+**Product Type:** `"DIMMABLE_SWITCH"`
+
+**Capabilities:**
+- PowerStateController
+- PowerLevelController (NOT BrightnessController!)
+- SettingController
+- PushNotification
+
+**IMPORTANT:** DimSwitch uses PowerLevelController, not BrightnessController
+
+**Methods:**
+```python
+# Callbacks
+dimswitch.on_power_state(callback: Callable[[bool], Awaitable[bool]])
+dimswitch.on_power_level(callback: Callable[[int], Awaitable[bool]])
+dimswitch.on_adjust_power_level(callback: Callable[[int], Awaitable[tuple[bool, int]]])  # Returns tuple!
+dimswitch.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await dimswitch.send_power_state_event(state: bool)
+await dimswitch.send_power_level_event(level: int)  # 0-100
+await dimswitch.send_push_notification(message: str)
+```
+
+**Example:**
+```python
+dimswitch = SinricProDimSwitch("device_id")
+current_level = 0
+
+async def on_power_level(level: int) -> bool:
+    global current_level
+    current_level = level
+    pwm.ChangeDutyCycle(level)
+    return True
+
+async def on_adjust_power_level(delta: int) -> tuple[bool, int]:
+    global current_level
+    new_level = max(0, min(100, current_level + delta))
+    current_level = new_level
+    pwm.ChangeDutyCycle(new_level)
+    return True, new_level  # Return tuple!
+
+dimswitch.on_power_level(on_power_level)
+dimswitch.on_adjust_power_level(on_adjust_power_level)
+```
+
+**Actions:**
+- `ACTION_SET_POWER_LEVEL` - "setPowerLevel"
+- `ACTION_ADJUST_POWER_LEVEL` - "adjustPowerLevel"
+
+---
+
+### 4.4 SinricProMotionSensor
+
+**Product Type:** `"MOTION_SENSOR"`
+
+**Capabilities:**
+- MotionSensor
+- SettingController
+- PushNotification
+
+**Methods:**
+```python
+# Callbacks
+sensor.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await sensor.send_motion_event(detected: bool)  # True = motion detected
+await sensor.send_push_notification(message: str)
+```
+
+**Example:**
+```python
+sensor = SinricProMotionSensor("device_id")
+
+# Monitor GPIO pin
+def on_motion_detected():
+    asyncio.create_task(sensor.send_motion_event(True))
+    print("Motion detected!")
+
+GPIO.add_event_detect(PIR_PIN, GPIO.RISING, callback=on_motion_detected)
+```
+
+---
+
+### 4.5 SinricProContactSensor
+
+**Product Type:** `"CONTACT_SENSOR"`
+
+**Capabilities:**
+- ContactSensor
+- SettingController
+- PushNotification
+
+**Methods:**
+```python
+# Callbacks
+sensor.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await sensor.send_contact_event(detected: bool)  # True=open, False=closed
+await sensor.send_push_notification(message: str)
+```
+
+**Example:**
+```python
+contact = SinricProContactSensor("device_id")
+
+# Monitor magnetic reed switch
+previous_state = None
+
+while True:
+    is_open = GPIO.input(REED_PIN) == GPIO.HIGH
+
+    if is_open != previous_state:
+        await contact.send_contact_event(is_open)
+
+        if is_open:
+            await contact.send_push_notification("Door opened!")
+
+        previous_state = is_open
+
+    await asyncio.sleep(0.1)
+```
+
+---
+
+### 4.6 SinricProTemperatureSensor
+
+**Product Type:** `"TEMPERATURE_SENSOR"`
+
+**Capabilities:**
+- TemperatureSensor
+- SettingController
+- PushNotification
+
+**Methods:**
+```python
+# Callbacks
+sensor.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await sensor.send_temperature_event(temperature: float, humidity: float)
+await sensor.send_push_notification(message: str)
+```
+
+**Example:**
+```python
+temp = SinricProTemperatureSensor("device_id")
+
+while True:
+    # Read DHT22 sensor
+    humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.DHT22, DHT_PIN)
+
+    if humidity is not None and temperature is not None:
+        await temp.send_temperature_event(temperature, humidity)
+
+    await asyncio.sleep(60)  # Every 60 seconds
+```
+
+---
+
+### 4.7 SinricProAirQualitySensor
+
+**Product Type:** `"AIR_QUALITY_SENSOR"`
+
+**Capabilities:**
+- AirQualitySensor
+- TemperatureSensor
+- SettingController
+- PushNotification
+
+**Methods:**
+```python
+# Callbacks
+sensor.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await sensor.send_air_quality_event(pm1_0: int, pm2_5: int, pm10: int)
+await sensor.send_temperature_event(temperature: float, humidity: float)
+await sensor.send_push_notification(message: str)
+```
+
+**Example:**
+```python
+air = SinricProAirQualitySensor("device_id")
+
+while True:
+    # Read PMS5003 sensor
+    data = pms5003.read()
+    pm1_0 = data.pm1_0
+    pm2_5 = data.pm2_5
+    pm10 = data.pm10
+
+    await air.send_air_quality_event(pm1_0, pm2_5, pm10)
+
+    # Also send temperature if available
+    temp, humidity = read_dht22()
+    await air.send_temperature_event(temp, humidity)
+
+    # Alert if PM2.5 is high
+    if pm2_5 > 35:
+        await air.send_push_notification(f"High PM2.5: {pm2_5} μg/m³")
+
+    await asyncio.sleep(60)
+```
+
+---
+
+### 4.8 SinricProPowerSensor
+
+**Product Type:** `"POWER_SENSOR"`
+
+**Capabilities:**
+- PowerSensor
+- SettingController
+- PushNotification
+
+**Methods:**
+```python
+# Callbacks
+sensor.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await sensor.send_power_sensor_event(
+    voltage: float,
+    current: float,
+    power: float | None = None,  # Auto-calculated if None
+    apparent_power: float | None = None,
+    reactive_power: float | None = None,
+    factor: float | None = None,  # Auto-calculated if apparentPower provided
+    cause: str = "PERIODIC_POLL"
+)
+await sensor.send_push_notification(message: str)
+```
+
+**Important:**
+- Action: `ACTION_POWER_USAGE` ("powerUsage")
+- SDK automatically adds `startTime` and `wattHours` fields
+- `wattHours` calculated as: `(current_time - start_time) * power / 3600.0`
+- `power` auto-calculated as `voltage * current` if not provided
+- `factor` auto-calculated as `power / apparentPower` if apparentPower provided
+
+**Example:**
+```python
+power = SinricProPowerSensor("device_id")
+
+while True:
+    # Read INA219
+    voltage = ina219.voltage()
+    current = ina219.current() / 1000.0  # mA to A
+    power_w = ina219.power() / 1000.0    # mW to W
+
+    # Can omit power - will be calculated
+    await power.send_power_sensor_event(
+        voltage=voltage,
+        current=current,
+        # power=power_w,  # Optional - SDK calculates if omitted
+    )
+
+    # Or send complete data
+    await power.send_power_sensor_event(
+        voltage=120.0,
+        current=2.5,
+        power=300.0,
+        apparent_power=310.0,
+        reactive_power=50.0,
+        factor=0.97
+    )
+    # startTime and wattHours added automatically by SDK
+
+    await asyncio.sleep(60)
+```
+
+---
+
+### 4.9 SinricProBlinds
+
+**Product Type:** `"BLINDS"`
+
+**Capabilities:**
+- PowerStateController
+- OpenCloseController (uses RangeController internally)
+- SettingController
+- PushNotification
+
+**Methods:**
+```python
+# Callbacks
+blinds.on_power_state(callback: Callable[[bool], Awaitable[bool]])
+blinds.on_open_close(callback: Callable[[int], Awaitable[bool]])  # 0=closed, 100=open
+blinds.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await blinds.send_power_state_event(state: bool)
+await blinds.send_open_close_event(position: int)  # 0-100
+await blinds.send_push_notification(message: str)
+```
+
+**Example:**
+```python
+blinds = SinricProBlinds("device_id")
+
+async def on_open_close(position: int) -> bool:
+    # position: 0=closed, 100=open
+    steps = int((position / 100.0) * TOTAL_STEPS)
+    stepper_motor.move_to(steps)
+    return True
+
+async def on_power(state: bool) -> bool:
+    # Enable/disable motor driver
+    GPIO.output(ENABLE_PIN, GPIO.HIGH if state else GPIO.LOW)
+    return True
+
+blinds.on_open_close(on_open_close)
+blinds.on_power_state(on_power)
+
+# Report physical button press
+await blinds.send_open_close_event(75)  # 75% open
+```
+
+**Actions:**
+- Uses `ACTION_SET_RANGE_VALUE` ("setRangeValue") internally
+- Provides semantic `on_open_close()` callback
+
+---
+
+### 4.10 SinricProGarageDoor
+
+**Product Type:** `"GARAGE_DOOR"`
+
+**Capabilities:**
+- DoorController
+- SettingController
+- PushNotification
+
+**Methods:**
+```python
+# Callbacks
+garage.on_door_state(callback: Callable[[str], Awaitable[bool]])  # "OPEN" or "CLOSED"
+garage.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await garage.send_door_state_event(state: str)  # "OPEN" or "CLOSED"
+await garage.send_push_notification(message: str)
+```
+
+**Example:**
+```python
+garage = SinricProGarageDoor("device_id")
+
+async def on_door_state(state: str) -> bool:
+    # state: "OPEN" or "CLOSED"
+    if state == "OPEN":
+        trigger_garage_opener()
+        await asyncio.sleep(15)  # Wait for door to open
+    elif state == "CLOSED":
+        trigger_garage_closer()
+        await asyncio.sleep(15)
+    return True
+
+garage.on_door_state(on_door_state)
+
+# Report door sensor
+if door_sensor_open:
+    await garage.send_door_state_event("OPEN")
+else:
+    await garage.send_door_state_event("CLOSED")
+```
+
+---
+
+### 4.11 SinricProLock
+
+**Product Type:** `"LOCK"`
+
+**Capabilities:**
+- LockController
+- SettingController
+- PushNotification
+
+**Methods:**
+```python
+# Callbacks
+lock.on_lock_state(callback: Callable[[bool], Awaitable[bool]])  # True=locked
+lock.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await lock.send_lock_state_event(locked: bool)  # True=locked, False=unlocked
+await lock.send_push_notification(message: str)
+```
+
+**Example:**
+```python
+lock = SinricProLock("device_id")
+
+async def on_lock_state(locked: bool) -> bool:
+    if locked:
+        # Engage lock
+        servo.angle = 0
+    else:
+        # Disengage lock
+        servo.angle = 90
+    return True
+
+lock.on_lock_state(on_lock_state)
+
+# Report physical lock/unlock
+await lock.send_lock_state_event(True)
+await lock.send_push_notification("Door locked")
+```
+
+---
+
+### 4.12 SinricProThermostat
+
+**Product Type:** `"THERMOSTAT"`
+
+**Capabilities:**
+- PowerStateController
+- ThermostatController
+- TemperatureSensor
+- SettingController
+- PushNotification
+
+**Methods:**
+```python
+# Callbacks
+thermo.on_power_state(callback: Callable[[bool], Awaitable[bool]])
+thermo.on_thermostat_mode(callback: Callable[[str], Awaitable[bool]])  # AUTO, COOL, HEAT, ECO
+thermo.on_target_temperature(callback: Callable[[float], Awaitable[bool]])
+thermo.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await thermo.send_power_state_event(state: bool)
+await thermo.send_temperature_event(temperature: float, humidity: float)
+await thermo.send_push_notification(message: str)
+```
+
+**Example:**
+```python
+thermo = SinricProThermostat("device_id")
+
+async def on_thermostat_mode(mode: str) -> bool:
+    # mode: "AUTO", "COOL", "HEAT", "ECO", "OFF"
+    set_hvac_mode(mode)
+    return True
+
+async def on_target_temp(temp: float) -> bool:
+    set_target_temperature(temp)
+    return True
+
+thermo.on_thermostat_mode(on_thermostat_mode)
+thermo.on_target_temperature(on_target_temp)
+
+# Report current temperature
+while True:
+    temp, humidity = read_sensor()
+    await thermo.send_temperature_event(temp, humidity)
+    await asyncio.sleep(60)
+```
+
+---
+
+### 4.13 SinricProWindowAC
+
+**Product Type:** `"AC_UNIT"`
+
+**Capabilities:**
+- PowerStateController
+- ThermostatController
+- TemperatureSensor
+- RangeController (for fan speed)
+- SettingController
+- PushNotification
+
+**Methods:**
+```python
+# Callbacks
+ac.on_power_state(callback: Callable[[bool], Awaitable[bool]])
+ac.on_thermostat_mode(callback: Callable[[str], Awaitable[bool]])
+ac.on_target_temperature(callback: Callable[[float], Awaitable[bool]])
+ac.on_range_value(callback: Callable[[int], Awaitable[bool]])  # Fan speed
+ac.on_adjust_range_value(callback: Callable[[int], Awaitable[bool]])
+ac.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await ac.send_power_state_event(state: bool)
+await ac.send_temperature_event(temperature: float, humidity: float)
+await ac.send_range_value_event(speed: int)
+await ac.send_push_notification(message: str)
+```
+
+**Example:**
+```python
+ac = SinricProWindowAC("device_id")
+
+async def on_thermostat_mode(mode: str) -> bool:
+    send_ir_command(f"MODE_{mode}")
+    return True
+
+async def on_target_temp(temp: float) -> bool:
+    send_ir_command(f"TEMP_{int(temp)}")
+    return True
+
+async def on_fan_speed(speed: int) -> bool:
+    # Convert 0-100 to LOW/MED/HIGH
+    if speed < 33:
+        send_ir_command("FAN_LOW")
+    elif speed < 66:
+        send_ir_command("FAN_MED")
+    else:
+        send_ir_command("FAN_HIGH")
+    return True
+
+ac.on_thermostat_mode(on_thermostat_mode)
+ac.on_target_temperature(on_target_temp)
+ac.on_range_value(on_fan_speed)
+```
+
+---
+
+### 4.14 SinricProFan
+
+**Product Type:** `"FAN"`
+
+**Capabilities:**
+- PowerStateController
+- RangeController (for speed)
+- SettingController
+- PushNotification
+
+**Methods:**
+```python
+# Callbacks
+fan.on_power_state(callback: Callable[[bool], Awaitable[bool]])
+fan.on_range_value(callback: Callable[[int], Awaitable[bool]])  # Speed 0-100
+fan.on_adjust_range_value(callback: Callable[[int], Awaitable[bool]])
+fan.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await fan.send_power_state_event(state: bool)
+await fan.send_range_value_event(speed: int)
+await fan.send_push_notification(message: str)
+```
+
+**Example:**
+```python
+fan = SinricProFan("device_id")
+
+async def on_fan_speed(speed: int) -> bool:
+    pwm.ChangeDutyCycle(speed)
+    return True
+
+async def on_setting(setting: str, value: Any) -> bool:
+    if setting == "oscillate":
+        GPIO.output(OSC_PIN, GPIO.HIGH if value else GPIO.LOW)
+        return True
+    return False
+
+fan.on_range_value(on_fan_speed)
+fan.on_setting(on_setting)
+```
+
+---
+
+### 4.15 SinricProDoorbell
+
+**Product Type:** `"DOORBELL"`
+
+**Capabilities:**
+- SettingController
+- PushNotification
+- Custom: send_doorbell_event()
+
+**Methods:**
+```python
+# Callbacks
+doorbell.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
+
+# Events
+await doorbell.send_doorbell_event(cause: str = "PHYSICAL_INTERACTION")
+await doorbell.send_push_notification(message: str)
+```
+
+**Example:**
+```python
+doorbell = SinricProDoorbell("device_id")
+
+def on_button_press():
+    # Play local chime
+    play_chime()
+
+    # Send event to cloud
+    asyncio.create_task(doorbell.send_doorbell_event())
+    asyncio.create_task(doorbell.send_push_notification("Someone at the door!"))
+
+GPIO.add_event_detect(BUTTON_PIN, GPIO.FALLING, callback=on_button_press)
+```
+
+---
+
+## 5. Complete Capabilities Reference
+
+### 5.1 PowerStateController
+
+**Used by:** Switch, Light, DimSwitch, Blinds, Thermostat, WindowAC, Fan
+
+```python
+class PowerStateController:
+    def on_power_state(self, callback: PowerStateCallback) -> None:
+        """Register callback for power state changes"""
+
+    async def handle_power_state_request(
+        self, state: bool, device: SinricProDevice
+    ) -> tuple[bool, dict[str, Any]]:
+        """Internal: Handle setPowerState request"""
+
+    async def send_power_state_event(
+        self, state: bool, cause: str = "PHYSICAL_INTERACTION"
+    ) -> bool:
+        """Send power state event"""
+```
+
+**Callback Signature:**
+```python
+async def on_power_state(state: bool) -> bool:
+    # state: True=ON, False=OFF
+    # Return True on success
+    return True
+```
+
+**Actions:** `ACTION_SET_POWER_STATE` ("setPowerState")
+
+**Rate Limit:** EVENT_LIMIT_STATE (1/second)
+
+---
+
+### 5.2 BrightnessController
+
+**Used by:** Light ONLY (not DimSwitch!)
+
+```python
+class BrightnessController:
+    def on_brightness(self, callback: BrightnessCallback) -> None:
+        """Register callback for absolute brightness"""
+
+    def on_adjust_brightness(self, callback: AdjustBrightnessCallback) -> None:
+        """Register callback for relative brightness adjustment"""
+
+    async def send_brightness_event(self, brightness: int) -> bool:
+        """Send brightness event (0-100)"""
+```
+
+**Callback Signatures:**
+```python
+async def on_brightness(brightness: int) -> bool:
+    # brightness: 0-100
+    return True
+
+async def on_adjust_brightness(delta: int) -> bool:
+    # delta: -100 to +100
+    # Calculate new brightness and apply
+    return True
+```
+
+**Actions:**
+- `ACTION_SET_BRIGHTNESS` ("setBrightness")
+- `ACTION_ADJUST_BRIGHTNESS` ("adjustBrightness")
+
+---
+
+### 5.3 PowerLevelController
+
+**Used by:** DimSwitch ONLY
+
+```python
+class PowerLevelController:
+    def on_power_level(self, callback: PowerLevelCallback) -> None:
+        """Register callback for power level"""
+
+    def on_adjust_power_level(self, callback: AdjustPowerLevelCallback) -> None:
+        """Register callback for power level adjustment"""
+
+    async def send_power_level_event(self, power_level: int) -> bool:
+        """Send power level event (0-100)"""
+```
+
+**Callback Signatures:**
+```python
+async def on_power_level(level: int) -> bool:
+    # level: 0-100
+    return True
+
+async def on_adjust_power_level(delta: int) -> tuple[bool, int]:
+    # delta: -100 to +100
+    # MUST RETURN TUPLE: (success, new_level)
+    new_level = max(0, min(100, current_level + delta))
+    return True, new_level
+```
+
+**Actions:**
+- `ACTION_SET_POWER_LEVEL` ("setPowerLevel")
+- `ACTION_ADJUST_POWER_LEVEL` ("adjustPowerLevel")
+
+**Important:** Returns tuple from adjust callback!
+
+---
+
+### 5.4 ColorController
+
+**Used by:** Light
+
+```python
+class ColorController:
+    def on_color(self, callback: ColorCallback) -> None:
+        """Register callback for RGB color"""
+
+    async def send_color_event(self, r: int, g: int, b: int) -> bool:
+        """Send color event"""
+```
+
+**Callback Signature:**
+```python
+async def on_color(r: int, g: int, b: int) -> bool:
+    # r, g, b: 0-255
+    return True
+```
+
+**Actions:** `ACTION_SET_COLOR` ("setColor")
+
+---
+
+### 5.5 ColorTemperatureController
+
+**Used by:** Light
+
+```python
+class ColorTemperatureController:
+    def on_color_temperature(self, callback: ColorTemperatureCallback) -> None:
+        """Register callback for color temperature"""
+
+    def on_increase_color_temperature(self, callback: IncreaseColorTempCallback) -> None:
+        """Register callback for increase"""
+
+    def on_decrease_color_temperature(self, callback: DecreaseColorTempCallback) -> None:
+        """Register callback for decrease"""
+
+    async def send_color_temperature_event(self, temperature: int) -> bool:
+        """Send color temperature event (2200-7000K)"""
+```
+
+**Callback Signatures:**
+```python
+async def on_color_temperature(temp: int) -> bool:
+    # temp: 2200-7000 Kelvin
+    return True
+
+async def on_increase_color_temperature() -> bool:
+    return True
+
+async def on_decrease_color_temperature() -> bool:
+    return True
+```
+
+**Actions:**
+- `ACTION_SET_COLOR_TEMPERATURE` ("setColorTemperature")
+- `ACTION_INCREASE_COLOR_TEMPERATURE` ("increaseColorTemperature")
+- `ACTION_DECREASE_COLOR_TEMPERATURE` ("decreaseColorTemperature")
+
+---
+
+### 5.6 ThermostatController
+
+**Used by:** Thermostat, WindowAC
+
+```python
+class ThermostatController:
+    def on_thermostat_mode(self, callback: ThermostatModeCallback) -> None:
+        """Register callback for thermostat mode"""
+
+    def on_target_temperature(self, callback: TargetTemperatureCallback) -> None:
+        """Register callback for target temperature"""
+```
+
+**Callback Signatures:**
+```python
+async def on_thermostat_mode(mode: str) -> bool:
+    # mode: "AUTO", "COOL", "HEAT", "ECO", "OFF"
+    return True
+
+async def on_target_temperature(temp: float) -> bool:
+    # temp: temperature in Celsius
+    return True
+```
+
+**Actions:**
+- `ACTION_SET_THERMOSTAT_MODE` ("setThermostatMode")
+- `ACTION_TARGET_TEMPERATURE` ("targetTemperature")
+
+---
+
+### 5.7 RangeController
+
+**Used by:** Fan, WindowAC
+
+```python
+class RangeController:
+    def on_range_value(self, callback: RangeValueCallback) -> None:
+        """Register callback for absolute range value"""
+
+    def on_adjust_range_value(self, callback: AdjustRangeValueCallback) -> None:
+        """Register callback for relative adjustment"""
+
+    async def send_range_value_event(self, value: int) -> bool:
+        """Send range value event (0-100)"""
+```
+
+**Callback Signatures:**
+```python
+async def on_range_value(value: int) -> bool:
+    # value: 0-100
+    return True
+
+async def on_adjust_range_value(delta: int) -> bool:
+    # delta: -100 to +100
+    return True
+```
+
+**Actions:**
+- `ACTION_SET_RANGE_VALUE` ("setRangeValue")
+- `ACTION_ADJUST_RANGE_VALUE` ("adjustRangeValue")
+
+---
+
+### 5.8 OpenCloseController
+
+**Used by:** Blinds
+
+```python
+class OpenCloseController:
+    def on_open_close(self, callback: OpenCloseCallback) -> None:
+        """Register callback for open/close position"""
+
+    async def send_open_close_event(self, position: int) -> bool:
+        """Send open/close event (0=closed, 100=open)"""
+```
+
+**Callback Signature:**
+```python
+async def on_open_close(position: int) -> bool:
+    # position: 0=closed, 100=open
+    return True
+```
+
+**Actions:** `ACTION_SET_RANGE_VALUE` ("setRangeValue") - Uses RangeController internally
+
+---
+
+### 5.9 LockController
+
+**Used by:** Lock
+
+```python
+class LockController:
+    def on_lock_state(self, callback: LockStateCallback) -> None:
+        """Register callback for lock state"""
+
+    async def send_lock_state_event(self, locked: bool) -> bool:
+        """Send lock state event"""
+```
+
+**Callback Signature:**
+```python
+async def on_lock_state(locked: bool) -> bool:
+    # locked: True=locked, False=unlocked
+    return True
+```
+
+**Actions:** `ACTION_SET_LOCK_STATE` ("setLockState")
+
+---
+
+### 5.10 DoorController
+
+**Used by:** GarageDoor
+
+```python
+class DoorController:
+    def on_door_state(self, callback: DoorStateCallback) -> None:
+        """Register callback for door state"""
+
+    async def send_door_state_event(self, state: str) -> bool:
+        """Send door state event"""
+```
+
+**Callback Signature:**
+```python
+async def on_door_state(state: str) -> bool:
+    # state: "OPEN" or "CLOSED"
+    return True
+```
+
+**Actions:** `ACTION_SET_MODE` ("setMode")
+
+---
+
+### 5.11 MotionSensor
+
+**Used by:** MotionSensor
+
+```python
+class MotionSensor:
+    async def send_motion_event(
+        self, detected: bool, cause: str = "PHYSICAL_INTERACTION"
+    ) -> bool:
+        """Send motion detection event"""
+```
+
+**Actions:** `ACTION_MOTION` ("motion")
+
+**Rate Limit:** EVENT_LIMIT_SENSOR_VALUE (1/60 seconds)
+
+---
+
+### 5.12 ContactSensor
+
+**Used by:** ContactSensor
+
+```python
+class ContactSensor:
+    async def send_contact_event(
+        self, detected: bool, cause: str = "PHYSICAL_INTERACTION"
+    ) -> bool:
+        """Send contact state event"""
+```
+
+**Actions:** `ACTION_SET_CONTACT_STATE` ("setContactState")
+
+**Rate Limit:** EVENT_LIMIT_SENSOR_VALUE (1/60 seconds)
+
+---
+
+### 5.13 TemperatureSensor
+
+**Used by:** TemperatureSensor, AirQualitySensor, Thermostat, WindowAC
+
+```python
+class TemperatureSensor:
+    async def send_temperature_event(
+        self, temperature: float, humidity: float, cause: str = "PERIODIC_POLL"
+    ) -> bool:
+        """Send temperature and humidity event"""
+```
+
+**Actions:** `ACTION_CURRENT_TEMPERATURE` ("currentTemperature")
+
+**Rate Limit:** EVENT_LIMIT_SENSOR_VALUE (1/60 seconds)
+
+---
+
+### 5.14 AirQualitySensor
+
+**Used by:** AirQualitySensor
+
+```python
+class AirQualitySensor:
+    async def send_air_quality_event(
+        self, pm1_0: int, pm2_5: int, pm10: int, cause: str = "PHYSICAL_INTERACTION"
+    ) -> bool:
+        """Send air quality measurement"""
+```
+
+**Actions:** `ACTION_CURRENT_AIR_QUALITY` ("currentAirQuality")
+
+**Rate Limit:** EVENT_LIMIT_SENSOR_VALUE (1/60 seconds)
+
+---
+
+### 5.15 PowerSensor
+
+**Used by:** PowerSensor
+
+```python
+class PowerSensor:
+    async def send_power_sensor_event(
+        self,
+        voltage: float,
+        current: float,
+        power: float | None = None,
+        apparent_power: float | None = None,
+        reactive_power: float | None = None,
+        factor: float | None = None,
+        cause: str = "PERIODIC_POLL"
+    ) -> bool:
+        """Send power measurement with automatic wattHours calculation"""
+```
+
+**Actions:** `ACTION_POWER_USAGE` ("powerUsage")
+
+**Rate Limit:** EVENT_LIMIT_SENSOR_VALUE (1/60 seconds)
+
+**Auto-calculated Fields:**
+- `power` = `voltage * current` (if not provided)
+- `factor` = `power / apparentPower` (if apparentPower provided but factor not)
+- `startTime` = timestamp of last event
+- `wattHours` = `(current_time - startTime) * lastPower / 3600.0`
+
+---
+
+### 5.16 SettingController
+
+**Used by:** ALL devices
+
+```python
+class SettingController:
+    def on_setting(self, callback: SettingCallback) -> None:
+        """Register callback for settings"""
+```
+
+**Callback Signature:**
+```python
+async def on_setting(setting: str, value: Any) -> bool:
+    # setting: setting name (custom)
+    # value: setting value (any type)
+    return True
+```
+
+**Actions:** `ACTION_SET_SETTING` ("setSetting")
+
+---
+
+### 5.17 PushNotification
+
+**Used by:** ALL devices
+
+```python
+class PushNotification:
+    async def send_push_notification(
+        self, notification: str, cause: str = "PHYSICAL_INTERACTION"
+    ) -> bool:
+        """Send push notification to user"""
+```
+
+**Actions:** `ACTION_PUSH_NOTIFICATION` ("pushNotification")
+
+**Rate Limit:** EVENT_LIMIT_STATE (1/second)
+
+---
+
+## 6. Action Constants
+
+All action strings are available as constants in `sinricpro.core.actions`:
+
+```python
+from sinricpro.core.actions import (
+    # Power Control
+    ACTION_SET_POWER_STATE,           # "setPowerState"
+
+    # Brightness Control (Light only)
+    ACTION_SET_BRIGHTNESS,            # "setBrightness"
+    ACTION_ADJUST_BRIGHTNESS,         # "adjustBrightness"
+
+    # Power Level Control (DimSwitch only)
+    ACTION_SET_POWER_LEVEL,           # "setPowerLevel"
+    ACTION_ADJUST_POWER_LEVEL,        # "adjustPowerLevel"
+
+    # Color Control
+    ACTION_SET_COLOR,                 # "setColor"
+    ACTION_SET_COLOR_TEMPERATURE,     # "setColorTemperature"
+    ACTION_INCREASE_COLOR_TEMPERATURE,  # "increaseColorTemperature"
+    ACTION_DECREASE_COLOR_TEMPERATURE,  # "decreaseColorTemperature"
+
+    # Range/Position Control
+    ACTION_SET_RANGE_VALUE,           # "setRangeValue"
+    ACTION_ADJUST_RANGE_VALUE,        # "adjustRangeValue"
+
+    # Lock Control
+    ACTION_SET_LOCK_STATE,            # "setLockState"
+
+    # Door Control
+    ACTION_SET_MODE,                  # "setMode"
+
+    # Thermostat Control
+    ACTION_SET_THERMOSTAT_MODE,       # "setThermostatMode"
+    ACTION_TARGET_TEMPERATURE,        # "targetTemperature"
+
+    # Settings
+    ACTION_SET_SETTING,               # "setSetting"
+
+    # Sensor Events
+    ACTION_MOTION,                    # "motion"
+    ACTION_SET_CONTACT_STATE,         # "setContactState"
+    ACTION_CURRENT_TEMPERATURE,       # "currentTemperature"
+    ACTION_CURRENT_AIR_QUALITY,       # "currentAirQuality"
+    ACTION_POWER_USAGE,               # "powerUsage"
+
+    # Notifications
+    ACTION_PUSH_NOTIFICATION,         # "pushNotification"
+
+    # Doorbell
+    ACTION_DOORBELL_PRESS,            # "DoorbellPress"
+
+    # Legacy
+    ACTION_SET_PERCENTAGE,            # "setPercentage"
+)
+```
+
+---
+
+## 7. Advanced Patterns
+
+### 7.1 Multiple Devices
+
+```python
+async def main():
+    sinric = SinricPro.get_instance()
+
+    # Create multiple devices
+    switch1 = SinricProSwitch("device_id_1")
+    switch2 = SinricProSwitch("device_id_2")
+    light = SinricProLight("device_id_3")
+
+    # Register callbacks
+    switch1.on_power_state(lambda state: handle_switch1(state))
+    switch2.on_power_state(lambda state: handle_switch2(state))
+    light.on_power_state(lambda state: handle_light(state))
+    light.on_brightness(lambda b: handle_brightness(b))
+
+    # Add all devices
+    sinric.add(switch1)
+    sinric.add(switch2)
+    sinric.add(light)
+
+    # Single connection handles all devices
+    await sinric.begin(config)
+```
+
+### 7.2 Graceful Shutdown
+
+```python
+async def main():
+    sinric = SinricPro.get_instance()
+    # ... setup ...
+
+    try:
+        await sinric.begin(config)
+        while True:
+            await asyncio.sleep(1)
+    except KeyboardInterrupt:
+        print("Shutting down...")
+    finally:
+        await sinric.stop()
+        print("Disconnected")
+```
+
+### 7.3 Event Debouncing
+
+```python
+class DebouncedSensor:
+    def __init__(self, sensor, delay=1.0):
+        self.sensor = sensor
+        self.delay = delay
+        self.last_event = 0
+
+    async def send_if_ready(self, value):
+        now = time.time()
+        if now - self.last_event >= self.delay:
+            success = await self.sensor.send_motion_event(value)
+            if success:
+                self.last_event = now
+            return success
+        return False
+
+motion = SinricProMotionSensor("device_id")
+debounced = DebouncedSensor(motion, delay=2.0)
+
+# Only sends if 2 seconds passed
+await debounced.send_if_ready(True)
+```
+
+### 7.4 State Synchronization
+
+```python
+class StatefulSwitch:
+    def __init__(self, device_id):
+        self.switch = SinricProSwitch(device_id)
+        self.state = False
+        self.switch.on_power_state(self.on_power)
+
+    async def on_power(self, state: bool) -> bool:
+        # Update hardware
+        GPIO.output(RELAY_PIN, GPIO.HIGH if state else GPIO.LOW)
+        # Update internal state
+        self.state = state
+        return True
+
+    async def physical_button_pressed(self):
+        # Toggle state
+        self.state = not self.state
+        # Update hardware
+        GPIO.output(RELAY_PIN, GPIO.HIGH if self.state else GPIO.LOW)
+        # Sync to cloud
+        await self.switch.send_power_state_event(self.state)
+```
+
+### 7.5 Custom Device
+
+```python
+from sinricpro.core.sinric_pro_device import SinricProDevice
+from sinricpro.capabilities.power_state_controller import PowerStateController
+from sinricpro.core.types import SinricProRequest
+
+class MyCustomDevice(SinricProDevice, PowerStateController):
+    def __init__(self, device_id: str):
+        super().__init__(device_id=device_id, product_type="SWITCH")
+
+    async def handle_request(self, request: SinricProRequest) -> bool:
+        if request.action == ACTION_SET_POWER_STATE:
+            state = request.request_value.get("state") == "On"
+            success, response_value = await self.handle_power_state_request(state, self)
+            request.response_value = response_value
+            return success
+        return False
+```
+
+---
+
+## 8. Complete Examples
+
+### 8.1 Complete Smart Light Example
+
+```python
+import asyncio
+import os
+from sinricpro import SinricPro, SinricProLight, SinricProConfig
+
+# Configuration
+DEVICE_ID = os.getenv("DEVICE_ID", "YOUR_DEVICE_ID")
+APP_KEY = os.getenv("SINRICPRO_APP_KEY", "YOUR_APP_KEY")
+APP_SECRET = os.getenv("SINRICPRO_APP_SECRET", "YOUR_APP_SECRET")
+
+# State
+power_state = False
+brightness = 100
+color_rgb = (255, 255, 255)
+color_temp = 4000
+
+# Callbacks
+async def on_power_state(state: bool) -> bool:
+    global power_state
+    power_state = state
+    print(f"Power: {'ON' if state else 'OFF'}")
+    # TODO: Control LED strip
+    return True
+
+async def on_brightness(brightness_val: int) -> bool:
+    global brightness
+    brightness = brightness_val
+    print(f"Brightness: {brightness}%")
+    # TODO: Set PWM duty cycle
+    return True
+
+async def on_adjust_brightness(delta: int) -> bool:
+    global brightness
+    brightness = max(0, min(100, brightness + delta))
+    print(f"Brightness adjusted to {brightness}%")
+    return True
+
+async def on_color(r: int, g: int, b: int) -> bool:
+    global color_rgb
+    color_rgb = (r, g, b)
+    print(f"Color: RGB({r}, {g}, {b})")
+    # TODO: Set RGB strip color
+    return True
+
+async def on_color_temperature(temp: int) -> bool:
+    global color_temp
+    color_temp = temp
+    print(f"Color temperature: {temp}K")
+    # TODO: Set white LED temperature
+    return True
+
+async def on_setting(setting: str, value) -> bool:
+    print(f"Setting {setting} = {value}")
+    return True
+
+async def main():
+    # Create instance
+    sinric = SinricPro.get_instance()
+    light = SinricProLight(DEVICE_ID)
+
+    # Register all callbacks
+    light.on_power_state(on_power_state)
+    light.on_brightness(on_brightness)
+    light.on_adjust_brightness(on_adjust_brightness)
+    light.on_color(on_color)
+    light.on_color_temperature(on_color_temperature)
+    light.on_setting(on_setting)
+
+    # Add device
+    sinric.add(light)
+
+    # Configure
+    config = SinricProConfig(
+        app_key=APP_KEY,
+        app_secret=APP_SECRET,
+        debug=True
+    )
+
+    try:
+        print("Connecting to SinricPro...")
+        await sinric.begin(config)
+        print("Connected! Light is ready.")
+
+        # Main loop
+        while True:
+            await asyncio.sleep(1)
+
+    except KeyboardInterrupt:
+        print("\nShutting down...")
+    finally:
+        await sinric.stop()
+        print("Disconnected.")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### 8.2 Complete Power Sensor Example
+
+```python
+import asyncio
+import os
+import time
+from sinricpro import SinricPro, SinricProPowerSensor, SinricProConfig
+
+DEVICE_ID = os.getenv("DEVICE_ID")
+APP_KEY = os.getenv("SINRICPRO_APP_KEY")
+APP_SECRET = os.getenv("SINRICPRO_APP_SECRET")
+
+async def monitor_power(sensor: SinricProPowerSensor):
+    """Continuously monitor power consumption"""
+    while True:
+        # TODO: Read from INA219/INA3221
+        voltage = 120.0  # V
+        current = 2.5    # A
+
+        # Send to cloud (power auto-calculated, wattHours tracked)
+        success = await sensor.send_power_sensor_event(
+            voltage=voltage,
+            current=current
+        )
+
+        if success:
+            print(f"Sent: {voltage}V, {current}A")
+
+        await asyncio.sleep(60)  # Every 60 seconds
+
+async def main():
+    sinric = SinricPro.get_instance()
+    sensor = SinricProPowerSensor(DEVICE_ID)
+
+    sensor.on_setting(lambda s, v: True)
+    sinric.add(sensor)
+
+    config = SinricProConfig(app_key=APP_KEY, app_secret=APP_SECRET)
+
+    try:
+        await sinric.begin(config)
+        print("Connected! Power sensor ready.")
+
+        # Start monitoring
+        asyncio.create_task(monitor_power(sensor))
+
+        while True:
+            await asyncio.sleep(1)
+
+    except KeyboardInterrupt:
+        print("\nShutting down...")
+    finally:
+        await sinric.stop()
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+---
+
+## 9. Error Handling
+
+### Exception Hierarchy
+
+```python
+SinricProError                    # Base exception
+├── SinricProConnectionError      # WebSocket connection issues
+├── SinricProConfigurationError   # Invalid configuration
+├── SinricProDeviceError          # Device-related errors
+├── SinricProSignatureError       # HMAC signature verification failed
+└── SinricProTimeoutError         # Operation timeout
+```
+
+### Example Error Handling
+
+```python
+from sinricpro import (
+    SinricPro,
+    SinricProConfig,
+    SinricProConnectionError,
+    SinricProConfigurationError,
+    SinricProSignatureError,
+)
+
+async def main():
+    sinric = SinricPro.get_instance()
+
+    try:
+        config = SinricProConfig(
+            app_key=APP_KEY,
+            app_secret=APP_SECRET
+        )
+    except SinricProConfigurationError as e:
+        print(f"Invalid configuration: {e}")
+        return
+
+    try:
+        await sinric.begin(config)
+    except SinricProConnectionError as e:
+        print(f"Connection failed: {e}")
+        return
+    except SinricProSignatureError as e:
+        print(f"Signature verification failed: {e}")
+        return
+
+    try:
+        while True:
+            await asyncio.sleep(1)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        await sinric.stop()
+```
+
+---
+
+## 10. Migration from C++/Node.js
+
+### Key Differences
+
+#### C++ SDK → Python SDK
+
+| C++ | Python |
+|-----|--------|
+| `SinricPro.begin(...)` | `await sinric.begin(config)` |
+| Callback returns `true/false` | Callback returns `True/False` |
+| `Serial.println()` | `print()` or `SinricProLogger` |
+| `loop()` + `SinricPro.handle()` | `while True: await asyncio.sleep(1)` |
+| Template parameters `<T>` | Multiple inheritance |
+| Callback: `bool callback(const String& id, bool& state)` | `async def callback(state: bool) -> bool:` |
+
+#### Node.js SDK → Python SDK
+
+| Node.js | Python |
+|---------|--------|
+| `device.onPowerState(callback)` | `device.on_power_state(callback)` |
+| `device.sendPowerStateEvent()` | `await device.send_power_state_event()` |
+| `.then()` / `.catch()` | `try/except` with `await` |
+| `require('sinricpro')` | `from sinricpro import ...` |
+| camelCase | snake_case |
+| `export class` | `class` with type hints |
+
+### Migration Example
+
+**C++ Code:**
+```cpp
+bool onPowerState(const String& deviceId, bool &state) {
+  digitalWrite(RELAY_PIN, state ? HIGH : LOW);
+  return true;
+}
+
+void setup() {
+  SinricProSwitch& mySwitch = SinricPro[SWITCH_ID];
+  mySwitch.onPowerState(onPowerState);
+  SinricPro.begin(APP_KEY, APP_SECRET);
+}
+
+void loop() {
+  SinricPro.handle();
+}
+```
+
+**Python Equivalent:**
+```python
+async def on_power_state(state: bool) -> bool:
+    GPIO.output(RELAY_PIN, GPIO.HIGH if state else GPIO.LOW)
+    return True
+
+async def main():
+    sinric = SinricPro.get_instance()
+    switch = SinricProSwitch(SWITCH_ID)
+    switch.on_power_state(on_power_state)
+    sinric.add(switch)
+
+    config = SinricProConfig(app_key=APP_KEY, app_secret=APP_SECRET)
+    await sinric.begin(config)
+
+    while True:
+        await asyncio.sleep(1)
+
+asyncio.run(main())
+```
+
+---
+
+## 11. Troubleshooting
+
+### Connection Issues
+
+**Problem:** Can't connect to SinricPro
+
+**Solutions:**
+```python
+# 1. Enable debug logging
+config = SinricProConfig(..., debug=True)
+
+# 2. Check credentials format
+assert len(APP_KEY) == 36  # UUID format
+assert len(APP_SECRET) >= 32
+
+# 3. Check device ID
+assert len(DEVICE_ID) == 24  # 24 hex chars
+
+# 4. Test network
+import socket
+socket.create_connection(("ws.sinric.pro", 80), timeout=5)
+```
+
+### Events Not Being Sent
+
+**Problem:** `send_*_event()` returns False
+
+**Causes:**
+1. **Rate limiting** - Events sent too frequently
+   - State events: max 1/second
+   - Sensor events: max 1/60 seconds
+
+2. **Not connected** - Check connection status
+
+**Solutions:**
+```python
+# Check return value
+success = await device.send_power_state_event(True)
+if not success:
+    print("Event rate limited or not connected")
+
+# Add delays between events
+await device.send_power_state_event(True)
+await asyncio.sleep(1)  # Wait 1 second
+await device.send_power_state_event(False)
+```
+
+### Callbacks Not Called
+
+**Problem:** Callback function not being called
+
+**Checklist:**
+1. Is callback registered? `device.on_power_state(callback)`
+2. Is callback async? `async def callback(...) -> bool:`
+3. Is device added? `sinric.add(device)`
+4. Is connection active? Check debug logs
+5. Is device ID correct? Must match portal exactly
+
+### Type Errors
+
+**Problem:** MyPy or IDE showing type errors
+
+**Solutions:**
+```python
+# Use proper type hints
+async def on_power_state(state: bool) -> bool:
+    return True
+
+# Not this:
+async def on_power_state(state):  # Missing types
+    return True
+```
+
+---
+
+## Best Practices
+
+1. **Always use async/await**
+   ```python
+   # Good
+   await device.send_event(...)
+
+   # Bad
+   device.send_event(...)  # Missing await!
+   ```
+
+2. **Handle errors in callbacks**
+   ```python
+   async def on_power_state(state: bool) -> bool:
+       try:
+           # Control hardware
+           return True
+       except Exception as e:
+           print(f"Error: {e}")
+           return False
+   ```
+
+3. **Use environment variables**
+   ```python
+   APP_KEY = os.getenv("SINRICPRO_APP_KEY")
+   APP_SECRET = os.getenv("SINRICPRO_APP_SECRET")
+   ```
+
+4. **Enable debug during development**
+   ```python
+   config = SinricProConfig(..., debug=True)
+   ```
+
+5. **Respect rate limits**
+   - Don't spam events
+   - Check return values
+   - Add appropriate delays
+
+6. **Clean shutdown**
+   ```python
+   finally:
+       await sinric.stop()
+   ```
+
+---
+
+## License
+
+Copyright (c) 2019-2025 Sinric. All rights reserved.
+
+Licensed under Creative Commons Attribution-Share Alike 4.0 International (CC BY-SA 4.0)
+
+You are free to share and adapt this work for any purpose (including commercially), as long as you give appropriate credit and distribute your contributions under the same license.
+
+See LICENSE file for details.
+
+---
+
+**End of Complete LLM Context**
+
+For summarized version, see llms.txt
+For latest updates, visit: https://github.com/sinricpro/python-sdk

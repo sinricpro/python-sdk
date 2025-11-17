@@ -1,0 +1,82 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sinricpro"
+version = "3.0.0"
+description = "Official SinricPro SDK for Python - Control IoT devices with Alexa and Google Home"
+authors = [{name = "SinricPro", email = "support@sinric.pro"}]
+readme = "README.md"
+license = {text = "CC-BY-SA-4.0"}
+requires-python = ">=3.10"
+keywords = ["sinricpro", "alexa", "google-home", "smart-home", "iot", "websocket", "home-automation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Home Automation",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: Free For Educational Use",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "websockets>=12.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "pytest-cov>=4.0",
+    "black>=23.0",
+    "flake8>=6.0",
+    "mypy>=1.0",
+    "isort>=5.12",
+]
+
+[project.urls]
+Homepage = "https://sinric.pro"
+Repository = "https://github.com/sinricpro/python-sdk"
+Issues = "https://github.com/sinricpro/python-sdk/issues"
+Documentation = "https://sinric.pro/python-sdk-docs"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sinricpro*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310', 'py311', 'py312']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_unimported = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--strict-markers --cov=sinricpro --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["sinricpro"]
+omit = ["tests/*", "examples/*"]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
