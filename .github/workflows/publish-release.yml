@@ -10,7 +10,7 @@ on:
       branch:
         description: 'Branch or tag to publish from'
         required: true
-        default: 'main'
+        default: 'master'
         type: string
       prerelease:
         description: 'Mark as pre-release'
