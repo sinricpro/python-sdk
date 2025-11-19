@@ -16,11 +16,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from sinricpro import SinricPro, SinricProCustomDevice, SinricProConfig
 
 # Device ID from SinricPro portal
-DEVICE_ID = "686b935c61cab415839a4311"
+DEVICE_ID = "YOUR_DEVICE_ID_HERE"  # Replace with your device ID
 
 # Credentials from SinricPro portal
-APP_KEY = os.getenv("SINRICPRO_APP_KEY", "ef9f44d9-bd8c-4772-a840-0e059b637b8f")
-APP_SECRET = os.getenv("SINRICPRO_APP_SECRET", "97bf3183-2891-4e41-8e75-81900937d1d4-f5c0668a-e579-4205-996b-29e8c5de55d0")
+APP_KEY = os.getenv("SINRICPRO_APP_KEY", "YOUR_APP_KEY_HERE")
+APP_SECRET = os.getenv("SINRICPRO_APP_SECRET", "YOUR_APP_SECRET_HERE")
 
 # Device state
 device_state = {

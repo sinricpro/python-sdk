@@ -11,7 +11,7 @@ import re
 from sinricpro.core.exceptions import SinricProConfigurationError
 
 # Constants
-SINRICPRO_SERVER_URL = "testws.sinric.pro"
+SINRICPRO_SERVER_URL = "ws.sinric.pro"
 SINRICPRO_SERVER_PORT = 80
 SINRICPRO_SERVER_SSL_PORT = 443
 WEBSOCKET_PING_INTERVAL = 300000  # 5 minutes in milliseconds
