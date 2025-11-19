@@ -13,7 +13,7 @@ APP_SECRET = os.getenv("SINRICPRO_APP_SECRET", "YOUR_APP_SECRET_HERE")
 
 current_state = "Close"  # "Open" or "Close"
 
-async def on_door_state(state: str) -> bool:
+async def on_mode_state(state: str) -> bool:
     """
     Handle garage door open/close requests.
     
@@ -53,7 +53,7 @@ async def simulate_physical_control(garage_door: SinricProGarageDoor) -> None:
     current_state = "Open"
 
     # Send update event to SinricPro
-    success = await garage_door.send_door_state_event(current_state)
+    success = await garage_door.send_mode_event(current_state)
     if success:
         print(f"[Event] Door event: {current_state} sent")
     else:
@@ -62,7 +62,7 @@ async def simulate_physical_control(garage_door: SinricProGarageDoor) -> None:
 async def main() -> None:
     sinric_pro = SinricPro.get_instance()
     garage_door = SinricProGarageDoor(DEVICE_ID)
-    garage_door.on_door_state(on_door_state)
+    garage_door.on_mode_state(on_mode_state)
     sinric_pro.add(garage_door)
 
     config = SinricProConfig(app_key=APP_KEY, app_secret=APP_SECRET)

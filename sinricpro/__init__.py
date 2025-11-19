@@ -40,6 +40,8 @@ from sinricpro.devices.sinric_pro_window_ac import SinricProWindowAC
 from sinricpro.devices.sinric_pro_fan import SinricProFan
 from sinricpro.devices.sinric_pro_doorbell import SinricProDoorbell
 from sinricpro.devices.sinric_pro_camera import SinricProCamera
+from sinricpro.devices.sinric_pro_custom_device import SinricProCustomDevice
+
 
 # Exceptions
 from sinricpro.core.exceptions import (
@@ -77,6 +79,7 @@ __all__ = [
     "SinricProFan",
     "SinricProDoorbell",
     "SinricProCamera",
+    "SinricProCustomDevice",
     # Logger
     "SinricProLogger",
     "LogLevel",

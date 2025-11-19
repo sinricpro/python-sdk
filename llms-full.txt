@@ -765,18 +765,18 @@ await blinds.send_open_close_event(75)  # 75% open
 **Product Type:** `"GARAGE_DOOR"`
 
 **Capabilities:**
-- DoorController
+- ModeController
 - SettingController
 - PushNotification
 
 **Methods:**
 ```python
 # Callbacks
-garage.on_door_state(callback: Callable[[str], Awaitable[bool]])  # "OPEN" or "CLOSED"
+garage.on_mode_state(callback: Callable[[str], Awaitable[bool]])  # "OPEN" or "CLOSED"
 garage.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
 
 # Events
-await garage.send_door_state_event(state: str)  # "OPEN" or "CLOSED"
+await garage.send_mode_event(state: str)  # "OPEN" or "CLOSED"
 await garage.send_push_notification(message: str)
 ```
 
@@ -784,7 +784,7 @@ await garage.send_push_notification(message: str)
 ```python
 garage = SinricProGarageDoor("device_id")
 
-async def on_door_state(state: str) -> bool:
+async def on_mode_state(state: str) -> bool:
     # state: "OPEN" or "CLOSED"
     if state == "OPEN":
         trigger_garage_opener()
@@ -794,13 +794,13 @@ async def on_door_state(state: str) -> bool:
         await asyncio.sleep(15)
     return True
 
-garage.on_door_state(on_door_state)
+garage.on_mode_state(on_mode_state)
 
 # Report door sensor
 if door_sensor_open:
-    await garage.send_door_state_event("OPEN")
+    await garage.send_mode_event("OPEN")
 else:
-    await garage.send_door_state_event("CLOSED")
+    await garage.send_mode_event("CLOSED")
 ```
 
 ---
@@ -1316,22 +1316,22 @@ async def on_lock_state(locked: bool) -> bool:
 
 ---
 
-### 5.10 DoorController
+### 5.10 ModeController
 
 **Used by:** GarageDoor
 
 ```python
-class DoorController:
-    def on_door_state(self, callback: DoorStateCallback) -> None:
+class ModeController:
+    def on_mode_state(self, callback: ModeStateCallback) -> None:
         """Register callback for door state"""
 
-    async def send_door_state_event(self, state: str) -> bool:
+    async def send_mode_event(self, state: str) -> bool:
         """Send door state event"""
 ```
 
 **Callback Signature:**
 ```python
-async def on_door_state(state: str) -> bool:
+async def on_mode_state(state: str) -> bool:
     # state: "OPEN" or "CLOSED"
     return True
 ```

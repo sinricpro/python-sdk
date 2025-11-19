@@ -28,7 +28,7 @@ ACTION_ADJUST_RANGE_VALUE = "adjustRangeValue"
 # Lock Control Actions
 ACTION_SET_LOCK_STATE = "setLockState"
 
-# Door Control Actions
+# Mode Actions
 ACTION_SET_MODE = "setMode"
 
 # Thermostat Control Actions
