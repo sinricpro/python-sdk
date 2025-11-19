@@ -28,7 +28,7 @@ ACTION_ADJUST_RANGE_VALUE = "adjustRangeValue"
 # Lock Control Actions
 ACTION_SET_LOCK_STATE = "setLockState"
 
-# Door Control Actions
+# Mode Actions
 ACTION_SET_MODE = "setMode"
 
 # Thermostat Control Actions
@@ -50,6 +50,11 @@ ACTION_PUSH_NOTIFICATION = "pushNotification"
 
 # Doorbell Actions
 ACTION_DOORBELL_PRESS = "DoorbellPress"
+
+# Camera Actions
+ACTION_GET_SNAPSHOT = "getSnapshot"
+ACTION_GET_WEBRTC_ANSWER = 'getWebRTCAnswer'
+ACTION_GET_CAMERA_STREAM_URL = 'getCameraStreamUrl'
 
 # Percentage Control Actions (Legacy)
 ACTION_SET_PERCENTAGE = "setPercentage"
@@ -92,6 +97,10 @@ __all__ = [
     "ACTION_PUSH_NOTIFICATION",
     # Doorbell
     "ACTION_DOORBELL_PRESS",
+    # Camera
+    "ACTION_GET_SNAPSHOT",
+    "ACTION_GET_WEBRTC_ANSWER",
+    "ACTION_GET_CAMERA_STREAM_URL",
     # Legacy
     "ACTION_SET_PERCENTAGE",
 ]

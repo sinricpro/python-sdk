@@ -122,8 +122,8 @@ await blinds.send_open_close_event(75)
 # Garage Door
 from sinricpro import SinricProGarageDoor
 garage = SinricProGarageDoor("device_id")
-garage.on_door_state(callback)  # "OPEN", "CLOSED"
-await garage.send_door_state_event("OPEN")
+garage.on_mode_state(callback)  # "OPEN", "CLOSED"
+await garage.send_mode_event("OPEN")
 
 # Lock
 from sinricpro import SinricProLock

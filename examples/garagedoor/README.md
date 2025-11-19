@@ -47,7 +47,7 @@ async def trigger_door():
     await asyncio.sleep(0.5)  # 500ms pulse
     GPIO.output(RELAY_PIN, GPIO.LOW)
 
-async def on_door_state(state: str) -> bool:
+async def on_mode_state(state: str) -> bool:
     await trigger_door()
     return True
 ```

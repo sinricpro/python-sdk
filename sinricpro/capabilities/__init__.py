@@ -6,10 +6,11 @@ Device capability controllers for SinricPro devices.
 
 from sinricpro.capabilities.air_quality_sensor import AirQualitySensor
 from sinricpro.capabilities.brightness_controller import BrightnessController
+from sinricpro.capabilities.camera_controller import CameraController
 from sinricpro.capabilities.color_controller import ColorController
 from sinricpro.capabilities.color_temperature_controller import ColorTemperatureController
 from sinricpro.capabilities.contact_sensor import ContactSensor
-from sinricpro.capabilities.door_controller import DoorController
+from sinricpro.capabilities.mode_controller import ModeController
 from sinricpro.capabilities.lock_controller import LockController
 from sinricpro.capabilities.motion_sensor import MotionSensor
 from sinricpro.capabilities.open_close_controller import OpenCloseController
@@ -26,10 +27,11 @@ from sinricpro.capabilities.thermostat_controller import ThermostatController
 __all__ = [
     "AirQualitySensor",
     "BrightnessController",
+    "CameraController",
     "ColorController",
     "ColorTemperatureController",
     "ContactSensor",
-    "DoorController",
+    "ModeController",
     "LockController",
     "MotionSensor",
     "OpenCloseController",

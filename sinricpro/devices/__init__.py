@@ -28,6 +28,10 @@ from sinricpro.devices.sinric_pro_window_ac import SinricProWindowAC
 # Other
 from sinricpro.devices.sinric_pro_fan import SinricProFan
 from sinricpro.devices.sinric_pro_doorbell import SinricProDoorbell
+from sinricpro.devices.sinric_pro_camera import SinricProCamera
+
+# Custom
+from sinricpro.devices.sinric_pro_custom_device import SinricProCustomDevice
 
 __all__ = [
     # Lighting & Switches
@@ -50,4 +54,7 @@ __all__ = [
     # Other
     "SinricProFan",
     "SinricProDoorbell",
+    "SinricProCamera",
+    # Custom
+    "SinricProCustomDevice",
 ]
