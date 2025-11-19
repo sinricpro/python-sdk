@@ -6,6 +6,7 @@ Device capability controllers for SinricPro devices.
 
 from sinricpro.capabilities.air_quality_sensor import AirQualitySensor
 from sinricpro.capabilities.brightness_controller import BrightnessController
+from sinricpro.capabilities.camera_controller import CameraController
 from sinricpro.capabilities.color_controller import ColorController
 from sinricpro.capabilities.color_temperature_controller import ColorTemperatureController
 from sinricpro.capabilities.contact_sensor import ContactSensor
@@ -26,6 +27,7 @@ from sinricpro.capabilities.thermostat_controller import ThermostatController
 __all__ = [
     "AirQualitySensor",
     "BrightnessController",
+    "CameraController",
     "ColorController",
     "ColorTemperatureController",
     "ContactSensor",
