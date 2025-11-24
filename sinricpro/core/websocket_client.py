@@ -113,13 +113,13 @@ class WebSocketClient:
             "SDKVersion": self.config.sdk_version,
         }
 
-        SinricProLogger.info(f"Connecting to {uri}")
+        SinricProLogger.debug(f"Connecting to {uri}")
         SinricProLogger.debug(f"WebSocket headers: {headers}")
 
         try:
             self.ws = await websockets.connect(uri, additional_headers=headers)
             self.connected = True
-            SinricProLogger.info("WebSocket connected")
+            SinricProLogger.debug("WebSocket connected")
 
             # Start heartbeat
             self._start_heartbeat()
