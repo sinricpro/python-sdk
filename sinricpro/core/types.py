@@ -42,14 +42,12 @@ class SinricProConfig:
         app_key: SinricPro app key (UUID format)
         app_secret: SinricPro app secret (min 32 characters)
         server_url: WebSocket server URL (default: ws.sinric.pro)
-        restore_device_states: Whether to restore device states on connect
         debug: Enable debug logging
     """
 
     app_key: str
     app_secret: str
     server_url: str = SINRICPRO_SERVER_URL
-    restore_device_states: bool = False
     debug: bool = False
 
     def __post_init__(self) -> None:

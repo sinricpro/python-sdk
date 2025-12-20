@@ -30,14 +30,12 @@ class WebSocketConfig:
         server_url: str,
         app_key: str,
         device_ids: list[str],
-        restore_device_states: bool = False,
         platform: str = "Python",
         sdk_version: str | None = None,
     ) -> None:
         self.server_url = server_url
         self.app_key = app_key
         self.device_ids = device_ids
-        self.restore_device_states = restore_device_states
         self.platform = platform
         self.sdk_version = sdk_version or __version__
 
@@ -108,7 +106,6 @@ class WebSocketClient:
         headers = {
             "appkey": self.config.app_key,
             "deviceids": ";".join(self.config.device_ids),
-            "restoredevicestates": str(self.config.restore_device_states).lower(),
             "platform": self.config.platform,
             "SDKVersion": self.config.sdk_version,
         }

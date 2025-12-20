@@ -85,7 +85,6 @@ class SinricPro:
 class SinricProConfig:
     app_key: str              # UUID format
     app_secret: str           # Min 32 chars
-    restore_states: bool = True
     debug: bool = False
 
     def __post_init__(self):

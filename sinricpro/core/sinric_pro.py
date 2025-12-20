@@ -119,7 +119,6 @@ class SinricPro:
                 server_url=self.config.server_url,
                 app_key=self.config.app_key,
                 device_ids=list(self.devices.keys()),
-                restore_device_states=self.config.restore_device_states,
             )
 
             self.websocket = WebSocketClient(ws_config)
