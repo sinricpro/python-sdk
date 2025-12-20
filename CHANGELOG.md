@@ -1,6 +1,6 @@
 ## [4.0.0]
 
-- Remove `restoreDeviceStates` in order to change this at device level from server side instead of fixed value in client sdk.
+- BREAKING CHANGE: Remove `restoreDeviceStates` in order to change this at device level from server side instead of fixed value in client sdk.
 
 ## [3.1.1]
 
