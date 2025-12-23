@@ -56,6 +56,27 @@ ACTION_GET_SNAPSHOT = "getSnapshot"
 ACTION_GET_WEBRTC_ANSWER = 'getWebRTCAnswer'
 ACTION_GET_CAMERA_STREAM_URL = 'getCameraStreamUrl'
 
+# Volume Control Actions
+ACTION_SET_VOLUME = "setVolume"
+ACTION_ADJUST_VOLUME = "adjustVolume"
+
+# Mute Control Actions
+ACTION_SET_MUTE = "setMute"
+
+# Media Control Actions
+ACTION_MEDIA_CONTROL = "mediaControl"
+
+# Equalizer Control Actions
+ACTION_SET_BANDS = "setBands"
+ACTION_ADJUST_BANDS = "adjustBands"
+
+# Channel Control Actions
+ACTION_CHANGE_CHANNEL = "changeChannel"
+ACTION_SKIP_CHANNELS = "skipChannels"
+
+# Input Control Actions
+ACTION_SELECT_INPUT = "selectInput"
+
 # Percentage Control Actions (Legacy)
 ACTION_SET_PERCENTAGE = "setPercentage"
 
@@ -101,6 +122,21 @@ __all__ = [
     "ACTION_GET_SNAPSHOT",
     "ACTION_GET_WEBRTC_ANSWER",
     "ACTION_GET_CAMERA_STREAM_URL",
+    # Volume Control
+    "ACTION_SET_VOLUME",
+    "ACTION_ADJUST_VOLUME",
+    # Mute Control
+    "ACTION_SET_MUTE",
+    # Media Control
+    "ACTION_MEDIA_CONTROL",
+    # Equalizer Control
+    "ACTION_SET_BANDS",
+    "ACTION_ADJUST_BANDS",
+    # Channel Control
+    "ACTION_CHANGE_CHANNEL",
+    "ACTION_SKIP_CHANNELS",
+    # Input Control
+    "ACTION_SELECT_INPUT",
     # Legacy
     "ACTION_SET_PERCENTAGE",
 ]

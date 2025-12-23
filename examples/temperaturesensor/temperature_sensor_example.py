@@ -11,11 +11,11 @@ import random
 from sinricpro import SinricPro, SinricProTemperatureSensor, SinricProConfig
 
 # Device ID from SinricPro portal
-DEVICE_ID = "YOUR_DEVICE_ID_HERE"  # Replace with your device ID
+DEVICE_ID = "YOUR-DEVICE-ID"  # Replace with your device ID
 
 # Credentials from SinricPro portal
-APP_KEY = os.getenv("SINRICPRO_APP_KEY", "YOUR_APP_KEY_HERE")
-APP_SECRET = os.getenv("SINRICPRO_APP_SECRET", "YOUR_APP_SECRET_HERE")
+APP_KEY = os.getenv("SINRICPRO_APP_KEY", "YOUR-APP-KEY")
+APP_SECRET = os.getenv("SINRICPRO_APP_SECRET", "YOUR-APP-SECRET")
 
 async def simulate_sensor_readings(sensor: SinricProTemperatureSensor) -> None:
     """Simulate temperature/humidity readings for testing."""

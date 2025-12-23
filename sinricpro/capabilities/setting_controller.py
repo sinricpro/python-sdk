@@ -14,17 +14,17 @@ class SettingController:
         self._setting_callback: SettingCallback | None = None
 
     def on_setting(self, callback: SettingCallback) -> None:
-        """Register callback for setting changes (setting name, value)."""
+        """Register callback for setting changes (setting id, value)."""
         self._setting_callback = callback
 
-    async def handle_setting_request(self, setting: str, value: Any, device: "SinricProDevice") -> tuple[bool, dict[str, Any]]:
+    async def handle_setting_request(self, setting_id: str, value: Any, device: "SinricProDevice") -> tuple[bool, dict[str, Any]]:
         """Handle setSetting request."""
         if not self._setting_callback:
             SinricProLogger.error(f"No setting callback registered for {device.get_device_id()}")
             return False, {}
         try:
-            success = await self._setting_callback(setting, value)
-            return (True, {"setting": setting, "value": value}) if success else (False, {})
+            success = await self._setting_callback(setting_id, value)
+            return (True, {"id": setting_id, "value": value}) if success else (False, {})
         except Exception as e:
             SinricProLogger.error(f"Error in setting callback: {e}")
             return False, {}

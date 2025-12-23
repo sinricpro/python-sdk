@@ -29,6 +29,8 @@ from sinricpro.devices.sinric_pro_window_ac import SinricProWindowAC
 from sinricpro.devices.sinric_pro_fan import SinricProFan
 from sinricpro.devices.sinric_pro_doorbell import SinricProDoorbell
 from sinricpro.devices.sinric_pro_camera import SinricProCamera
+from sinricpro.devices.sinric_pro_speaker import SinricProSpeaker
+from sinricpro.devices.sinric_pro_tv import SinricProTV
 
 # Custom
 from sinricpro.devices.sinric_pro_custom_device import SinricProCustomDevice
@@ -48,6 +50,8 @@ __all__ = [
     "SinricProBlinds",
     "SinricProGarageDoor",
     "SinricProLock",
+    "SinricProSpeaker",
+    "SinricProTV",
     # Climate Control
     "SinricProThermostat",
     "SinricProWindowAC",

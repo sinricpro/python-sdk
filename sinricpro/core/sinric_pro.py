@@ -275,7 +275,7 @@ class SinricPro:
         self.signature.sign(message)
 
         # Add to send queue
-        self.send_queue.push_sync(json.dumps(message))
+        self.send_queue.push_sync(json.dumps(message, separators=(",", ":"), sort_keys=False))
 
     def get_timestamp(self) -> int:
         """
@@ -415,13 +415,13 @@ class SinricPro:
             },
         }
 
-        if self.signature:
-            self.signature.sign(response_message)
-
         if "instanceId" in request_message["payload"]:
             response_message["payload"]["instanceId"] = request_message["payload"]["instanceId"]
 
-        self.send_queue.push_sync(json.dumps(response_message))
+        if self.signature:
+            self.signature.sign(response_message)
+
+        self.send_queue.push_sync(json.dumps(response_message, separators=(",", ":"), sort_keys=False))
 
     def _send_error_response(self, message: dict[str, Any], error_message: str) -> None:
         """Send an error response."""

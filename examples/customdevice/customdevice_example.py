@@ -26,6 +26,22 @@ device_state = {
     "color": {"r": 255, "g": 255, "b": 255},
 }
 
+async def on_range_value(rangeValue: int, instance_id: str) -> bool:
+    """Handle range value changes."""
+    if instance_id:
+        print(f"[Range] Instance '{instance_id}' set to {rangeValue}")
+    else:
+        print(f"[Range] Set to {rangeValue}")
+    return True
+
+
+async def on_mode_state(mode: str, instance_id: str) -> bool:
+    """Handle mode state changes."""
+    if instance_id:
+        print(f"[Mode] Instance '{instance_id}' set to {mode}")
+    else:
+        print(f"[Mode] Set to {mode}")
+    return True
 
 async def on_power_state(state: bool) -> bool:
     """Handle power state changes."""
@@ -85,7 +101,6 @@ async def on_lock_state(state: str) -> bool:
     print(f"\n[Lock] State set to {state}")
     return True
 
-
 async def on_setting(setting: str, value: Any) -> bool:
     """Handle device setting changes."""
     print(f"\n[Setting] {setting} = {value}")
@@ -134,6 +149,8 @@ async def main() -> None:
 
     # Common
     custom_device.on_setting(on_setting)
+    custom_device.on_mode_state(on_mode_state)
+    custom_device.on_range_value(on_range_value)
 
     # Add device to SinricPro
     sinric_pro.add(custom_device)

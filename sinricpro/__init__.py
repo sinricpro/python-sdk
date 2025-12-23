@@ -41,7 +41,8 @@ from sinricpro.devices.sinric_pro_fan import SinricProFan
 from sinricpro.devices.sinric_pro_doorbell import SinricProDoorbell
 from sinricpro.devices.sinric_pro_camera import SinricProCamera
 from sinricpro.devices.sinric_pro_custom_device import SinricProCustomDevice
-
+from sinricpro.devices.sinric_pro_speaker import SinricProSpeaker
+from sinricpro.devices.sinric_pro_tv import SinricProTV
 
 # Exceptions
 from sinricpro.core.exceptions import (
@@ -80,6 +81,8 @@ __all__ = [
     "SinricProDoorbell",
     "SinricProCamera",
     "SinricProCustomDevice",
+    "SinricProSpeaker",
+    "SinricProTV",
     # Logger
     "SinricProLogger",
     "LogLevel",
