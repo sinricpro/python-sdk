@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sinricpro"
-version = "4.0.0"
+version = "5.0.0"
 description = "Official SinricPro SDK for Python - Control IoT devices with Alexa and Google Home"
 authors = [{name = "SinricPro", email = "support@sinric.pro"}]
 readme = "README.md"
