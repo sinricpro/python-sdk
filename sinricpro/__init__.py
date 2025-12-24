@@ -9,7 +9,7 @@ Licensed under Creative Commons Attribution-Share Alike (CC BY-SA)
 This file is part of the SinricPro Python SDK (https://github.com/sinricpro/)
 """
 
-__version__ = "3.1.1"
+__version__ = "5.0.0"
 
 from sinricpro.core.sinric_pro import SinricPro, SinricProConfig
 from sinricpro.core.sinric_pro_device import SinricProDevice
@@ -41,7 +41,8 @@ from sinricpro.devices.sinric_pro_fan import SinricProFan
 from sinricpro.devices.sinric_pro_doorbell import SinricProDoorbell
 from sinricpro.devices.sinric_pro_camera import SinricProCamera
 from sinricpro.devices.sinric_pro_custom_device import SinricProCustomDevice
-
+from sinricpro.devices.sinric_pro_speaker import SinricProSpeaker
+from sinricpro.devices.sinric_pro_tv import SinricProTV
 
 # Exceptions
 from sinricpro.core.exceptions import (
@@ -80,6 +81,8 @@ __all__ = [
     "SinricProDoorbell",
     "SinricProCamera",
     "SinricProCustomDevice",
+    "SinricProSpeaker",
+    "SinricProTV",
     # Logger
     "SinricProLogger",
     "LogLevel",

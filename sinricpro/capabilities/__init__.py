@@ -23,6 +23,12 @@ from sinricpro.capabilities.range_controller import RangeController
 from sinricpro.capabilities.setting_controller import SettingController
 from sinricpro.capabilities.temperature_sensor import TemperatureSensor
 from sinricpro.capabilities.thermostat_controller import ThermostatController
+from sinricpro.capabilities.volume_controller import VolumeController
+from sinricpro.capabilities.mute_controller import MuteController
+from sinricpro.capabilities.media_controller import MediaController
+from sinricpro.capabilities.equalizer_controller import EqualizerController
+from sinricpro.capabilities.channel_controller import ChannelController
+from sinricpro.capabilities.input_controller import InputController
 
 __all__ = [
     "AirQualitySensor",
@@ -44,4 +50,10 @@ __all__ = [
     "SettingController",
     "TemperatureSensor",
     "ThermostatController",
+    "VolumeController",
+    "MuteController",
+    "MediaController",
+    "EqualizerController",
+    "ChannelController",
+    "InputController",
 ]

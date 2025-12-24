@@ -13,12 +13,13 @@ APP_SECRET = os.getenv("SINRICPRO_APP_SECRET", "YOUR_APP_SECRET_HERE")
 
 current_state = "Close"  # "Open" or "Close"
 
-async def on_mode_state(state: str) -> bool:
+async def on_mode_state(state: str, instance_id: str) -> bool:
     """
     Handle garage door open/close requests.
-    
+
     Args:
         state: "Open" or "Close"
+        instance_id: Instance ID (not used for garage door)
     """
     global current_state
     print(f"Garage door command: {state}")

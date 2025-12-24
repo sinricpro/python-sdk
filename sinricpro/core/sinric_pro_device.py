@@ -104,6 +104,7 @@ class SinricProDevice(ABC):
         action: str,
         value: dict[str, Any],
         cause: str = "PHYSICAL_INTERACTION",
+        instance_id: str = "",
     ) -> bool:
         """
         Send an event to SinricPro.
@@ -112,6 +113,7 @@ class SinricProDevice(ABC):
             action: The action type (e.g., "setPowerState")
             value: Event data
             cause: Cause of the event (PHYSICAL_INTERACTION or APP_INTERACTION)
+            instance_id: Optional instance ID for multi-instance capabilities
 
         Returns:
             True if event was sent successfully, False if rate limited
@@ -124,19 +126,25 @@ class SinricProDevice(ABC):
             SinricProLogger.error("Device not added to SinricPro instance")
             return False
 
+        payload: dict[str, Any] = {
+            "action": action,
+            "cause": {"type": cause},
+            "createdAt": self._sinric_pro.get_timestamp(),
+            "deviceId": self._device_id,
+            "type": "event",
+            "value": value,
+        }
+
+        # Include instanceId if provided
+        if instance_id:
+            payload["instanceId"] = instance_id
+
         message = {
             "header": {
                 "payloadVersion": 2,
                 "signatureVersion": 1,
             },
-            "payload": {
-                "action": action,
-                "cause": {"type": cause},
-                "createdAt": self._sinric_pro.get_timestamp(),
-                "deviceId": self._device_id,
-                "type": "event",
-                "value": value,
-            },
+            "payload": payload,
         }
 
         try:

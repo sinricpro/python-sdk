@@ -243,14 +243,16 @@ class SinricProCustomDevice(
         # Range Control
         elif action == ACTION_SET_RANGE_VALUE:
             range_value = request.request_value.get("rangeValue", 0)
-            success, response_value = await self.handle_range_value_request(range_value, self)
+            instance_id = request.instance
+            success, response_value = await self.handle_range_value_request(range_value, instance_id, self)
             request.response_value = response_value
             return success
 
         elif action == ACTION_ADJUST_RANGE_VALUE:
             range_value_delta = request.request_value.get("rangeValueDelta", 0)
+            instance_id = request.instance
             success, response_value = await self.handle_adjust_range_value_request(
-                range_value_delta, self
+                range_value_delta, instance_id, self
             )
             request.response_value = response_value
             return success
@@ -272,7 +274,8 @@ class SinricProCustomDevice(
         # Mode Control
         elif action == ACTION_SET_MODE:
             mode = request.request_value.get("mode", "")
-            success, response_value = await self.handle_mode_request(mode, self)
+            instance_id = request.instance
+            success, response_value = await self.handle_mode_request(mode, instance_id, self)
             request.response_value = response_value
             return success
 
@@ -313,9 +316,9 @@ class SinricProCustomDevice(
 
         # Settings Control
         elif action == ACTION_SET_SETTING:
-            setting = request.request_value.get("setting", "")
+            setting_id = request.request_value.get("id", "")
             value = request.request_value.get("value")
-            success, response_value = await self.handle_setting_request(setting, value, self)
+            success, response_value = await self.handle_setting_request(setting_id, value, self)
             request.response_value = response_value
             return success
 

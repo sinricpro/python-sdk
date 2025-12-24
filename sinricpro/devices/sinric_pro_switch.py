@@ -74,9 +74,9 @@ class SinricProSwitch(SinricProDevice, PowerStateController, SettingController, 
 
         # Handle setSetting action
         elif action == ACTION_SET_SETTING:
-            setting = request.request_value.get("setting", "")
+            setting_id = request.request_value.get("id", "")
             value = request.request_value.get("value")
-            success, response_value = await self.handle_setting_request(setting, value, self)
+            success, response_value = await self.handle_setting_request(setting_id, value, self)
             request.response_value = response_value
             return success
 

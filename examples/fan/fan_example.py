@@ -38,12 +38,13 @@ async def on_power_state(state: bool) -> bool:
     return True
 
 
-async def on_range_value(speed: int) -> bool:
+async def on_range_value(speed: int, instance_id: str) -> bool:
     """
     Handle fan speed change requests.
 
     Args:
         speed: Fan speed level (0-100)
+        instance_id: Instance ID for multi-instance range control (not used for fan)
 
     Returns:
         True if successful, False otherwise
@@ -64,12 +65,13 @@ async def on_range_value(speed: int) -> bool:
     return True
 
 
-async def on_adjust_range_value(speed_delta: int) -> bool:
+async def on_adjust_range_value(speed_delta: int, instance_id: str) -> bool:
     """
     Handle relative fan speed adjustment requests.
 
     Args:
         speed_delta: Change in speed (-100 to +100)
+        instance_id: Instance ID for multi-instance range control (not used for fan)
 
     Returns:
         True if successful, False otherwise
