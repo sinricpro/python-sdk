@@ -114,7 +114,12 @@ class WebSocketClient:
         SinricProLogger.debug(f"WebSocket headers: {headers}")
 
         try:
-            self.ws = await websockets.connect(uri, additional_headers=headers)
+            self.ws = await websockets.connect(
+                uri,
+                additional_headers=headers,
+                ping_interval=None,
+                ping_timeout=None,
+            )
             self.connected = True
             SinricProLogger.debug("WebSocket connected")
 

@@ -1,3 +1,6 @@
+## [5.0.1]
+- fix: [Periodic disconnects of WebSocketClient](https://github.com/sinricpro/python-sdk/issues/79)
+
 ## [5.0.0]
 - feat: Speaker, GarageDoor examples added.
 - feat: setMode, setRangeValue - instance id support added.

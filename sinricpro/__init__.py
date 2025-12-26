@@ -9,7 +9,7 @@ Licensed under Creative Commons Attribution-Share Alike (CC BY-SA)
 This file is part of the SinricPro Python SDK (https://github.com/sinricpro/)
 """
 
-__version__ = "5.0.0"
+__version__ = "5.0.1"
 
 from sinricpro.core.sinric_pro import SinricPro, SinricProConfig
 from sinricpro.core.sinric_pro_device import SinricProDevice
