@@ -23,6 +23,7 @@ from sinricpro.core.types import (
     ConnectedCallback,
     DisconnectedCallback,
     PongCallback,
+    ModuleSettingCallback,
 )
 from sinricpro.core.websocket_client import WebSocketClient, WebSocketConfig
 from sinricpro.utils.logger import SinricProLogger, LogLevel
@@ -58,6 +59,7 @@ class SinricPro:
         self._connected_callbacks: list[ConnectedCallback] = []
         self._disconnected_callbacks: list[DisconnectedCallback] = []
         self._pong_callbacks: list[PongCallback] = []
+        self._module_setting_callback: ModuleSettingCallback | None = None
 
     @classmethod
     def get_instance(cls) -> "SinricPro":
@@ -226,6 +228,27 @@ class SinricPro:
         """
         self._pong_callbacks.append(callback)
 
+    def on_set_setting(self, callback: ModuleSettingCallback) -> None:
+        """
+        Register a callback for module-level setting changes.
+
+        Module settings are configuration values for the module (dev board) itself,
+        not for individual devices. Use this to handle settings like WiFi retry count,
+        logging level, or other module-wide configurations.
+
+        Args:
+            callback: Async function that receives setting_id and value, returns True on success.
+                      Signature: async def callback(setting_id: str, value: Any) -> bool
+
+        Example:
+            >>> async def on_module_setting(setting_id: str, value: Any) -> bool:
+            ...     if setting_id == "wifi_retry_count":
+            ...         set_wifi_retry_count(value)
+            ...     return True
+            >>> sinric_pro.on_set_setting(on_module_setting)
+        """
+        self._module_setting_callback = callback
+
     def is_connected(self) -> bool:
         """
         Check if currently connected to SinricPro.
@@ -362,7 +385,12 @@ class SinricPro:
 
             # Route message
             if message["payload"]["type"] == "request":
-                await self._handle_request(message)
+                # Check scope to determine if this is a module or device request
+                scope = message["payload"].get("scope", "device")
+                if scope == "module":
+                    await self._handle_module_request(message)
+                else:
+                    await self._handle_request(message)
             elif message["payload"]["type"] == "response":
                 # Response messages (not typically used in device SDK)
                 pass
@@ -389,6 +417,62 @@ class SinricPro:
         success = await device.handle_request(request)
         self._send_response(message, success, request.response_value, request.error_message)
 
+    async def _handle_module_request(self, message: dict[str, Any]) -> None:
+        """Handle an incoming module-level request."""
+        action = message["payload"].get("action", "")
+        request_value = message["payload"].get("value", {})
+
+        if action == "setSetting":
+            if not self._module_setting_callback:
+                SinricProLogger.error("No module setting callback registered")
+                self._send_module_response(message, False, {}, "No module setting callback registered")
+                return
+
+            setting_id = request_value.get("id", "")
+            value = request_value.get("value")
+
+            try:
+                success = await self._module_setting_callback(setting_id, value)
+                response_value = {"id": setting_id, "value": value} if success else {}
+                self._send_module_response(message, success, response_value)
+            except Exception as e:
+                SinricProLogger.error(f"Error in module setting callback: {e}")
+                self._send_module_response(message, False, {}, str(e))
+        else:
+            SinricProLogger.error(f"Unknown module action: {action}")
+            self._send_module_response(message, False, {}, f"Unknown module action: {action}")
+
+    def _send_module_response(
+        self,
+        request_message: dict[str, Any],
+        success: bool,
+        value: dict[str, Any],
+        error_message: str | None = None,
+    ) -> None:
+        """Send a module-level response message (without deviceId)."""
+        response_message: dict[str, Any] = {
+            "header": {
+                "payloadVersion": 2,
+                "signatureVersion": 1,
+            },
+            "payload": {
+                "action": request_message["payload"]["action"],
+                "clientId": request_message["payload"]["clientId"],
+                "createdAt": self.get_timestamp(),
+                "message": error_message if error_message else ("OK" if success else "Request failed"),
+                "replyToken": request_message["payload"]["replyToken"],
+                "scope": "module",
+                "success": success,
+                "type": "response",
+                "value": value,
+            },
+        }
+
+        if self.signature:
+            self.signature.sign(response_message)
+
+        self.send_queue.push_sync(json.dumps(response_message, separators=(",", ":"), sort_keys=False))
+
     def _send_response(
         self,
         request_message: dict[str, Any],
@@ -409,6 +493,7 @@ class SinricPro:
                 "deviceId": request_message["payload"]["deviceId"],
                 "message": error_message if error_message else ("OK" if success else "Request failed"),
                 "replyToken": request_message["payload"]["replyToken"],
+                "scope": "device",
                 "success": success,
                 "type": "response",
                 "value": value,

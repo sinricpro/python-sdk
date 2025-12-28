@@ -1,3 +1,8 @@
+## [5.1.1]
+- feat: Module settings commands.
+- fix: Missing scope in response.
+- fix: Missing mac in websocket header.
+
 ## [5.0.1]
 - fix: [Periodic disconnects of WebSocketClient](https://github.com/sinricpro/python-sdk/issues/79)
 
