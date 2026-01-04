@@ -24,7 +24,10 @@ from sinricpro.core.types import (
     DisconnectedCallback,
     PongCallback,
     ModuleSettingCallback,
+    EVENT_LIMIT_STATE,
+    PHYSICAL_INTERACTION,
 )
+from sinricpro.core.event_limiter import EventLimiter
 from sinricpro.core.websocket_client import WebSocketClient, WebSocketConfig
 from sinricpro.utils.logger import SinricProLogger, LogLevel
 
@@ -60,6 +63,7 @@ class SinricPro:
         self._disconnected_callbacks: list[DisconnectedCallback] = []
         self._pong_callbacks: list[PongCallback] = []
         self._module_setting_callback: ModuleSettingCallback | None = None
+        self._setting_event_limiter = EventLimiter(EVENT_LIMIT_STATE)
 
     @classmethod
     def get_instance(cls) -> "SinricPro":
@@ -248,6 +252,71 @@ class SinricPro:
             >>> sinric_pro.on_set_setting(on_module_setting)
         """
         self._module_setting_callback = callback
+
+    async def send_setting_event(
+        self,
+        setting_id: str,
+        value: Any,
+        cause: str = PHYSICAL_INTERACTION
+    ) -> bool:
+        """
+        Send a module-level setting event to SinricPro server.
+
+        Module settings are configuration values for the module (dev board) itself.
+        Use this to report setting changes like WiFi configuration, logging level,
+        or other module-wide settings.
+
+        Args:
+            setting_id: The setting identifier
+            value: The setting value (can be any JSON-serializable type)
+            cause: Reason for the event (default: 'PHYSICAL_INTERACTION')
+
+        Returns:
+            True if event was sent, False if rate limited or failed
+
+        Example:
+            >>> await sinric_pro.send_setting_event('wifi_retry_count', 5)
+            >>> await sinric_pro.send_setting_event('debug_mode', True)
+        """
+        if self._setting_event_limiter.is_limited():
+            return False
+
+        if not self.is_connected():
+            SinricProLogger.error("Cannot send setting event: Not connected to SinricPro")
+            return False
+
+        event_message: dict[str, Any] = {
+            "header": {
+                "payloadVersion": 2,
+                "signatureVersion": 1,
+            },
+            "payload": {
+                "action": "setSetting",
+                "replyToken": self._generate_message_id(),
+                "type": "event",
+                "createdAt": self.get_timestamp(),
+                "cause": {"type": cause},
+                "scope": "module",
+                "value": {"id": setting_id, "value": value},
+            },
+        }
+
+        try:
+            await self.send_message(event_message)
+            SinricProLogger.debug(f"Module setting event sent: {setting_id} = {value}")
+            return True
+        except Exception as e:
+            SinricProLogger.error(f"Failed to send module setting event {setting_id}: {e}")
+            return False
+
+    def _generate_message_id(self) -> str:
+        """Generate a unique message ID."""
+        import random
+        import string
+
+        timestamp = int(time.time() * 1000)
+        random_str = "".join(random.choices(string.ascii_lowercase + string.digits, k=9))
+        return f"{timestamp}-{random_str}"
 
     def is_connected(self) -> bool:
         """

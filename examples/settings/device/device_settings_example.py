@@ -128,6 +128,14 @@ async def main() -> None:
     # Add device to SinricPro
     sinric_pro.add(blinds)
 
+    # Example function to demonstrate sending device setting events
+    async def send_example_setting():
+        """Send an example device setting event after connection."""
+        await asyncio.sleep(5)  # Wait for connection to stabilize
+        print("\n[Example] Sending device setting event...")
+        sent = await blinds.send_setting_event("id_tilt", 75)
+        print(f"  Device setting event sent: {sent}")
+
     # Configure connection
     config = SinricProConfig(app_key=APP_KEY, app_secret=APP_SECRET)
 
@@ -143,12 +151,14 @@ async def main() -> None:
         print("Device Settings vs Module Settings:")
         print("=" * 60)
         print("  Device Settings: Configuration for THIS specific device")
-        print("    - Registered via: device.on_setting(callback)")
+        print("    - Receive via: device.on_setting(callback)")
+        print("    - Send via: device.send_setting_event(setting_id, value)")
         print("    - Examples: Tilt angle, speed, direction, auto-close")
         print("    - Callback receives: (setting_id, value)")
         print("")
         print("  Module Settings: Configuration for the module/board")
-        print("    - Registered via: sinric_pro.on_set_setting(callback)")
+        print("    - Receive via: sinric_pro.on_set_setting(callback)")
+        print("    - Send via: sinric_pro.send_setting_event(setting_id, value)")
         print("    - Examples: WiFi retry count, log level")
 
         print("\n" + "=" * 60)
@@ -167,6 +177,9 @@ async def main() -> None:
         print("\n" + "=" * 60)
         print("Press Ctrl+C to exit")
         print("=" * 60)
+
+        # Start the example setting event task
+        #asyncio.create_task(send_example_setting())
 
         while True:
             await asyncio.sleep(1)

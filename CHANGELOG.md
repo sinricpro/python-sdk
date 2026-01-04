@@ -1,3 +1,6 @@
+## [5.2.0]
+- feat: Send a device setting event to SinricPro
+
 ## [5.1.1]
 - feat: Module settings commands.
 - fix: Missing scope in response.

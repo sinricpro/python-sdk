@@ -1,4 +1,5 @@
 """SinricPro Module Settings Example - Handle module-level configuration."""
+
 import asyncio
 import os
 from typing import Any
@@ -18,6 +19,7 @@ module_config = {
     "id_log_level": "INFO",
     "id_heartbeat_interval": 300,
 }
+
 
 async def on_power_state(state: bool) -> bool:
     """Handle power state change for the switch device."""
@@ -91,6 +93,14 @@ async def main() -> None:
     # This is separate from device-level settings (device.on_setting())
     sinric_pro.on_set_setting(on_module_setting)
 
+    # Example function to demonstrate sending module setting events
+    async def send_example_module_setting():
+        """Send an example module setting event after connection."""
+        await asyncio.sleep(5)  # Wait for connection to stabilize
+        print("\n[Example] Sending module setting event...")
+        sent = await sinric_pro.send_setting_event("id_wifi_retry_count", 5)
+        print(f"  Module setting event sent: {sent}")
+
     # Configure connection
     config = SinricProConfig(app_key=APP_KEY, app_secret=APP_SECRET)
 
@@ -106,11 +116,13 @@ async def main() -> None:
         print("Module Settings vs Device Settings:")
         print("=" * 60)
         print("  Module Settings: Configuration for the module/board itself")
-        print("    - Registered via: sinric_pro.on_set_setting(callback)")
+        print("    - Receive via: sinric_pro.on_set_setting(callback)")
+        print("    - Send via: sinric_pro.send_setting_event(setting_id, value)")
         print("    - Examples: WiFi retry count, log level, heartbeat interval")
         print("")
         print("  Device Settings: Configuration for individual devices")
-        print("    - Registered via: device.on_setting(callback)")
+        print("    - Receive via: device.on_setting(callback)")
+        print("    - Send via: device.send_setting_event(setting_id, value)")
         print("    - Examples: Device-specific modes, thresholds, etc.")
 
         print("\n" + "=" * 60)
@@ -123,6 +135,9 @@ async def main() -> None:
         print("Press Ctrl+C to exit")
         print("=" * 60)
 
+        # Start the example setting event task
+        #asyncio.create_task(send_example_module_setting())
+
         while True:
             await asyncio.sleep(1)
 
@@ -131,6 +146,7 @@ async def main() -> None:
     except Exception as e:
         print(f"\nError: {e}")
         import traceback
+
         traceback.print_exc()
     finally:
         await sinric_pro.stop()
