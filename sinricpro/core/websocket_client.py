@@ -7,9 +7,23 @@ and heartbeat monitoring.
 
 import asyncio
 import time
+import uuid
 from typing import Callable
 
 import websockets
+
+
+def get_mac_address() -> str:
+    """Get the MAC address of this machine.
+
+    Returns:
+        MAC address string in format XX:XX:XX:XX:XX:XX
+    """
+    mac = uuid.getnode()
+    # Format as XX:XX:XX:XX:XX:XX
+    return ":".join(f"{(mac >> (8 * i)) & 0xFF:02X}" for i in range(5, -1, -1))
+
+
 from websockets.client import WebSocketClientProtocol
 
 from sinricpro import __version__
@@ -108,6 +122,7 @@ class WebSocketClient:
             "deviceids": ";".join(self.config.device_ids),
             "platform": self.config.platform,
             "SDKVersion": self.config.sdk_version,
+            "mac": get_mac_address(),
         }
 
         SinricProLogger.debug(f"Connecting to {uri}")

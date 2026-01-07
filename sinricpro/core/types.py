@@ -32,6 +32,9 @@ ConnectedCallback = Callable[[], None]
 DisconnectedCallback = Callable[[], None]
 PongCallback = Callable[[int], None]
 
+# Module-level setting callback: (setting_id, value) -> bool
+ModuleSettingCallback = Callable[[str, Any], Awaitable[bool]]
+
 
 @dataclass
 class SinricProConfig:
