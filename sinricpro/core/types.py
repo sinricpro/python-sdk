@@ -16,6 +16,7 @@ SINRICPRO_SERVER_PORT = 80
 SINRICPRO_SERVER_SSL_PORT = 443
 WEBSOCKET_PING_INTERVAL = 300000  # 5 minutes in milliseconds
 WEBSOCKET_PING_TIMEOUT = 10000  # 10 seconds in milliseconds
+WEBSOCKET_PONG_MISS_MAX = 3  # Close connection after this many consecutive missed pongs
 EVENT_LIMIT_STATE = 1000  # 1 second in milliseconds
 EVENT_LIMIT_SENSOR_VALUE = 60000  # 60 seconds in milliseconds
 

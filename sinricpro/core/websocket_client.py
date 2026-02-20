@@ -32,6 +32,7 @@ from sinricpro.core.types import (
     SINRICPRO_SERVER_SSL_PORT,
     WEBSOCKET_PING_INTERVAL,
     WEBSOCKET_PING_TIMEOUT,
+    WEBSOCKET_PONG_MISS_MAX,
 )
 from sinricpro.utils.logger import SinricProLogger
 
@@ -214,6 +215,8 @@ class WebSocketClient:
 
     async def _heartbeat_loop(self) -> None:
         """Heartbeat loop to send pings and await pong responses."""
+        consecutive_misses = 0
+
         while self.connected and self.ws:
             await asyncio.sleep(WEBSOCKET_PING_INTERVAL / 1000.0)  # Convert to seconds
 
@@ -231,15 +234,22 @@ class WebSocketClient:
 
                     latency = int((time.time() - self.last_ping_time) * 1000)
                     SinricProLogger.debug(f"WebSocket pong received (latency: {latency}ms)")
+                    consecutive_misses = 0
 
                     for callback in self._pong_callbacks:
                         callback(latency)
 
                 except asyncio.TimeoutError:
-                    SinricProLogger.error("WebSocket pong timeout - connection appears dead")
-                    if self.ws:
-                        await self.ws.close()
-                    return
+                    consecutive_misses += 1
+                    SinricProLogger.warn(
+                        f"WebSocket pong timeout ({consecutive_misses}/{WEBSOCKET_PONG_MISS_MAX})"
+                    )
+
+                    if consecutive_misses >= WEBSOCKET_PONG_MISS_MAX:
+                        SinricProLogger.error("WebSocket connection appears dead, closing")
+                        if self.ws:
+                            await self.ws.close()
+                        return
 
                 except asyncio.CancelledError:
                     return
