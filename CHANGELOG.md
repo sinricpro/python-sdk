@@ -1,3 +1,7 @@
+## [5.2.1]
+- fix: [WebSocket pong timeout - connection appears dead - Reconnection loop annoys server](https://github.com/sinricpro/python-sdk/issues/83)
+- feat: only after 3 consecutive misses does it close the connection
+
 ## [5.2.0]
 - feat: Send a device setting event to SinricPro
 
