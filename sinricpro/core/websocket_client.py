@@ -74,7 +74,6 @@ class WebSocketClient:
         self.should_reconnect = True
         self.last_ping_time = 0.0
         self._ping_task: asyncio.Task[None] | None = None
-        self._pong_timeout_task: asyncio.Task[None] | None = None
         self._reconnect_task: asyncio.Task[None] | None = None
         self._message_callbacks: list[Callable[[str], None]] = []
         self._connected_callbacks: list[Callable[[], None]] = []
@@ -166,18 +165,6 @@ class WebSocketClient:
                     SinricProLogger.debug(f"WebSocket received: {message}")
                     for callback in self._message_callbacks:
                         callback(message)
-                elif isinstance(message, bytes):
-                    # Handle pong messages
-                    latency = int((time.time() - self.last_ping_time) * 1000)
-                    SinricProLogger.debug(f"WebSocket pong received (latency: {latency}ms)")
-
-                    # Cancel pong timeout
-                    if self._pong_timeout_task:
-                        self._pong_timeout_task.cancel()
-                        self._pong_timeout_task = None
-
-                    for callback in self._pong_callbacks:
-                        callback(latency)
 
         except websockets.exceptions.ConnectionClosed:
             SinricProLogger.info("WebSocket connection closed")
@@ -226,45 +213,45 @@ class WebSocketClient:
         self._ping_task = asyncio.create_task(self._heartbeat_loop())
 
     async def _heartbeat_loop(self) -> None:
-        """Heartbeat loop to send pings."""
+        """Heartbeat loop to send pings and await pong responses."""
         while self.connected and self.ws:
             await asyncio.sleep(WEBSOCKET_PING_INTERVAL / 1000.0)  # Convert to seconds
 
             if self.ws and self.connected:
                 try:
                     self.last_ping_time = time.time()
-                    await self.ws.ping()
+                    pong_waiter = await self.ws.ping()
                     SinricProLogger.debug("WebSocket ping sent")
 
-                    # Set timeout for pong
-                    self._pong_timeout_task = asyncio.create_task(self._pong_timeout())
+                    # Wait for pong with timeout
+                    await asyncio.wait_for(
+                        pong_waiter,
+                        timeout=WEBSOCKET_PING_TIMEOUT / 1000.0,
+                    )
+
+                    latency = int((time.time() - self.last_ping_time) * 1000)
+                    SinricProLogger.debug(f"WebSocket pong received (latency: {latency}ms)")
+
+                    for callback in self._pong_callbacks:
+                        callback(latency)
+
+                except asyncio.TimeoutError:
+                    SinricProLogger.error("WebSocket pong timeout - connection appears dead")
+                    if self.ws:
+                        await self.ws.close()
+                    return
+
+                except asyncio.CancelledError:
+                    return
 
                 except Exception as e:
                     SinricProLogger.error(f"Error sending ping: {e}")
-
-    async def _pong_timeout(self) -> None:
-        """Handle pong timeout."""
-        try:
-            await asyncio.sleep(WEBSOCKET_PING_TIMEOUT / 1000.0)
-            SinricProLogger.error("WebSocket pong timeout - connection appears dead")
-
-            # Force close connection
-            if self.ws:
-                await self.ws.close()
-
-        except asyncio.CancelledError:
-            # Pong was received in time
-            pass
 
     def _stop_heartbeat(self) -> None:
         """Stop heartbeat tasks."""
         if self._ping_task:
             self._ping_task.cancel()
             self._ping_task = None
-
-        if self._pong_timeout_task:
-            self._pong_timeout_task.cancel()
-            self._pong_timeout_task = None
 
     def _schedule_reconnect(self) -> None:
         """Schedule automatic reconnection."""
