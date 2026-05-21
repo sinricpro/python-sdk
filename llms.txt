@@ -117,6 +117,7 @@ from sinricpro import SinricProBlinds
 blinds = SinricProBlinds("device_id")
 blinds.on_power_state(callback)
 blinds.on_open_close(callback)  # Uses OpenCloseController
+blinds.on_adjust_open_close(callback)  # Relative delta (e.g. "Alexa, close ...")
 await blinds.send_open_close_event(75)
 
 # Garage Door
@@ -217,7 +218,8 @@ await device.send_range_value_event(value: int)
 
 ### OpenCloseController (for Blinds)
 ```python
-device.on_open_close(callback: Callable[[int], Awaitable[bool]])  # 0-100
+device.on_open_close(callback: Callable[[int], Awaitable[bool]])  # 0-100 (absolute)
+device.on_adjust_open_close(callback: Callable[[int], Awaitable[bool]])  # signed delta
 await device.send_open_close_event(position: int)
 ```
 
