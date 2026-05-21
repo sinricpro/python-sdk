@@ -723,6 +723,7 @@ while True:
 # Callbacks
 blinds.on_power_state(callback: Callable[[bool], Awaitable[bool]])
 blinds.on_open_close(callback: Callable[[int], Awaitable[bool]])  # 0=closed, 100=open
+blinds.on_adjust_open_close(callback: Callable[[int], Awaitable[bool]])  # signed delta (e.g. -10)
 blinds.on_setting(callback: Callable[[str, Any], Awaitable[bool]])
 
 # Events
@@ -735,9 +736,20 @@ await blinds.send_push_notification(message: str)
 ```python
 blinds = SinricProBlinds("device_id")
 
+current_position = 0  # 0=closed, 100=open
+
 async def on_open_close(position: int) -> bool:
-    # position: 0=closed, 100=open
+    global current_position
+    current_position = position
     steps = int((position / 100.0) * TOTAL_STEPS)
+    stepper_motor.move_to(steps)
+    return True
+
+async def on_adjust_open_close(position_delta: int) -> bool:
+    # Alexa sends a signed delta (e.g. -10 for "close a bit")
+    global current_position
+    current_position = max(0, min(100, current_position + position_delta))
+    steps = int((current_position / 100.0) * TOTAL_STEPS)
     stepper_motor.move_to(steps)
     return True
 
@@ -747,6 +759,7 @@ async def on_power(state: bool) -> bool:
     return True
 
 blinds.on_open_close(on_open_close)
+blinds.on_adjust_open_close(on_adjust_open_close)
 blinds.on_power_state(on_power)
 
 # Report physical button press
@@ -754,8 +767,9 @@ await blinds.send_open_close_event(75)  # 75% open
 ```
 
 **Actions:**
-- Uses `ACTION_SET_RANGE_VALUE` ("setRangeValue") internally
-- Provides semantic `on_open_close()` callback
+- Uses `ACTION_SET_RANGE_VALUE` ("setRangeValue") for absolute position
+- Uses `ACTION_ADJUST_RANGE_VALUE` ("adjustRangeValue") for relative position (e.g. "Alexa, close ...")
+- Provides semantic `on_open_close()` and `on_adjust_open_close()` callbacks
 
 ---
 
@@ -1274,20 +1288,30 @@ async def on_adjust_range_value(delta: int) -> bool:
 ```python
 class OpenCloseController:
     def on_open_close(self, callback: OpenCloseCallback) -> None:
-        """Register callback for open/close position"""
+        """Register callback for absolute open/close position"""
+
+    def on_adjust_open_close(self, callback: AdjustOpenCloseCallback) -> None:
+        """Register callback for relative open/close position (signed delta)"""
 
     async def send_open_close_event(self, position: int) -> bool:
         """Send open/close event (0=closed, 100=open)"""
 ```
 
-**Callback Signature:**
+**Callback Signatures:**
 ```python
 async def on_open_close(position: int) -> bool:
-    # position: 0=closed, 100=open
+    # position: 0=closed, 100=open (absolute)
+    return True
+
+async def on_adjust_open_close(position_delta: int) -> bool:
+    # position_delta: signed delta applied to current position (e.g. -10 from "Alexa, close ...")
+    # Track current position yourself and clamp the new value into 0-100.
     return True
 ```
 
-**Actions:** `ACTION_SET_RANGE_VALUE` ("setRangeValue") - Uses RangeController internally
+**Actions:**
+- `ACTION_SET_RANGE_VALUE` ("setRangeValue") - absolute position
+- `ACTION_ADJUST_RANGE_VALUE` ("adjustRangeValue") - relative position
 
 ---
 
