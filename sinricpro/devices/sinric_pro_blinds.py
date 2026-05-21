@@ -3,7 +3,7 @@ from sinricpro.capabilities.open_close_controller import OpenCloseController
 from sinricpro.capabilities.power_state_controller import PowerStateController
 from sinricpro.capabilities.push_notification import PushNotification
 from sinricpro.capabilities.setting_controller import SettingController
-from sinricpro.core.actions import ACTION_SET_POWER_STATE, ACTION_SET_RANGE_VALUE, ACTION_SET_SETTING
+from sinricpro.core.actions import ACTION_ADJUST_RANGE_VALUE, ACTION_SET_POWER_STATE, ACTION_SET_RANGE_VALUE, ACTION_SET_SETTING
 from sinricpro.core.sinric_pro_device import SinricProDevice
 from sinricpro.core.types import SinricProRequest
 
@@ -21,6 +21,11 @@ class SinricProBlinds(SinricProDevice, PowerStateController, OpenCloseController
         elif request.action == ACTION_SET_RANGE_VALUE:
             position = request.request_value.get("rangeValue", 0)
             success, response_value = await self.handle_open_close_request(position, self)
+            request.response_value = response_value
+            return success
+        elif request.action == ACTION_ADJUST_RANGE_VALUE:
+            position_delta = request.request_value.get("rangeValueDelta", 0)
+            success, response_value = await self.handle_adjust_open_close_request(position_delta, self)
             request.response_value = response_value
             return success
         elif request.action == ACTION_SET_SETTING:

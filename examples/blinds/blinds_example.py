@@ -40,6 +40,27 @@ async def on_open_close(position: int) -> bool:
     print(f"[Hardware] Blinds moved to {position}%")
     return True
 
+async def on_adjust_open_close(position_delta: int) -> bool:
+    """
+    Handle relative open/close position change requests (e.g. "Alexa, close the blinds").
+
+    Args:
+        position_delta: Signed delta to apply to the current position (positive = open more,
+                        negative = close more). Alexa sends e.g. -10 for a small close step.
+
+    Returns:
+        True if successful, False otherwise
+    """
+    global current_position
+    new_position = max(0, min(100, current_position + position_delta))
+    print(f"\n[Callback] Adjusting blinds by {position_delta}% -> {new_position}%")
+    current_position = new_position
+
+    # TODO: Control your motor to move blinds to new_position
+
+    print(f"[Hardware] Blinds moved to {new_position}%")
+    return True
+
 async def on_power_state(state: bool) -> bool:
     """
     Handle power state change requests.
@@ -112,6 +133,7 @@ async def main() -> None:
     # Register callbacks
     blinds.on_power_state(on_power_state)
     blinds.on_open_close(on_open_close)
+    blinds.on_adjust_open_close(on_adjust_open_close)
     blinds.on_setting(on_setting)
 
     # Add device to SinricPro
