@@ -150,7 +150,7 @@ Full API documentation is available at [Read the Docs](https://sinricpro-python.
 - **Documentation**: [help.sinric.pro](https://help.sinric.pro)
 - **Community**: [Discord](https://discord.gg/W5299EgB59)
 - **Issues**: [GitHub Issues](https://github.com/sinricpro/python-sdk/issues)
-- **Email**: support@sinric.pro
+- **Email**: support@sinric.com
 
 ## License
 
