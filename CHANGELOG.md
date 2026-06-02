@@ -1,3 +1,9 @@
+## [5.3.2]
+- feat: version number
+
+## [5.3.1]
+- fix: [SinricProBlinds - Alexa: Missing callback function: adjustRangeValue](https://github.com/sinricpro/python-sdk/issues/85)
+
 ## [5.2.1]
 - fix: [WebSocket pong timeout - connection appears dead - Reconnection loop annoys server](https://github.com/sinricpro/python-sdk/issues/83)
 - feat: only after 3 consecutive misses does it close the connection
