@@ -7,23 +7,9 @@ and heartbeat monitoring.
 
 import asyncio
 import time
-import uuid
 from typing import Callable
 
 import websockets
-
-
-def get_mac_address() -> str:
-    """Get the MAC address of this machine.
-
-    Returns:
-        MAC address string in format XX:XX:XX:XX:XX:XX
-    """
-    mac = uuid.getnode()
-    # Format as XX:XX:XX:XX:XX:XX
-    return ":".join(f"{(mac >> (8 * i)) & 0xFF:02X}" for i in range(5, -1, -1))
-
-
 from websockets.client import WebSocketClientProtocol
 
 from sinricpro import __version__
@@ -35,6 +21,7 @@ from sinricpro.core.types import (
     WEBSOCKET_PONG_MISS_MAX,
 )
 from sinricpro.utils.logger import SinricProLogger
+from sinricpro.utils.network import get_mac_address
 
 
 class WebSocketConfig:
@@ -262,6 +249,10 @@ class WebSocketClient:
         if self._ping_task:
             self._ping_task.cancel()
             self._ping_task = None
+
+    def schedule_reconnect(self) -> None:
+        """Schedule a reconnection attempt after the current backoff."""
+        self._schedule_reconnect()
 
     def _schedule_reconnect(self) -> None:
         """Schedule automatic reconnection."""
