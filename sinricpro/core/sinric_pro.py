@@ -539,6 +539,12 @@ class SinricPro:
         device = self.devices.get(device_id) if device_id else None
 
         if not device:
+            if origin.transport is Transport.UDP:
+                SinricProLogger.debug(
+                    f"Ignoring LAN request for unknown device: {device_id}"
+                )
+                return
+
             SinricProLogger.error(f"Device not found: {device_id}")
             self._send_error_response(message, f"Device {device_id} not found", origin)
             return
