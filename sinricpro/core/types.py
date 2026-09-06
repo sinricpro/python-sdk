@@ -4,9 +4,10 @@ Type Definitions and Constants
 Common types, protocols, and constants used throughout the SDK.
 """
 
-from dataclasses import dataclass, field
-from typing import Protocol, Any, Callable, Awaitable
 import re
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Awaitable, Callable, Protocol
 
 from sinricpro.core.exceptions import SinricProConfigurationError
 
@@ -19,6 +20,14 @@ WEBSOCKET_PING_TIMEOUT = 10000  # 10 seconds in milliseconds
 WEBSOCKET_PONG_MISS_MAX = 3  # Close connection after this many consecutive missed pongs
 EVENT_LIMIT_STATE = 1000  # 1 second in milliseconds
 EVENT_LIMIT_SENSOR_VALUE = 60000  # 60 seconds in milliseconds
+
+# Local control (LAN) - wire contract shared with the app and every other SinricPro SDK
+UDP_MULTICAST_IP = "224.9.9.9"
+UDP_MULTICAST_PORT = 3333
+MDNS_SERVICE_TYPE = "_sinricpro._udp.local."
+
+# Outgoing messages held while the cloud is unreachable. Oldest are dropped past this.
+SEND_QUEUE_MAX = 128
 
 # Interaction types
 PHYSICAL_INTERACTION = "PHYSICAL_INTERACTION"
@@ -37,6 +46,42 @@ PongCallback = Callable[[int], None]
 ModuleSettingCallback = Callable[[str, Any], Awaitable[bool]]
 
 
+class Transport(str, Enum):
+    """Transport a message arrived on / must be answered over."""
+
+    WEBSOCKET = "websocket"
+    UDP = "udp"
+
+
+@dataclass(frozen=True)
+class MessageOrigin:
+    """
+    Where a message came from, and where its response must go.
+
+    The peer is carried per message rather than held on the listener: a response
+    can be sent several loop iterations after the request was queued, by which
+    time another peer may have sent a packet.
+
+    Attributes:
+        transport: Transport the message arrived on
+        peer: (host, port) of the sender, for UDP only
+    """
+
+    transport: Transport = Transport.WEBSOCKET
+    peer: tuple[str, int] | None = None
+
+
+WEBSOCKET_ORIGIN = MessageOrigin(Transport.WEBSOCKET)
+
+
+@dataclass(frozen=True)
+class QueuedMessage:
+    """A serialized message plus the origin that decides how it is delivered."""
+
+    message: str
+    origin: MessageOrigin = WEBSOCKET_ORIGIN
+
+
 @dataclass
 class SinricProConfig:
     """
@@ -47,12 +92,22 @@ class SinricProConfig:
         app_secret: SinricPro app secret (min 32 characters)
         server_url: WebSocket server URL (default: ws.sinric.pro)
         debug: Enable debug logging
+        local_control: Answer signed commands over the LAN (UDP 3333)
+        mdns: Announce the device over mDNS so the app can discover it.
+            Requires the optional ``zeroconf`` dependency; ignored without it.
+        local_control_interface: IPv4 address of the interface to bind the
+            multicast join to and to announce over mDNS. Leave unset to let the
+            OS choose - set it on multi-homed hosts (Docker, VPN, WSL) where the
+            default is not the LAN.
     """
 
     app_key: str
     app_secret: str
     server_url: str = SINRICPRO_SERVER_URL
     debug: bool = False
+    local_control: bool = True
+    mdns: bool = True
+    local_control_interface: str | None = None
 
     def __post_init__(self) -> None:
         """Validate configuration after initialization."""

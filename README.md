@@ -11,6 +11,7 @@ Official Python SDK for [SinricPro](https://sinric.pro) - Control your IoT devic
 - ✅ **Type Safe** - Full type hints for better IDE support and error detection
 - ✅ **Voice Control** - Works with Alexa and Google Home
 - ✅ **Real-time** - WebSocket-based bidirectional communication
+- ✅ **Local Control** - Keeps answering the app over the LAN when the cloud is unreachable
 - ✅ **Secure** - HMAC-SHA256 message signatures
 - ✅ **Reliable** - Auto-reconnection and heartbeat monitoring
 - ✅ **Flexible** - Support for multiple device types and capabilities
@@ -49,10 +50,18 @@ Official Python SDK for [SinricPro](https://sinric.pro) - Control your IoT devic
 pip install sinricpro
 ```
  
+Local control announces the device over mDNS so the app can discover it on the LAN.
+The announcement uses `zeroconf`, installed with the SDK:
+
+```bash
+pip install sinricpro
+```
+
 ## Requirements
 
 - Python 3.10 or higher
 - `websockets` library (automatically installed)
+- `zeroconf` - the mDNS announcement used by local control
 
 ## Platform Support
 
@@ -62,6 +71,13 @@ The SDK works on:
 - **Windows** 10/11
 - **macOS** 10.14+
 - **Raspberry Pi** (All models with Python 3.10+)
+
+## Local Control
+
+Devices answer signed commands over the LAN as well as through the cloud, so they
+keep responding to the app when sinric.pro is unreachable. It is on by default and
+needs no code change - a LAN request runs the same capability callbacks a cloud
+request does. UDP listener on port `3333`, joined to multicast group `224.9.9.9` and answering unicast on the same port. Replies go back to the peer that sent the request, never to the cloud websocket.
 
 ## Logging
 
@@ -132,6 +148,17 @@ Full API documentation is available at [Read the Docs](https://sinricpro-python.
 2. **Check device ID** - Verify the device ID is exactly 24 hexadecimal characters
 3. **Check network** - Ensure you have internet connectivity
 4. **Enable debug logging** - Set `debug=True` in config to see detailed logs
+
+### Local Control Issues
+
+1. **No device found on the LAN** - check the log for
+   `Local control listening on UDP 3333`. A failed multicast join leaves nothing
+   listening, and the log line says so.
+2. **No mDNS record** - confirm `zeroconf` imported cleanly; the SDK logs a warning and falls back to UDP-only when it did not.
+3. **Discovery answers on the wrong network** - set `local_control_interface` to the
+   LAN address of the host.
+4. **Android clients need a `WifiManager.MulticastLock`**, and iOS clients need
+   `_sinricpro._udp` listed in `NSBonjourServices`, or discovery returns nothing.
 
 ### Common Errors
 

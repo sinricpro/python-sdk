@@ -10,10 +10,12 @@ import re
 import time
 from typing import Any
 
+from sinricpro import __version__
 from sinricpro.core.exceptions import (
     SinricProConfigurationError,
     SinricProDeviceError,
 )
+from sinricpro.core.local_control import MdnsAnnouncer, UdpListener
 from sinricpro.core.message_queue import MessageQueue
 from sinricpro.core.signature import Signature
 from sinricpro.core.sinric_pro_device import SinricProDevice
@@ -22,10 +24,15 @@ from sinricpro.core.types import (
     SinricProRequest,
     ConnectedCallback,
     DisconnectedCallback,
+    MessageOrigin,
     PongCallback,
     ModuleSettingCallback,
+    QueuedMessage,
+    Transport,
     EVENT_LIMIT_STATE,
     PHYSICAL_INTERACTION,
+    SEND_QUEUE_MAX,
+    WEBSOCKET_ORIGIN,
 )
 from sinricpro.core.event_limiter import EventLimiter
 from sinricpro.core.websocket_client import WebSocketClient, WebSocketConfig
@@ -55,8 +62,10 @@ class SinricPro:
         self.devices: dict[str, SinricProDevice] = {}
         self.websocket: WebSocketClient | None = None
         self.receive_queue = MessageQueue()
-        self.send_queue = MessageQueue()
+        self.send_queue = MessageQueue(max_size=SEND_QUEUE_MAX)
         self.signature: Signature | None = None
+        self.udp_listener: UdpListener | None = None
+        self.mdns: MdnsAnnouncer | None = None
         self.is_initialized = False
         self._processing_tasks: list[asyncio.Task[None]] = []
         self._connected_callbacks: list[ConnectedCallback] = []
@@ -89,7 +98,10 @@ class SinricPro:
 
         Raises:
             SinricProConfigurationError: If configuration is invalid
-            SinricProConnectionError: If connection fails
+
+        A cloud connection failure is not fatal: the SDK stays up, retries in
+        the background, and keeps answering local control. Call
+        :meth:`is_connected` to check cloud state.
 
         Example:
             >>> config = SinricProConfig(
@@ -119,7 +131,6 @@ class SinricPro:
         # Initialize signature handler
         self.signature = Signature(self.config.app_secret)
 
-        # Initialize WebSocket
         try:
             ws_config = WebSocketConfig(
                 server_url=self.config.server_url,
@@ -128,22 +139,65 @@ class SinricPro:
             )
 
             self.websocket = WebSocketClient(ws_config)
-
-            # Set up WebSocket event handlers
             self._setup_websocket_handlers()
 
-            # Connect to WebSocket
-            await self.websocket.connect()
-
-            # Start message processors
-            self._start_message_processor()
+            # Local control comes up before the cloud so a host that never
+            # reaches sinric.pro still answers the app over the LAN.
+            await self._start_local_control()
 
             self.is_initialized = True
+            self._start_message_processor()
+
+            try:
+                await self.websocket.connect()
+            except Exception as e:
+                # Transport failure is never fatal -- the reconnect timer is
+                # armed and local control already answers. Only invalid
+                # configuration raises, and it has done so above.
+                SinricProLogger.warn(
+                    f"Cloud connection failed ({e}); will keep retrying"
+                )
+                self.websocket.schedule_reconnect()
+
             SinricProLogger.info("SinricPro SDK initialized successfully")
 
         except Exception as e:
             SinricProLogger.error(f"Failed to initialize SinricPro: {e}")
+            self.is_initialized = False
+            await self._stop_local_control()
             raise
+
+    async def _start_local_control(self) -> None:
+        """Bring up the LAN listener and the mDNS announcement."""
+        if not self.config or not self.config.local_control:
+            SinricProLogger.info("Local control disabled by configuration")
+            return
+
+        listener = UdpListener(
+            self.receive_queue, interface_ip=self.config.local_control_interface
+        )
+        if not await listener.start():
+            return
+        self.udp_listener = listener
+
+        if not self.config.mdns:
+            SinricProLogger.info("mDNS announcement disabled by configuration")
+            return
+
+        announcer = MdnsAnnouncer(
+            sdk_version=__version__, interface_ip=self.config.local_control_interface
+        )
+        if await announcer.start(list(self.devices.keys())):
+            self.mdns = announcer
+
+    async def _stop_local_control(self) -> None:
+        """Tear down the LAN listener and the mDNS announcement."""
+        if self.mdns:
+            await self.mdns.stop()
+            self.mdns = None
+        if self.udp_listener:
+            await self.udp_listener.stop()
+            self.udp_listener = None
 
     def add(self, device: SinricProDevice) -> SinricProDevice:
         """
@@ -185,6 +239,15 @@ class SinricPro:
         # Update WebSocket device list if already connected
         if self.is_initialized and self.websocket:
             self.websocket.update_device_list(list(self.devices.keys()))
+
+        # The mDNS record is refreshed only when the device list changes.
+        if self.mdns:
+            try:
+                asyncio.get_running_loop().create_task(
+                    self.mdns.update(list(self.devices.keys()))
+                )
+            except RuntimeError:
+                SinricProLogger.warn("No running event loop, mDNS record not refreshed")
 
         return device
 
@@ -342,6 +405,8 @@ class SinricPro:
             task.cancel()
         self._processing_tasks.clear()
 
+        await self._stop_local_control()
+
         # Disconnect WebSocket
         if self.websocket:
             await self.websocket.disconnect()
@@ -363,11 +428,7 @@ class SinricPro:
             SinricProLogger.error("Signature handler not initialized")
             return
 
-        # Sign the message
-        self.signature.sign(message)
-
-        # Add to send queue
-        self.send_queue.push_sync(json.dumps(message, separators=(",", ":"), sort_keys=False))
+        self.send_queue.push_sync(self.signature.sign_message(message), WEBSOCKET_ORIGIN)
 
     def get_timestamp(self) -> int:
         """
@@ -427,9 +488,9 @@ class SinricPro:
         """Process received messages."""
         while self.is_initialized:
             try:
-                message_str = await self.receive_queue.pop()
-                if message_str:
-                    await self._handle_message(message_str)
+                entry = await self.receive_queue.pop()
+                if entry:
+                    await self._handle_message(entry)
                 else:
                     await asyncio.sleep(0.01)  # Small delay if queue is empty
             except asyncio.CancelledError:
@@ -437,29 +498,32 @@ class SinricPro:
             except Exception as e:
                 SinricProLogger.error(f"Error processing received message: {e}")
 
-    async def _handle_message(self, message_str: str) -> None:
-        """Handle a received message."""
+    async def _handle_message(self, entry: QueuedMessage) -> None:
+        """Handle a received message, from either the cloud or the LAN."""
         try:
-            message = json.loads(message_str)
+            message = json.loads(entry.message)
+            origin = entry.origin
 
             # Handle timestamp message
             if "timestamp" in message:
                 return
 
-            # Validate signature
-            if not self.signature or not self.signature.validate(message):
+            # Validated against the received bytes: the sender's key order and
+            # spacing are its own, so a re-serialized dict would not match.
+            if not self.signature or not self.signature.validate(entry.message):
                 SinricProLogger.error("Invalid message signature")
-                self._send_invalid_signature_response(message)
+                self._send_invalid_signature_response(message, origin)
                 return
 
-            # Route message
+            # Route message. LAN requests land in the same handlers as cloud
+            # requests - there is no second dispatch path.
             if message["payload"]["type"] == "request":
                 # Check scope to determine if this is a module or device request
                 scope = message["payload"].get("scope", "device")
                 if scope == "module":
-                    await self._handle_module_request(message)
+                    await self._handle_module_request(message, origin)
                 else:
-                    await self._handle_request(message)
+                    await self._handle_request(message, origin)
             elif message["payload"]["type"] == "response":
                 # Response messages (not typically used in device SDK)
                 pass
@@ -467,14 +531,22 @@ class SinricPro:
         except Exception as e:
             SinricProLogger.error(f"Error handling message: {e}")
 
-    async def _handle_request(self, message: dict[str, Any]) -> None:
+    async def _handle_request(
+        self, message: dict[str, Any], origin: MessageOrigin = WEBSOCKET_ORIGIN
+    ) -> None:
         """Handle an incoming request."""
         device_id = message["payload"].get("deviceId")
         device = self.devices.get(device_id) if device_id else None
 
         if not device:
+            if origin.transport is Transport.UDP:
+                SinricProLogger.debug(
+                    f"Ignoring LAN request for unknown device: {device_id}"
+                )
+                return
+
             SinricProLogger.error(f"Device not found: {device_id}")
-            self._send_error_response(message, f"Device {device_id} not found")
+            self._send_error_response(message, f"Device {device_id} not found", origin)
             return
 
         request = SinricProRequest(
@@ -484,9 +556,13 @@ class SinricPro:
         )
 
         success = await device.handle_request(request)
-        self._send_response(message, success, request.response_value, request.error_message)
+        self._send_response(
+            message, success, request.response_value, request.error_message, origin
+        )
 
-    async def _handle_module_request(self, message: dict[str, Any]) -> None:
+    async def _handle_module_request(
+        self, message: dict[str, Any], origin: MessageOrigin = WEBSOCKET_ORIGIN
+    ) -> None:
         """Handle an incoming module-level request."""
         action = message["payload"].get("action", "")
         request_value = message["payload"].get("value", {})
@@ -494,7 +570,9 @@ class SinricPro:
         if action == "setSetting":
             if not self._module_setting_callback:
                 SinricProLogger.error("No module setting callback registered")
-                self._send_module_response(message, False, {}, "No module setting callback registered")
+                self._send_module_response(
+                    message, False, {}, "No module setting callback registered", origin
+                )
                 return
 
             setting_id = request_value.get("id", "")
@@ -503,13 +581,15 @@ class SinricPro:
             try:
                 success = await self._module_setting_callback(setting_id, value)
                 response_value = {"id": setting_id, "value": value} if success else {}
-                self._send_module_response(message, success, response_value)
+                self._send_module_response(message, success, response_value, origin=origin)
             except Exception as e:
                 SinricProLogger.error(f"Error in module setting callback: {e}")
-                self._send_module_response(message, False, {}, str(e))
+                self._send_module_response(message, False, {}, str(e), origin)
         else:
             SinricProLogger.error(f"Unknown module action: {action}")
-            self._send_module_response(message, False, {}, f"Unknown module action: {action}")
+            self._send_module_response(
+                message, False, {}, f"Unknown module action: {action}", origin
+            )
 
     def _send_module_response(
         self,
@@ -517,19 +597,21 @@ class SinricPro:
         success: bool,
         value: dict[str, Any],
         error_message: str | None = None,
+        origin: MessageOrigin = WEBSOCKET_ORIGIN,
     ) -> None:
         """Send a module-level response message (without deviceId)."""
+        request_payload = request_message.get("payload", {})
         response_message: dict[str, Any] = {
             "header": {
                 "payloadVersion": 2,
                 "signatureVersion": 1,
             },
             "payload": {
-                "action": request_message["payload"]["action"],
-                "clientId": request_message["payload"]["clientId"],
+                "action": request_payload.get("action", ""),
+                "clientId": request_payload.get("clientId", ""),
                 "createdAt": self.get_timestamp(),
                 "message": error_message if error_message else ("OK" if success else "Request failed"),
-                "replyToken": request_message["payload"]["replyToken"],
+                "replyToken": request_payload.get("replyToken", ""),
                 "scope": "module",
                 "success": success,
                 "type": "response",
@@ -537,10 +619,7 @@ class SinricPro:
             },
         }
 
-        if self.signature:
-            self.signature.sign(response_message)
-
-        self.send_queue.push_sync(json.dumps(response_message, separators=(",", ":"), sort_keys=False))
+        self._enqueue_response(response_message, origin)
 
     def _send_response(
         self,
@@ -548,20 +627,24 @@ class SinricPro:
         success: bool,
         value: dict[str, Any],
         error_message: str | None = None,
+        origin: MessageOrigin = WEBSOCKET_ORIGIN,
     ) -> None:
         """Send a response message."""
+        # A request that failed verification may be missing anything, so every
+        # echoed field is read defensively.
+        request_payload = request_message.get("payload", {})
         response_message: dict[str, Any] = {
             "header": {
                 "payloadVersion": 2,
                 "signatureVersion": 1,
             },
             "payload": {
-                "action": request_message["payload"]["action"],
-                "clientId": request_message["payload"]["clientId"],
+                "action": request_payload.get("action", ""),
+                "clientId": request_payload.get("clientId", ""),
                 "createdAt": self.get_timestamp(),
-                "deviceId": request_message["payload"]["deviceId"],
+                "deviceId": request_payload.get("deviceId", ""),
                 "message": error_message if error_message else ("OK" if success else "Request failed"),
-                "replyToken": request_message["payload"]["replyToken"],
+                "replyToken": request_payload.get("replyToken", ""),
                 "scope": "device",
                 "success": success,
                 "type": "response",
@@ -569,43 +652,72 @@ class SinricPro:
             },
         }
 
-        if "instanceId" in request_message["payload"]:
-            response_message["payload"]["instanceId"] = request_message["payload"]["instanceId"]
+        if "instanceId" in request_payload:
+            response_message["payload"]["instanceId"] = request_payload["instanceId"]
 
-        if self.signature:
-            self.signature.sign(response_message)
+        self._enqueue_response(response_message, origin)
 
-        self.send_queue.push_sync(json.dumps(response_message, separators=(",", ":"), sort_keys=False))
+    def _enqueue_response(
+        self, response_message: dict[str, Any], origin: MessageOrigin
+    ) -> None:
+        """Sign a response and queue it for the transport it must go back on."""
+        if not self.signature:
+            SinricProLogger.error("Signature handler not initialized")
+            return
+        self.send_queue.push_sync(self.signature.sign_message(response_message), origin)
 
-    def _send_error_response(self, message: dict[str, Any], error_message: str) -> None:
+    def _send_error_response(
+        self,
+        message: dict[str, Any],
+        error_message: str,
+        origin: MessageOrigin = WEBSOCKET_ORIGIN,
+    ) -> None:
         """Send an error response."""
-        self._send_response(message, False, {"error": error_message}, error_message)
+        self._send_response(message, False, {"error": error_message}, error_message, origin)
 
-    def _send_invalid_signature_response(self, message: dict[str, Any]) -> None:
-        """Send invalid signature response."""
-        self._send_error_response(message, "Invalid signature")
+    def _send_invalid_signature_response(
+        self, message: dict[str, Any], origin: MessageOrigin = WEBSOCKET_ORIGIN
+    ) -> None:
+        """Answer a request that failed verification.
+
+        Answering rather than dropping is deliberate: it lets a client tell a
+        wrong app secret apart from an unreachable device.
+        """
+        self._send_response(message, False, {}, "Signature is invalid", origin)
 
     async def _process_send_queue(self) -> None:
         """Process outgoing messages."""
         while self.is_initialized:
             try:
-                if not self.is_connected():
-                    await asyncio.sleep(0.1)
+                # Gate per message, not per queue: a cloud message waiting for
+                # the socket must not hold up a LAN reply queued behind it.
+                connected = self.is_connected()
+                entry = self.send_queue.pop_sync(
+                    lambda m: connected or m.origin.transport is not Transport.WEBSOCKET
+                )
+
+                if entry is None:
+                    await asyncio.sleep(0.01)
                     continue
 
-                message_str = self.send_queue.pop_sync()
-                if message_str and self.websocket:
-                    try:
-                        self.websocket.send(message_str)
-                    except Exception as e:
-                        # If send fails, put message back in queue
-                        self.send_queue.push_sync(message_str)
-                        SinricProLogger.error(f"Failed to send message, will retry later: {e}")
-                        await asyncio.sleep(1)
-                else:
-                    await asyncio.sleep(0.01)
+                if entry.origin.transport is Transport.UDP:
+                    # LAN responses are never echoed to the cloud socket.
+                    if self.udp_listener:
+                        self.udp_listener.send(entry.message, entry.origin.peer)
+                    continue
+
+                if not self.websocket:
+                    continue
+
+                try:
+                    self.websocket.send(entry.message)
+                except Exception as e:
+                    self.send_queue.push_front_sync(entry)
+                    SinricProLogger.error(f"Failed to send message, will retry later: {e}")
+                    await asyncio.sleep(1)
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
                 SinricProLogger.error(f"Error processing send queue: {e}")
+                await asyncio.sleep(0.01)
