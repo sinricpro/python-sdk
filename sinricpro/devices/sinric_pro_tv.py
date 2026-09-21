@@ -114,7 +114,8 @@ class SinricProTV(
 
         # Handle adjustVolume action
         elif action == ACTION_ADJUST_VOLUME:
-            volume_delta = request.request_value.get("volumeDelta", 0)
+            # The protocol uses "volume" for both absolute values and relative deltas.
+            volume_delta = request.request_value.get("volume", 0)
             success, response_value = await self.handle_adjust_volume_request(volume_delta, self)
             request.response_value = response_value
             return success

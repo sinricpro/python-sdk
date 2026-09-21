@@ -53,12 +53,13 @@ async def on_volume(volume: int) -> bool:
     return True
 
 
-async def on_adjust_volume(volume_delta: int) -> bool:
+async def on_adjust_volume(volume_delta: int) -> dict:
     """Handle volume adjustments from SinricPro."""
     print(f"[Volume] Adjust by {'+' if volume_delta > 0 else ''}{volume_delta}")
     tv_state["volume"] = max(0, min(100, tv_state["volume"] + volume_delta))
     print(f"  New volume: {tv_state['volume']}")
-    return True
+    # Report the adjusted level; SinricPro stores it as the device's volume.
+    return {"success": True, "volume": tv_state["volume"]}
 
 
 async def on_mute(mute: bool) -> bool:
