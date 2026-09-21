@@ -1,3 +1,7 @@
+## [6.1.0]
+- fix: `adjustVolume` read the delta from a nonexistent `volumeDelta` field, so every volume adjustment reached the callback as `0` and reported `0` back to SinricPro, which stores it as the device's volume. The delta now comes from the request's `volume` field.
+- fix: An `on_adjust_volume` callback can return `{"success": True, "volume": <new volume>}` to report the volume after the adjustment, which SinricPro stores as the device's absolute level. Returning `True` still echoes the delta.
+
 ## [6.0.0]
 - feat: Local control. Devices answer signed commands over the LAN on UDP 3333 (multicast 224.9.9.9, unicast too), so they keep working with the cloud unreachable. Requests dispatch through the existing capability callbacks.
 - feat: mDNS announcement of `_sinricpro._udp.local.` (TXT: `deviceIds`, `sdk`, `udp`) for app discovery. `zeroconf` is a required dependency, so a default install announces without extra steps. Local control is on by default; set `local_control=False` to opt out.

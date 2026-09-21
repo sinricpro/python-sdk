@@ -15,7 +15,11 @@ if TYPE_CHECKING:
     from sinricpro.core.sinric_pro_device import SinricProDevice
 
 VolumeCallback = Callable[[int], Awaitable[bool]]
-AdjustVolumeCallback = Callable[[int], Awaitable[bool]]
+
+# An adjust-volume callback returns True/False, or a mapping carrying the volume
+# after the adjustment: {"success": True, "volume": 45}.
+AdjustVolumeResult = bool | dict[str, Any]
+AdjustVolumeCallback = Callable[[int], Awaitable[AdjustVolumeResult]]
 
 
 class VolumeController:
@@ -39,8 +43,13 @@ class VolumeController:
     def on_adjust_volume(self, callback: AdjustVolumeCallback) -> None:
         """Register callback for volume adjustments.
 
+        SinricPro stores the volume in the response as the device's absolute level,
+        so return {"success": True, "volume": <new volume>} to report it. Returning
+        True echoes the delta back instead.
+
         Args:
-            callback: Async function that receives volume delta and returns True on success
+            callback: Async function that receives volume delta and returns True on
+                success, or a mapping with "success" and the new absolute "volume"
         """
         self._adjust_volume_callback = callback
 
@@ -71,9 +80,19 @@ class VolumeController:
             return False, {}
 
         try:
-            success = await self._adjust_volume_callback(volume_delta)
+            result = await self._adjust_volume_callback(volume_delta)
+
+            # Fall back to the delta so callbacks that only return a bool keep working.
+            volume = volume_delta
+            if isinstance(result, dict):
+                success = bool(result.get("success", False))
+                if result.get("volume") is not None:
+                    volume = result["volume"]
+            else:
+                success = bool(result)
+
             if success:
-                return True, {"volume": volume_delta}
+                return True, {"volume": volume}
             else:
                 return False, {}
         except Exception as e:
